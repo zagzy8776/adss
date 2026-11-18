@@ -88,12 +88,6 @@ h1 span{color:#00d54b}
 .btn.ghost{background:#14171d;color:#cfd5dd;border:1px solid #262b34;font-weight:700}
 .note{margin:8px 0 0;font-size:9.5px;line-height:1.5;color:#8b93a1;text-align:center}
 
-.proof{margin:11px 16px 0;display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-.pf{background:#0e1014;border:1px solid #1b1f26;border-radius:9px;padding:7px 3px;text-align:center}
-.pf .b{font-size:8.5px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
-.pf .a{font-size:9.5px;color:#00d54b;font-weight:700;margin-top:2px}
-.cap{margin:6px 16px 0;font-size:9.5px;line-height:1.45;color:#8b93a1;text-align:center}
-
 .field{margin-top:11px}
 .lbl{display:block;font-size:10.5px;font-weight:600;color:#b9c0cb;margin-bottom:4px}
 .in{width:100%;min-height:46px;background:#0a0c10;border:1px solid #262b34;border-radius:10px;color:#eef1f5;
@@ -212,9 +206,6 @@ footer a:hover{color:#00d54b}
     <button class="btn" id="btn" type="button" aria-describedby="note">Confirm and continue →</button>
     <p class="note" id="note">No payment details in this step. Ever.</p>
   </section>
-
-  <div class="proof" id="proof" aria-label="Recent payouts"></div>
-  <p class="cap">Examples of recent disbursements · first name and initial only</p>
 
   <section class="card hide" id="capture" aria-labelledby="capH">
     <div class="h"><b>STEP 5</b><span id="tagCap">Contact</span></div>
@@ -486,14 +477,6 @@ setInterval(() => {
   claiming = Math.max(claiming, 64);
   $('claiming').textContent = fmt(claiming);
 }, 2600);
-
-/* ------------------------------ proof strip ------------------------------ */
-const PROOF = [
-  ['Cash App', '$500'], ['Venmo', '$250'], ['PayPal', '$120'],
-  ['Interac', '$320'], ['Cash App', '$180']
-];
-$('proof').innerHTML = PROOF.map(p =>
-  '<div class="pf"><div class="b">' + p[0] + '</div><div class="a">' + p[1] + '</div></div>').join('');
 
 /* -------------------------------- ads -----------------------------------
    Four independently configurable slots, each tracked under its own /hit
