@@ -15,7 +15,9 @@
  */
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
-const PHONE_RE = /^[2-9]\d{9}$/;
+/* Any country: 7–15 digits (E.164 maximum). No North-American assumption, so
+   a +44, +234 or +55 number validates the same as a +1 one. */
+const PHONE_RE = /^\+?\d{7,15}$/;
 
 const ALLOW_EVENTS = new Set([
   'view', 'step_1', 'step_2', 'step_3', 'interstitial', 'ad',
@@ -58,9 +60,8 @@ function region(cf) {
   const country = (cf && cf.country) || '';
   if (city && rc) return city + ', ' + rc;
   if (rc) return rc;
-  if (country === 'CA') return 'Canada';
-  if (country === 'US') return 'United States';
-  return 'US / Canada';
+  /* Any country gets its own label — no US/Canada assumption. */
+  return country || 'Online';
 }
 
 async function capture(req, env, ctx) {
@@ -72,10 +73,14 @@ async function capture(req, env, ctx) {
   if (body && body.company) return json({ ok: true }, 200, env);
 
   const email = String(body.email || '').trim().toLowerCase();
-  const phone = String(body.phone || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '');
+  /* Keep the leading + for international numbers; only strip the redundant
+     North-American 1 that some phone keyboards add. */
+  const rawPhone = String(body.phone || '').trim();
+  const phone = (rawPhone.charAt(0) === '+' ? '+' : '') +
+                rawPhone.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '');
 
   if (!EMAIL_RE.test(email) || email.length > 254) return json({ ok: false, error: 'email' }, 422, env);
-  if (!PHONE_RE.test(phone)) return json({ ok: false, error: 'phone' }, 422, env);
+  if (!PHONE_RE.test(phone) || !/[1-9]/.test(phone)) return json({ ok: false, error: 'phone' }, 422, env);
   if (body.consent !== true) return json({ ok: false, error: 'consent' }, 422, env);
 
   /* 5 submissions per IP per hour. */

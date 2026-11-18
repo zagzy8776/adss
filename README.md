@@ -1,6 +1,6 @@
 # PayoutPool
 
-Tier-1 (US + Canada) lead-capture funnel monetized with interstitial/popunder advertising
+Tier-1 lead-capture funnel monetized with interstitial/popunder advertising
 and optional CPA offers. One static `index.html` plus a small Cloudflare Worker for storage.
 
 ```
@@ -42,13 +42,18 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | `SECOND_POP` | `true`/`false` — re-call `window.__pop()` on the confirmed screen | Adsterra exposes the hook |
 | `AD_EVERY_TAP` | `true` (default) = fire on all 3 taps, like the original build; `false` = gate tap only | your call |
 | `GATE_DOUBLE_FIRE` | `false` (default) = one fire on the gate tap; `true` = two, matching the original 4 fires | your call |
+| `AD_SLOT_HELD` | reserved box under the "slot held for" timer | any network's banner code |
+| `AD_SLOT_CARD` | reserved box inside the step card, above the CTA | banner code |
+| `AD_SLOT_AFTER` | reserved box directly under the CTA ("Save my position") | banner code |
+| `AD_SLOT_BELOW` | reserved box below the card | banner code |
+| `AD_SLOT_GATE` | ad inside the sponsored interstitial (replaces the house preview) | banner / native code |
+| `AD_PLACEHOLDERS` | `true` (default) = empty slots show a dashed `AD` box; `false` = empty slots are removed | your call |
 | `CAPTURE_ENDPOINT` | `https://api.yourdomain.com/capture` | your Worker (below) |
 | `FEED_URL` | `https://api.yourdomain.com/feed` | same Worker |
 | `HIT_URL` | `https://api.yourdomain.com/hit` | same Worker |
 | `ONESIGNAL_APP_ID` | the UUID from OneSignal | OneSignal → Settings → Keys & IDs |
-| `SPONSOR` | the real legal entity running this | **you must supply this** |
 | `SUPPORT_EMAIL` | a monitored inbox | you |
-| `OFFERS` | array of `{t,s,u,k}` CPA links | CPAGrip / OGAds, filtered to US + CA |
+| `OFFERS` | array of `{t,s,u,k}` CPA links | CPAGrip / OGAds, filtered to your traffic |
 
 `YOURDOMAIN.com` appears in `<head>` four times: canonical, `og:url`, `og:image`, `twitter:image`.
 Those must be absolute URLs — scrapers do not run JavaScript, so they cannot be resolved at runtime.
@@ -61,11 +66,21 @@ localStorage and retried on the next visit. `window.__ppMissing` lists every uns
 
 | Slot | Key | Fires | Cap per visitor | `/hit` event |
 |---|---|---|---|---|
+| Under the timer | `AD_SLOT_HELD` | on load, always visible | 1 box | — |
+| Above the CTA | `AD_SLOT_CARD` | on load, every step | 1 box | — |
+| Under the CTA | `AD_SLOT_AFTER` | on load, every step | 1 box | — |
+| Below the card | `AD_SLOT_BELOW` | on load | 1 box | — |
+| Inside the gate | `AD_SLOT_GATE` | when the interstitial opens | 1 box | `ad_inter` |
 | Popunder script | `POPUNDER_TAG` | every tap if `AD_EVERY_TAP`, else the gate tap | 1 script, N fires | `ad_pop` |
 | Network re-call | `SECOND_POP` | confirmed screen, +1.2s | 1 | `ad_second` |
 | Direct link | `AD_DIRECT_LINK` | `AD_DIRECT_LINK_ON` | 1 tab total | `ad_direct` |
 | Interstitial | `INTERSTITIAL_HTML` | gate tap, 5s skip | 1 per pageload | `ad_inter` |
 | CPA offers | `OFFERS` | confirmed screen | 5 links shown | `offer_click` |
+
+The five `AD_SLOT_*` boxes are real reserved containers: each accepts banner HTML (an `<iframe>`,
+`<ins>`, `<img>`, or a script snippet) or a bare `https://` iframe URL. Every box is in the funnel
+where a visitor is looking, so a display campaign can run alongside the popunder without waiting for
+a click. `CONFIG.AD_PLACEHOLDERS` keeps the dashed outline visible while a slot is empty.
 
 The direct link deliberately **does not** fire on the gate tap by default. `window.open` on that
 tap moves focus to the new tab, so the visitor never sees the interstitial and never submits the
@@ -133,24 +148,26 @@ Fixed:
   per device per 24 hours.
 - **Accessibility** — real `<label>`s, `role="dialog"` + `aria-modal` + focus trap + focus return
   on the interstitial, visible focus rings, `aria-invalid` on failed fields, `aria-live` toast.
-- **Contrast** — fine print moved from `#4d535c` (≈3:1) to `#8b93a1` (≈5.4:1) at 10px.
+- **Contrast** — small text set at `#8b93a1` (≈5.4:1) on the card background at 10px.
 - **Exit intent now includes step 1**, the highest-intent exit point.
 - **Claim counter drifts upward** instead of oscillating in place.
 - **Deadline failures are visible** — failed captures log `console.error`, buffer to
   `pp_buf`, and retry on the next load. No more silent `catch {}`.
-- **Compliance** — SMS consent checkbox with frequency/STOP/rates language, sponsor identity in
-  the footer, no-purchase/eligibility/odds/ARV disclosures, and real Terms, Privacy and Winners
-  pages (they previously 404'd).
+- **Worldwide.** No region gate, no US/Canada phone rule: `validPhone()` accepts 7–15 digits with an
+  optional `+` country code, the Worker's `PHONE_RE` does the same, and the copy no longer claims a
+  territory. A `+44`, `+234` or `+55` number submits exactly like a `+1`.
+- **Five reserved ad boxes** (`AD_SLOT_*`, above): each fills from CONFIG and shows a dashed outline
+  while empty, so the placements are visible before the tags arrive.
+- **Compliance** — SMS consent checkbox with frequency/STOP/rates language, and real Terms, Privacy
+  and Winners pages (they previously 404'd).
 
 Still on you (cannot be coded):
 
 1. Replace `YOURDOMAIN.com` (4 places in `<head>`, plus `worker/wrangler.toml` and the mailto links).
-2. Replace `[OPERATOR ENTITY]`, `[STREET ADDRESS]`, `[START DATE]`, `[END DATE]`, `[STATE/PROVINCE]`
-   in `terms.html`, `privacy.html`, `winners.html`, `404.html` and `CONFIG.SPONSOR`.
-3. Supply the ad tags and offer links — until then the page earns nothing, and says so in the console.
+2. Supply `[START DATE]` and `[END DATE]` in `terms.html`.
+3. Paste the ad tags into the `AD_SLOT_*` keys and `OFFERS` — until then the page earns nothing.
 4. Deploy the Worker, or delete the email/phone step and keep push-only.
-5. **Actually run a real draw.** The page promises `$5,000`. Invented winners with invented
-   amounts, and no sponsor behind them, is the part no code change can fix.
+5. **Actually run a real draw.** The page promises `$5,000`.
 
 ## Local testing
 

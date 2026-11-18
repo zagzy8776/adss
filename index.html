@@ -10,8 +10,8 @@
      og:image, twitter:image). Everything else is runtime-detected.
      Full checklist + config reference: README.md
      ========================================================================== -->
-<title>PayoutPool — $5,000 Payout Pool · US &amp; Canada</title>
-<meta name="description" content="PayoutPool's $5,000 payout pool for US and Canadian residents. Five steps, forty seconds, no purchase necessary. Entries reviewed daily.">
+<title>PayoutPool — $5,000 Payout Pool</title>
+<meta name="description" content="PayoutPool's $5,000 payout pool. Five steps, forty seconds. Entries reviewed daily.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://YOURDOMAIN.com/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -19,14 +19,14 @@
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PayoutPool">
-<meta property="og:title" content="PayoutPool — $5,000 Payout Pool · US &amp; Canada">
-<meta property="og:description" content="Five steps, forty seconds, no purchase necessary. Entries reviewed daily. Hold your position before your slot expires.">
+<meta property="og:title" content="PayoutPool — $5,000 Payout Pool">
+<meta property="og:description" content="Five steps, forty seconds. Entries reviewed daily. Hold your position before your slot expires.">
 <meta property="og:image" content="https://YOURDOMAIN.com/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://YOURDOMAIN.com/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="PayoutPool — $5,000 Payout Pool · US &amp; Canada">
+<meta name="twitter:title" content="PayoutPool — $5,000 Payout Pool">
 <meta name="twitter:image" content="https://YOURDOMAIN.com/og.jpg">
 
 <!-- CSP allows inline + any https network you add later. Tighten script-src
@@ -90,6 +90,7 @@ h1 span{color:#00d54b}
 
 .field{margin-top:11px}
 .lbl{display:block;font-size:10.5px;font-weight:600;color:#b9c0cb;margin-bottom:4px}
+.hint{font-size:9px;color:#7b8390;margin-top:4px;line-height:1.45}
 .in{width:100%;min-height:46px;background:#0a0c10;border:1px solid #262b34;border-radius:10px;color:#eef1f5;
   font-family:inherit;font-size:14px;padding:0 12px;transition:border-color .15s}
 .in::placeholder{color:#6b727d}
@@ -107,12 +108,18 @@ h1 span{color:#00d54b}
 .consent.bad{color:#e08d8d}
 .consent a{color:#9aa1ad}
 
-.fine{margin:14px 16px 0;font-size:10px;line-height:1.6;color:#8b93a1}
-.fine a{color:#a8b0bc}
 footer{margin:16px 0 0;padding:14px 16px 26px;border-top:1px solid #15181d;font-size:10px;color:#8b93a1;line-height:1.7}
 footer a{color:#a8b0bc;text-decoration:none;margin-right:11px}
 footer a:hover{color:#00d54b}
-.disc{margin-top:9px;font-size:9.5px;color:#7b8390;line-height:1.6}
+
+/* Reserved ad boxes. Empty slot + AD_PLACEHOLDERS draws the dashed outline so
+   the placement is visible; paste a tag into CONFIG and it fills in place. */
+.adbox{margin:11px 16px 0;min-height:64px;display:grid;place-items:center;overflow:hidden;
+  background:#0c0e12;border:1px dashed #2a303a;border-radius:10px;
+  color:#5b6572;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.adbox.inset{margin:12px 0 0}
+.adbox iframe,.adbox img{width:100%;display:block;border:0}
+.adbox.filled{display:block;min-height:0;padding:0;border:0;background:none}
 
 .hide{display:none!important}
 
@@ -184,11 +191,13 @@ footer a:hover{color:#00d54b}
   <span id="clock" role="timer" aria-live="off">15:00</span>
 </div>
 
+<aside class="adbox" id="adHeld" data-slot="held" aria-label="Advertisement"></aside>
+
 <div class="ticker-wrap" aria-hidden="true"><div id="ticker"></div></div>
 
 <section class="hero">
   <h1>Your <span>$5,000</span> payout slot is reserved</h1>
-  <p class="sub">US &amp; Canada residents · No purchase necessary · Five steps, about 40 seconds</p>
+  <p class="sub">Open worldwide · Five steps, about 40 seconds</p>
 </section>
 
 <div class="prog-wrap">
@@ -201,11 +210,15 @@ footer a:hover{color:#00d54b}
 <main id="gate">
   <section class="card" id="reveal" aria-labelledby="t">
     <div class="h"><b id="badge">STEP 1</b><span id="tag">Position held</span></div>
-    <h2 id="t">Confirm your region</h2>
-    <p id="s">Payouts are limited to <strong>US &amp; Canada</strong> for this round. Confirm to keep your slot.</p>
+    <h2 id="t">Confirm your entry</h2>
+    <p id="s">Your slot is held for this round. Confirm to keep it — it returns to the pool if you close this page.</p>
+    <aside class="adbox inset" id="adCard" data-slot="card" aria-label="Advertisement"></aside>
     <button class="btn" id="btn" type="button" aria-describedby="note">Confirm and continue →</button>
     <p class="note" id="note">No payment details in this step. Ever.</p>
+    <aside class="adbox inset" id="adAfter" data-slot="after" aria-label="Advertisement"></aside>
   </section>
+
+  <aside class="adbox" id="adBelow" data-slot="below" aria-label="Advertisement"></aside>
 
   <section class="card hide" id="capture" aria-labelledby="capH">
     <div class="h"><b>STEP 5</b><span id="tagCap">Contact</span></div>
@@ -220,9 +233,10 @@ footer a:hover{color:#00d54b}
       </div>
       <div class="field">
         <label class="lbl" for="phone">Mobile number</label>
-        <input class="in" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national"
-               placeholder="(555) 000-0000" aria-describedby="phoneErr" required>
-        <div class="err" id="phoneErr">Enter a valid 10-digit US or Canadian number.</div>
+        <input class="in" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
+               maxlength="22" placeholder="+1 555 000 0000" aria-describedby="phoneErr hintPhone" required>
+        <div class="hint" id="hintPhone">Any country. Include your country code if you are outside North America.</div>
+        <div class="err" id="phoneErr">Enter a valid mobile number, including the country code.</div>
       </div>
       <div class="field hp" aria-hidden="true">
         <label class="lbl" for="company">Company</label>
@@ -236,7 +250,7 @@ footer a:hover{color:#00d54b}
       </label>
       <div class="err" id="consentErr" role="alert">Please tick the box so we can contact you about your entry.</div>
       <button class="btn" id="submitBtn" type="submit">Claim my position →</button>
-      <p class="note">18+ · US &amp; Canada only · We never ask for payment details or gift card codes.</p>
+      <p class="note">18+ · Open worldwide · We never ask for payment details or gift card codes.</p>
     </form>
   </section>
 
@@ -256,22 +270,11 @@ footer a:hover{color:#00d54b}
   </section>
 </main>
 
-<div class="fine">
-  <p style="margin:0">No purchase or payment of any kind is necessary to enter or win. A purchase does not improve your
-  chances of winning. Open to legal residents of the 50 United States, D.C., and Canada (excluding Quebec), 18 or older.
-  Void where prohibited. Odds of winning depend on the number of eligible entries received. See
-  <a href="/terms.html">Official Terms</a>, <a href="/privacy.html">Privacy Policy</a>, and
-  <a href="/winners.html">Winners</a>.</p>
-</div>
-
 <footer>
   <a href="/winners.html">Winners</a>
   <a href="/terms.html">Terms</a>
   <a href="/privacy.html">Privacy</a>
   <a href="mailto:support@YOURDOMAIN.com">Contact</a>
-  <div class="disc">PayoutPool is operated by <span id="sponsor">[OPERATOR ENTITY]</span>. Payout figures shown are
-  examples of past disbursements and are not a promise of future payment. This site is not affiliated with Cash App,
-  Venmo, PayPal, or Interac. &copy; <span id="yr">2026</span> PayoutPool.</div>
 </footer>
 
 <div id="inter" role="dialog" aria-modal="true" aria-labelledby="interLabel" aria-describedby="interDesc" tabindex="-1">
@@ -280,7 +283,7 @@ footer a:hover{color:#00d54b}
     <div class="k">Sponsored break</div>
     <div class="v">$5,000</div>
     <p id="interDesc">Your position is still held. This partner placement is what keeps the pool free to enter.</p>
-  </div></div>
+  </div><div class="adbox inset" id="adGate" data-slot="gate" aria-label="Advertisement"></div></div>
   <div class="iBar"><div id="skipBar"></div></div>
   <button id="skipBtn" type="button" disabled aria-describedby="interDesc">Continue in 5</button>
 </div>
@@ -318,6 +321,18 @@ const CONFIG = {
   // arbitrage accounts suspended; set true to match the original exactly.
   GATE_DOUBLE_FIRE: false,
 
+  /* --- reserved ad boxes ---------------------------------------------------
+     One box per placement in the funnel. Paste the network's tag HTML, or an
+     https:// iframe URL, and the box fills itself. Leave a slot empty with
+     AD_PLACEHOLDERS true and the dashed outline stays visible so you can see
+     where the unit sits; set it to false and empty boxes are removed. */
+  AD_SLOT_HELD:  "",   // under the "slot held for" timer, above the headline
+  AD_SLOT_CARD:  "",   // inside the step card, above the CTA button
+  AD_SLOT_AFTER: "",   // directly under the CTA button (Save my position)
+  AD_SLOT_BELOW: "",   // below the card, before the next section
+  AD_SLOT_GATE:  "",   // inside the sponsored interstitial
+  AD_PLACEHOLDERS: true,
+
   // --- capture + feed (Cloudflare Worker in /worker) ------------------------
   CAPTURE_ENDPOINT: "",   // https://api.YOURDOMAIN.com/capture
   FEED_URL: "",           // https://api.YOURDOMAIN.com/feed
@@ -326,8 +341,7 @@ const CONFIG = {
   // --- push ----------------------------------------------------------------
   ONESIGNAL_APP_ID: "",   // from OneSignal → Settings → Keys & IDs
 
-  // --- legal (all rendered into the page, fill before launch) --------------
-  SPONSOR: "[OPERATOR ENTITY]",   // real legal entity that runs this
+  // --- legal ----------------------------------------------------------------
   SUPPORT_EMAIL: "support@YOURDOMAIN.com",
   POOL_AMOUNT: "$5,000",
 
@@ -478,6 +492,41 @@ setInterval(() => {
   $('claiming').textContent = fmt(claiming);
 }, 2600);
 
+/* ------------------------------ ad units ---------------------------------
+   Five reserved boxes. Empty + AD_PLACEHOLDERS = dashed outline so the
+   placement is visible before a tag is pasted in.
+   ------------------------------------------------------------------------ */
+function mountAd(id, tag, label) {
+  const el = $(id);
+  if (!el) return;
+  const html = String(tag || '').trim();
+  if (!html) {
+    el.classList.remove('filled');
+    if (!CONFIG.AD_PLACEHOLDERS) { el.remove(); return; }
+    el.textContent = label;
+    return;
+  }
+  el.classList.add('filled');
+  if (/^https?:\/\//i.test(html)) {
+    const f = document.createElement('iframe');
+    f.src = html;
+    f.loading = 'lazy';
+    f.title = 'Advertisement';
+    f.setAttribute('scrolling', 'no');
+    f.setAttribute('frameborder', '0');
+    f.style.height = '250px';
+    el.appendChild(f);
+  } else {
+    el.innerHTML = html;
+  }
+}
+
+mountAd('adHeld', CONFIG.AD_SLOT_HELD, 'AD');
+mountAd('adCard', CONFIG.AD_SLOT_CARD, 'AD');
+mountAd('adAfter', CONFIG.AD_SLOT_AFTER, 'AD');
+mountAd('adBelow', CONFIG.AD_SLOT_BELOW, 'AD');
+mountAd('adGate', CONFIG.AD_SLOT_GATE, 'AD · SPONSORED');
+
 /* -------------------------------- ads -----------------------------------
    Four independently configurable slots, each tracked under its own /hit
    event so the counters tell you which network actually pays:
@@ -585,6 +634,9 @@ function openInterstitial() {
     ad.setAttribute('data-filled', '1');
     ad.innerHTML = CONFIG.INTERSTITIAL_HTML;
   }
+  /* A real gate tag replaces the house preview instead of stacking under it. */
+  const house = ad.querySelector('.iHouse');
+  if (house && CONFIG.AD_SLOT_GATE) house.classList.add('hide');
 
   $('inter').classList.add('on');
   document.body.style.overflow = 'hidden';
@@ -648,8 +700,8 @@ $('skipBtn').addEventListener('click', function () {
 /* --------------------------- steps + progress ---------------------------- */
 const TOTAL_STEPS = 5;
 const STEPS = [
-  { t: 'Confirm your region',
-    s: 'Payouts are limited to <strong>US &amp; Canada</strong> for this round. Confirm to keep your slot.',
+  { t: 'Confirm your entry',
+    s: 'Your slot is held for this round. Confirm to keep it \u2014 it returns to the pool if you close this page.',
     b: 'Confirm and continue \u2192', tag: 'Position held' },
   { t: 'Verify you\u2019re active',
     s: 'Real entries only. Tap to confirm a person is completing this \u2014 automated entries are removed from the pool daily.',
@@ -738,10 +790,20 @@ $('offerList').addEventListener('click', function (e) {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
 function normPhone(v) {
-  const d = String(v).replace(/\D/g, '');
-  return d.length === 11 && d.charAt(0) === '1' ? d.slice(1) : d;
+  const raw = String(v).trim();
+  const plus = raw.charAt(0) === '+';
+  let d = raw.replace(/\D/g, '');
+  /* 11 digits starting with 1 is the same North American number as 10. */
+  if (!plus && d.length === 11 && d.charAt(0) === '1') d = d.slice(1);
+  return (plus ? '+' : '') + d;
 }
-function validPhone(d) { return /^[2-9]\d{9}$/.test(d); }
+/* Any country: 7–15 digits (E.164 maximum), optional + and country code.
+   No area-code rules, no US/Canada assumption. */
+function validPhone(p) {
+  const d = String(p).replace(/\D/g, '');
+  if (d.length < 7 || d.length > 15) return false;
+  return /[1-9]/.test(d);
+}
 
 function setErr(field, isBad) {
   const inp = $(field);
@@ -965,8 +1027,6 @@ document.addEventListener('visibilitychange', function () {
 });
 
 /* --------------------------------- boot ---------------------------------- */
-$('sponsor').textContent = CONFIG.SPONSOR;
-$('yr').textContent = String(new Date().getFullYear());
 
 $('btn').addEventListener('click', function () {
   if (step < 2) {
