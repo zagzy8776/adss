@@ -1,0 +1,14 @@
+name = "payoutpool-api"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+# Same-origin only in production. Set to "*" while testing from file:// or
+# localhost, then lock it down.
+[vars]
+ALLOWED_ORIGIN = "https://YOURDOMAIN.com"
+
+# Create with:  npx wrangler kv namespace create PP
+# Then paste the printed id below.
+[[kv_namespaces]]
+binding = "PP"
+id = "PASTE_KV_NAMESPACE_ID_HERE"

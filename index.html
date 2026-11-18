@@ -4,35 +4,47 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#08090b">
-<title>PayoutPool — $5,000 November Payout Pool</title>
-<meta name="description" content="$5,000 payout pool, open to US and Canada. Five quick steps. Entries reviewed daily, qualified users contacted directly.">
+
+<!-- ==========================================================================
+     SETUP — replace YOURDOMAIN.com below (4 places: canonical, og:url,
+     og:image, twitter:image). Everything else is runtime-detected.
+     Full checklist + config reference: README.md
+     ========================================================================== -->
+<title>PayoutPool — $5,000 Payout Pool · US &amp; Canada</title>
+<meta name="description" content="PayoutPool's $5,000 payout pool for US and Canadian residents. Five steps, forty seconds, no purchase necessary. Entries reviewed daily.">
 <meta name="robots" content="index,follow">
+<link rel="canonical" href="https://YOURDOMAIN.com/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/favicon.svg">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PayoutPool">
-<meta property="og:title" content="$5,000 payout pool — open to US &amp; CA">
-<meta property="og:description" content="Five steps, forty seconds. Entries reviewed daily. Hold your position before your slot expires.">
+<meta property="og:title" content="PayoutPool — $5,000 Payout Pool · US &amp; Canada">
+<meta property="og:description" content="Five steps, forty seconds, no purchase necessary. Entries reviewed daily. Hold your position before your slot expires.">
 <meta property="og:image" content="https://YOURDOMAIN.com/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://YOURDOMAIN.com/">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PayoutPool — $5,000 Payout Pool · US &amp; Canada">
+<meta name="twitter:image" content="https://YOURDOMAIN.com/og.jpg">
+
+<!-- CSP allows inline + any https network you add later. Tighten script-src
+     to your ad-network domains once they are known. See README.md -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-src https:; base-uri 'self'; object-src 'none'; form-action 'self'">
 
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
-body{
-  background:#08090b;color:#eef1f5;
-  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  max-width:480px;margin:0 auto;min-height:100vh;overflow-x:hidden;
-  -webkit-font-smoothing:antialiased;
-}
+body{background:#08090b;color:#eef1f5;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  max-width:480px;margin:0 auto;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 @keyframes sl{from{transform:translateY(0)}to{transform:translateY(-50%)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 
-/* ---------- chrome ---------- */
+:focus-visible{outline:2px solid #00d54b;outline-offset:2px;border-radius:4px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.hp{position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none}
+
 .brand{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #15181d}
 .logo{width:25px;height:25px;border-radius:7px;background:linear-gradient(135deg,#00d54b,#00a83b);display:grid;place-items:center;font-weight:800;font-size:12px;color:#00290f;flex:0 0 auto}
 .bname{font-size:12.5px;font-weight:700;letter-spacing:-.01em}
@@ -41,411 +53,893 @@ body{
 .urgency i{width:5px;height:5px;border-radius:50%;background:#e08d8d;box-shadow:0 0 6px #e08d8d;animation:pulse 1.4s infinite}
 #clock{margin-left:auto;color:#f5b942;font-variant-numeric:tabular-nums;font-weight:700}
 
-/* ---------- ticker ---------- */
 .ticker-wrap{height:104px;overflow:hidden;position:relative;background:#0a0b0e}
-#ticker{will-change:transform;animation:sl 24s linear infinite}
-.ticker-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#08090b,transparent 26%,transparent 74%,#08090b)}
+#ticker{will-change:transform;animation:sl 26s linear infinite}
+.ticker-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,#08090b,transparent 26%,transparent 74%,#08090b)}
 .tR{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:11px}
 .tA{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:800;color:#00290f;flex:0 0 auto}
 .tN{color:#cfd5dd;font-weight:600;font-size:10.5px}
-.tC{font-size:9px;color:#525863}
+.tC{font-size:9px;color:#7b8390}
 .tM{margin-left:auto;color:#00d54b;font-weight:700;font-size:10.5px}
 
-/* ---------- hero ---------- */
 .hero{padding:15px 16px 0}
 h1{margin:0;font-size:24px;line-height:1.19;font-weight:800;letter-spacing:-.03em}
 h1 span{color:#00d54b}
-.sub{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#838a95}
+.sub{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#9aa1ad}
 
-/* ---------- progress ---------- */
 .prog-wrap{padding:13px 16px 0}
 .prog{height:5px;border-radius:4px;background:#15181d;overflow:hidden}
-#prog{height:100%;width:9%;background:linear-gradient(90deg,#00a83b,#00d54b);transition:width .45s ease}
-.meta{display:flex;justify-content:space-between;font-size:9.5px;color:#5d636d;margin-top:5px}
+#prog{height:100%;width:0%;background:linear-gradient(90deg,#00a83b,#00d54b);transition:width .45s ease}
+.meta{display:flex;justify-content:space-between;font-size:9.5px;color:#8b93a1;margin-top:5px}
 
-/* ---------- step ---------- */
-#gate{padding:15px 16px 22px}
-#reveal{background:#0d0f12;border:1px solid #1b1f25;border-radius:12px;padding:14px;animation:rise .3s ease}
-#reveal h2{margin:0 0 4px;font-size:14px;font-weight:700;color:#eef1f5}
-#reveal p{margin:0 0 12px;font-size:11.5px;line-height:1.5;color:#767d88}
-button{font-family:inherit}
-.cta{width:100%;padding:13px;border:0;border-radius:9px;background:#00d54b;color:#00290f;font-size:13.5px;font-weight:800;cursor:pointer;transition:transform .08s}
-.cta:active{transform:scale(.985)}
+.card{margin:13px 16px 0;background:#0e1014;border:1px solid #1b1f26;border-radius:13px;padding:15px}
+.h{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#00d54b;margin-bottom:7px}
+.h b{background:#04170c;border:1px solid #0d3d20;border-radius:5px;padding:2px 6px;letter-spacing:.04em}
+#t{margin:0 0 5px;font-size:16.5px;font-weight:700;letter-spacing:-.015em;line-height:1.28}
+#s{margin:0;font-size:12px;line-height:1.52;color:#9aa1ad}
+#s strong{color:#eef1f5}
 
-/* ---------- proof ---------- */
-.proof{margin-top:14px}
-.sec{font-size:9px;letter-spacing:.13em;color:#5d636d;margin:0 0 7px}
-.proof-row{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
-.proof-row::-webkit-scrollbar{display:none}
-.pcard{flex:0 0 auto;width:104px;border-radius:9px;background:#0d0f12;border:1px solid #1b1f25;padding:8px}
-.pcard.cash{background:linear-gradient(160deg,#00351a,#001f10);border-color:#0d3d20}
-.papp{font-size:7.5px;font-weight:800;letter-spacing:.05em;color:#8ea1c4}
-.pcard.cash .papp{color:#00d54b}
-.pamt{font-size:15px;font-weight:800;color:#eef1f5;margin-top:5px;letter-spacing:-.02em}
-.pwho{font-size:8px;color:#6b727d}
-.pcard.cash .pwho{color:#5f8a6e}
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;min-height:48px;margin-top:13px;
+  background:#00d54b;color:#00290f;border:0;border-radius:11px;font-family:inherit;font-size:14.5px;font-weight:800;
+  letter-spacing:-.01em;cursor:pointer;transition:transform .12s,background .12s}
+.btn:active{transform:scale(.985);background:#00c344}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btn.ghost{background:#14171d;color:#cfd5dd;border:1px solid #262b34;font-weight:700}
+.note{margin:8px 0 0;font-size:9.5px;line-height:1.5;color:#8b93a1;text-align:center}
 
-/* ---------- capture ---------- */
-#capture{display:none;padding:15px 16px 22px;animation:rise .3s ease}
-.field{width:100%;padding:11px 12px;margin-bottom:7px;border-radius:9px;background:#08090b;border:1px solid #232830;color:#eef1f5;font-size:12.5px;font-family:inherit}
-.field::placeholder{color:#5d636d}
-.field:focus{outline:none;border-color:#00a83b}
-.err{border-color:#e08d8d!important}
-#save{margin-top:4px}
+.proof{margin:11px 16px 0;display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.pf{background:#0e1014;border:1px solid #1b1f26;border-radius:9px;padding:7px 3px;text-align:center}
+.pf .b{font-size:8.5px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.pf .a{font-size:9.5px;color:#00d54b;font-weight:700;margin-top:2px}
+.cap{margin:6px 16px 0;font-size:9.5px;line-height:1.45;color:#8b93a1;text-align:center}
 
-/* ---------- done ---------- */
-#done{display:none;padding:15px 16px 26px;animation:rise .35s ease}
-.done-top{text-align:center;padding:2px 0 14px}
-.check{width:50px;height:50px;margin:0 auto 9px;border-radius:50%;background:#04170c;border:1px solid #0d3d20;display:grid;place-items:center;font-size:23px;color:#00d54b}
-.done-top h2{margin:0;font-size:17px;font-weight:800}
-.done-top p{margin:4px 0 0;font-size:11.5px;color:#838a95}
-.of{display:flex;align-items:center;gap:9px;border:1px solid #1b1f25;background:#0d0f12;border-radius:9px;padding:10px;margin-bottom:6px;text-decoration:none;color:inherit}
-.of b{font-size:11.5px;display:block;font-weight:700;color:#e3e7ed}
-.of span{font-size:9.5px;color:#6b727d}
-.of i{font-style:normal;margin-left:auto;font-size:9px;font-weight:800;color:#00290f;background:#00d54b;padding:5px 8px;border-radius:5px;white-space:nowrap}
-.nudge{margin-top:10px;padding:10px 11px;border:1px solid #0d3d20;background:#04170c;border-radius:9px;font-size:10.5px;color:#7fd39a;text-align:center}
-.share{width:100%;margin-top:12px;padding:12px;border:1px solid #232830;border-radius:9px;background:#0d0f12;color:#cfd5dd;font-size:12.5px;font-weight:700;cursor:pointer}
-.fine{margin-top:14px;font-size:9px;line-height:1.7;color:#4d535c;text-align:center}
-.fine a{color:#6b727d}
+.field{margin-top:11px}
+.lbl{display:block;font-size:10.5px;font-weight:600;color:#b9c0cb;margin-bottom:4px}
+.in{width:100%;min-height:46px;background:#0a0c10;border:1px solid #262b34;border-radius:10px;color:#eef1f5;
+  font-family:inherit;font-size:14px;padding:0 12px;transition:border-color .15s}
+.in::placeholder{color:#6b727d}
+.in:focus{outline:none;border-color:#00d54b}
+.in.bad{border-color:#e05555;background:#150d0d}
+.err{font-size:10px;color:#e08d8d;margin-top:4px;display:none}
+.err.on{display:block}
+
+.consent{display:flex;gap:8px;align-items:flex-start;margin-top:11px;font-size:9.5px;line-height:1.5;color:#8b93a1}
+.consent input{-webkit-appearance:none;appearance:none;margin:1px 0 0;width:16px;height:16px;flex:0 0 auto;cursor:pointer;
+  border:1.5px solid #3a414d;border-radius:4px;background:#0a0c10;position:relative}
+.consent input:checked{border-color:#00d54b;background:#00d54b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3 3 7-7' fill='none' stroke='%2300290f' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/13px no-repeat}
+.consent input:focus-visible{outline:2px solid #00d54b;outline-offset:2px}
+#done .note{font-size:10px;color:#8b93a1}
+.consent.bad{color:#e08d8d}
+.consent a{color:#9aa1ad}
+
+.fine{margin:14px 16px 0;font-size:10px;line-height:1.6;color:#8b93a1}
+.fine a{color:#a8b0bc}
+footer{margin:16px 0 0;padding:14px 16px 26px;border-top:1px solid #15181d;font-size:10px;color:#8b93a1;line-height:1.7}
+footer a{color:#a8b0bc;text-decoration:none;margin-right:11px}
+footer a:hover{color:#00d54b}
+.disc{margin-top:9px;font-size:9.5px;color:#7b8390;line-height:1.6}
+
+.hide{display:none!important}
+
+/* ---------- boost offers ---------- */
+.off{display:flex;align-items:center;gap:9px;background:#0a0c10;border:1px solid #262b34;border-radius:10px;
+  padding:9px 11px;text-decoration:none;color:#eef1f5;transition:border-color .15s}
+.off:hover,.off:active{border-color:#00d54b}
+.ok-k{font-size:8px;font-weight:800;letter-spacing:.05em;color:#00d54b;background:#04170c;border:1px solid #0d3d20;
+  padding:3px 5px;border-radius:4px;flex:0 0 auto}
+.ok-t{display:block;font-size:12px;font-weight:700}
+.ok-s{display:block;font-size:9.5px;color:#8b93a1;margin-top:1px}
+.ok-a{margin-left:auto;color:#5f6673;font-size:15px}
 
 /* ---------- interstitial ---------- */
-#inter{display:none;position:fixed;inset:0;z-index:40;background:#08090b;flex-direction:column;max-width:480px;margin:0 auto}
-.inter-bar{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;font-size:10px;color:#6e737d;letter-spacing:.1em}
-.inter-body{flex:1;display:grid;place-items:center;padding:20px}
-.inter-card{width:100%;border-radius:14px;background:linear-gradient(150deg,#101a2b,#1b2d47,#101a2b);background-size:200% 100%;border:1px solid #24374f;padding:26px 20px;text-align:center;overflow:hidden}
-.inter-card .k{font-size:9px;letter-spacing:.16em;color:#7f97b5}
-.inter-card .h{font-size:19px;font-weight:800;color:#eaf0f8;margin:10px 0 6px;line-height:1.25}
-.inter-card .p{font-size:11px;color:#8ba2bd;line-height:1.5}
-.inter-foot{padding:16px}
-#skipBtn{width:100%;padding:14px;border:0;border-radius:10px;background:#22262d;color:#6e737d;font-size:13px;font-weight:800}
+#inter{position:fixed;inset:0;background:#08090b;z-index:9000;display:none;flex-direction:column;
+  padding:max(14px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+#inter.on{display:flex}
+#inter:focus{outline:none}
+.iTop{display:flex;align-items:center;gap:8px;font-size:9.5px;color:#7b8390;letter-spacing:.09em;text-transform:uppercase;font-weight:700}
+.iTop span:last-child{margin-left:auto;color:#5f6673}
+#interAd{flex:1;display:grid;place-items:center;margin:12px 0;border-radius:14px;overflow:hidden;
+  background:#0e1014;border:1px solid #1b1f26;min-height:300px}
+#interAd iframe,#interAd img{max-width:100%;border:0}
+.iHouse{text-align:center;padding:26px 20px}
+.iHouse .k{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#5f6673;font-weight:700}
+.iHouse .v{font-size:27px;font-weight:800;color:#00d54b;margin:9px 0 5px;letter-spacing:-.03em}
+.iHouse p{margin:0;font-size:11.5px;color:#9aa1ad;line-height:1.55}
+.iBar{height:3px;background:#15181d;border-radius:3px;overflow:hidden;margin-bottom:10px}
+#skipBar{height:100%;width:0%;background:#00d54b;transition:width 5s linear}
+#skipBtn{width:100%;min-height:48px;background:#14171d;color:#7b8390;border:1px solid #262b34;border-radius:11px;
+  font-family:inherit;font-size:13px;font-weight:700;cursor:not-allowed}
+#skipBtn.ready{background:#00d54b;color:#00290f;border-color:#00d54b;cursor:pointer}
 
-/* ---------- toast ---------- */
-#toast{position:fixed;top:92px;left:50%;transform:translate(-50%,-10px);width:calc(100% - 28px);max-width:452px;background:#12151a;border:1px solid #242a33;color:#d3d9e1;font-size:11px;padding:9px 12px;border-radius:9px;opacity:0;transition:.3s;pointer-events:none;z-index:60}
+/* ---------- done / toast ---------- */
+#done .ok{width:46px;height:46px;border-radius:50%;background:#04170c;border:1px solid #0d3d20;display:grid;place-items:center;
+  font-size:21px;color:#00d54b;margin:0 auto 11px}
+#done{text-align:center}
+#done h2{margin:0 0 6px;font-size:17.5px;font-weight:800;letter-spacing:-.02em}
+#done p{margin:0;font-size:12px;color:#9aa1ad;line-height:1.55}
+.ref{margin-top:11px;background:#0a0c10;border:1px dashed #262b34;border-radius:10px;padding:9px 11px;
+  font-size:11px;color:#b9c0cb;display:flex;align-items:center;gap:8px}
+.ref b{margin-left:auto;color:#00d54b;font-family:ui-monospace,monospace;font-size:12px;letter-spacing:.04em}
+#toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,20px);z-index:9500;
+  background:#14171d;border:1px solid #262b34;color:#eef1f5;font-size:11.5px;padding:10px 15px;border-radius:11px;
+  opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
 
-@media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;transition-duration:.001s!important}}
+@media (prefers-reduced-motion:reduce){
+  #ticker{animation:none!important;transform:none!important}
+  .ticker-wrap{height:auto;max-height:208px;overflow-y:auto}
+  .ticker-wrap::after{display:none}
+  #prog,#skipBar{transition:none}
+  .urgency i{animation:none}
+}
 </style>
 </head>
 <body>
+<a class="sr-only" href="#btn">Skip to the entry steps</a>
 
-<div class="brand">
-  <div class="logo">P</div>
-  <div class="bname">PayoutPool</div>
-  <div class="live" id="liveN">142 claiming</div>
-</div>
+<header class="brand">
+  <div class="logo" aria-hidden="true">P</div>
+  <span class="bname">PayoutPool</span>
+  <span class="live"><span id="claiming">142</span> claiming now</span>
+</header>
 
 <div class="urgency">
-  <i></i><span>Slot held for</span><b id="clock">15:00</b>
+  <i aria-hidden="true"></i>
+  <span>Slot held for</span>
+  <span id="clock" role="timer" aria-live="off">15:00</span>
 </div>
 
-<div class="ticker-wrap"><div id="ticker"></div></div>
+<div class="ticker-wrap" aria-hidden="true"><div id="ticker"></div></div>
 
-<div class="hero">
-  <h1>$5,000 payout pool.<br><span>Open to US &amp; CA.</span></h1>
-  <p class="sub">Entries reviewed daily. Qualified users are contacted directly.</p>
-</div>
+<section class="hero">
+  <h1>Your <span>$5,000</span> payout slot is reserved</h1>
+  <p class="sub">US &amp; Canada residents · No purchase necessary · Five steps, about 40 seconds</p>
+</section>
 
 <div class="prog-wrap">
-  <div class="prog"><div id="prog"></div></div>
-  <div class="meta"><span id="stepLbl">STEP 1 OF 5</span><span>~40 sec</span></div>
+  <div class="prog" id="progbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20" aria-valuetext="Step 1 of 5">
+    <div id="prog"></div>
+  </div>
+  <div class="meta"><span id="pStep">STEP 1 OF 5</span><span id="pPct">20% complete</span></div>
 </div>
 
-<div id="gate">
-  <div id="reveal">
-    <h2 id="t">You're in the queue</h2>
-    <p id="s">Held at position #1,247. A sponsored page may open in a background tab.</p>
-    <button class="cta" id="btn">View more →</button>
-  </div>
+<main id="gate">
+  <section class="card" id="reveal" aria-labelledby="t">
+    <div class="h"><b id="badge">STEP 1</b><span id="tag">Position held</span></div>
+    <h2 id="t">Confirm your region</h2>
+    <p id="s">Payouts are limited to <strong>US &amp; Canada</strong> for this round. Confirm to keep your slot.</p>
+    <button class="btn" id="btn" type="button" aria-describedby="note">Confirm and continue →</button>
+    <p class="note" id="note">No payment details in this step. Ever.</p>
+  </section>
 
-  <div class="proof">
-    <p class="sec">RECENT PAYOUTS</p>
-    <div class="proof-row">
-      <div class="pcard cash"><div class="papp">CASH APP</div><div class="pamt">$50.00</div><div class="pwho">to Alyssa P.</div></div>
-      <div class="pcard"><div class="papp">PAYPAL</div><div class="pamt">$250.00</div><div class="pwho">to Devin S.</div></div>
-      <div class="pcard"><div class="papp">INTERAC</div><div class="pamt">$100.00</div><div class="pwho">to Kim L.</div></div>
-      <div class="pcard cash"><div class="papp">CASH APP</div><div class="pamt">$25.00</div><div class="pwho">to Tyler B.</div></div>
-      <div class="pcard"><div class="papp">PAYPAL</div><div class="pamt">$500.00</div><div class="pwho">to Marcus T.</div></div>
+  <div class="proof" id="proof" aria-label="Recent payouts"></div>
+  <p class="cap">Examples of recent disbursements · first name and initial only</p>
+
+  <section class="card hide" id="capture" aria-labelledby="capH">
+    <div class="h"><b>STEP 5</b><span id="tagCap">Contact</span></div>
+    <h2 id="capH">Where should we send it?</h2>
+    <p id="s2">We only use this to confirm your entry and reach you about your payout. One entry per person.</p>
+    <form id="form" novalidate>
+      <div class="field">
+        <label class="lbl" for="email">Email address</label>
+        <input class="in" id="email" name="email" type="email" inputmode="email" autocomplete="email"
+               placeholder="you@email.com" aria-describedby="emailErr" required>
+        <div class="err" id="emailErr">Enter a valid email address.</div>
+      </div>
+      <div class="field">
+        <label class="lbl" for="phone">Mobile number</label>
+        <input class="in" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national"
+               placeholder="(555) 000-0000" aria-describedby="phoneErr" required>
+        <div class="err" id="phoneErr">Enter a valid 10-digit US or Canadian number.</div>
+      </div>
+      <div class="field hp" aria-hidden="true">
+        <label class="lbl" for="company">Company</label>
+        <input class="in" id="company" name="company" type="text" tabindex="-1" autocomplete="off">
+      </div>
+      <label class="consent" id="consentWrap" for="sms">
+        <input type="checkbox" id="sms" name="sms">
+        <span>I agree to receive calls and texts from PayoutPool about my entry, including by automated means.
+        Message frequency varies. Message &amp; data rates may apply. Reply STOP to cancel, HELP for help.
+        Consent is not a condition of entry. See <a href="/privacy.html">Privacy Policy</a>.</span>
+      </label>
+      <div class="err" id="consentErr" role="alert">Please tick the box so we can contact you about your entry.</div>
+      <button class="btn" id="submitBtn" type="submit">Claim my position →</button>
+      <p class="note">18+ · US &amp; Canada only · We never ask for payment details or gift card codes.</p>
+    </form>
+  </section>
+
+  <section class="card hide" id="done">
+    <div class="ok" aria-hidden="true">✓</div>
+    <h2>Entry confirmed</h2>
+    <p>You are in the <strong>$5,000</strong> pool. We review entries daily and contact winners at the email or number on file.</p>
+    <div class="ref"><span>Your referral code</span><b id="myCode">—</b></div>
+    <div id="boost" class="hide" style="margin-top:12px;text-align:left">
+      <div class="h"><b>BOOST</b><span>Move up 40 places</span></div>
+      <p style="margin:0 0 9px;font-size:11.5px;color:#9aa1ad">Complete any one offer below and we move you up 40 places in the queue.</p>
+      <div id="offerList" style="display:grid;gap:6px"></div>
     </div>
-  </div>
+    <button class="btn ghost" id="shareBtn" type="button" style="margin-top:12px">Share for +1 entry</button>
+    <button class="btn" id="pushBtn" type="button" style="margin-top:8px">Get payout alerts</button>
+    <p class="note" id="pushNote">We'll notify you the moment your position clears.</p>
+  </section>
+</main>
+
+<div class="fine">
+  <p style="margin:0">No purchase or payment of any kind is necessary to enter or win. A purchase does not improve your
+  chances of winning. Open to legal residents of the 50 United States, D.C., and Canada (excluding Quebec), 18 or older.
+  Void where prohibited. Odds of winning depend on the number of eligible entries received. See
+  <a href="/terms.html">Official Terms</a>, <a href="/privacy.html">Privacy Policy</a>, and
+  <a href="/winners.html">Winners</a>.</p>
 </div>
 
-<div id="capture">
-  <div style="background:#0d0f12;border:1px solid #1b1f25;border-radius:12px;padding:14px">
-    <h2 style="margin:0 0 4px;font-size:14px;font-weight:700;color:#eef1f5">Where do we send it?</h2>
-    <p style="margin:0 0 11px;font-size:11.5px;color:#767d88;line-height:1.5">Required to hold your position in the queue.</p>
-    <input class="field" id="email" type="email" inputmode="email" autocomplete="email" placeholder="Email address">
-    <input class="field" id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Mobile number">
-    <button class="cta" id="save">Continue →</button>
-  </div>
+<footer>
+  <a href="/winners.html">Winners</a>
+  <a href="/terms.html">Terms</a>
+  <a href="/privacy.html">Privacy</a>
+  <a href="mailto:support@YOURDOMAIN.com">Contact</a>
+  <div class="disc">PayoutPool is operated by <span id="sponsor">[OPERATOR ENTITY]</span>. Payout figures shown are
+  examples of past disbursements and are not a promise of future payment. This site is not affiliated with Cash App,
+  Venmo, PayPal, or Interac. &copy; <span id="yr">2026</span> PayoutPool.</div>
+</footer>
+
+<div id="inter" role="dialog" aria-modal="true" aria-labelledby="interLabel" aria-describedby="interDesc" tabindex="-1">
+  <div class="iTop"><span id="interLabel">Step 4 of 5 · Sponsored</span><span id="interCount"></span></div>
+  <div id="interAd"><div class="iHouse">
+    <div class="k">Sponsored break</div>
+    <div class="v">$5,000</div>
+    <p id="interDesc">Your position is still held. This partner placement is what keeps the pool free to enter.</p>
+  </div></div>
+  <div class="iBar"><div id="skipBar"></div></div>
+  <button id="skipBtn" type="button" disabled aria-describedby="interDesc">Continue in 5</button>
 </div>
 
-<div id="done">
-  <div class="done-top">
-    <div class="check">✓</div>
-    <h2>Position held</h2>
-    <p>You're #<b id="qpos" style="color:#00d54b">1,247</b> in the queue.</p>
-  </div>
-  <p class="sec">MOVE UP THE QUEUE</p>
-  <div id="offers"></div>
-  <div class="nudge">Each completed task moves you up ~40 places</div>
-  <button class="share" id="shareBtn">Invite 3 friends → +10 entries</button>
-  <p class="fine">
-    No purchase necessary · 18+ · Void where prohibited<br>
-    Ad-supported. Payouts via Cash App, PayPal, Interac.<br>
-    <a href="/winners.html">Recent payouts</a> · <a href="/terms.html">Terms</a> · <a href="/privacy.html">Privacy</a>
-  </p>
-</div>
-
-<div id="inter">
-  <div class="inter-bar"><span>SPONSORED</span><span id="skipLbl">SKIP IN 5</span></div>
-  <div class="inter-body">
-    <div class="inter-card" id="interAd">
-      <div class="k">PARTNER OFFER</div>
-      <div class="h">You could be earning<br>while you wait</div>
-      <div class="p">Free to start · No card required</div>
-    </div>
-  </div>
-  <div class="inter-foot"><button id="skipBtn" disabled>Skip in 5</button></div>
-</div>
-
-<div id="toast"></div>
-
-<!-- ================================================================
-     1. POPUNDER — Android / desktop secondary path.
-        Paste your Adsterra or HilltopAds popunder tag here.
-        Set frequency to MAX in the dashboard.
-     ================================================================ -->
-<!-- <script async src="//PASTE-POPUNDER-TAG-HERE"></script> -->
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script>
-/* ================================================================
-   CONFIG — fill these in. Blank values run in demo mode.
-   ================================================================ */
+/* ============================== CONFIG ====================================
+   Every key here is documented in README.md. Anything left blank degrades
+   loudly (console warning + visible fallback) instead of silently no-op.
+   ========================================================================= */
 const CONFIG = {
-  ONESIGNAL_APP_ID : "",                        // OneSignal app ID
-  CAPTURE_ENDPOINT : "",                        // POST url for email/phone (Worker)
-  FEED_URL         : "",                        // GET json [{n,p,c}] of recent visitors
-  INTERSTITIAL_HTML: "",                        // network ad html for the interstitial card
-  SHARE_URL        : "https://YOURDOMAIN.com"   // your domain
+  // Where this site lives. Blank = auto-detect at runtime (window.location.origin).
+  SITE_URL: "",
+
+  // --- ads -----------------------------------------------------------------
+  // Popunder network script URL (Adsterra/Hilltop/etc). Loaded on first tap.
+  POPUNDER_TAG: "",
+  // Interstitial placement HTML or iframe URL (Monetag vignette, Adsterra...).
+  INTERSTITIAL_HTML: "",
+  // Direct-link fallback: opened in a new tab on taps. Best iOS earner.
+  AD_DIRECT_LINK: "",
+
+  // --- capture + feed (Cloudflare Worker in /worker) ------------------------
+  CAPTURE_ENDPOINT: "",   // https://api.YOURDOMAIN.com/capture
+  FEED_URL: "",           // https://api.YOURDOMAIN.com/feed
+  HIT_URL: "",            // https://api.YOURDOMAIN.com/hit
+
+  // --- push ----------------------------------------------------------------
+  ONESIGNAL_APP_ID: "",   // from OneSignal → Settings → Keys & IDs
+
+  // --- legal (all rendered into the page, fill before launch) --------------
+  SPONSOR: "[OPERATOR ENTITY]",   // real legal entity that runs this
+  SUPPORT_EMAIL: "support@YOURDOMAIN.com",
+  POOL_AMOUNT: "$5,000",
+
+  // --- CPA offers (leave [] to hide the boost block entirely) --------------
+  // Newest-first: surveys / email-submits convert best in a mobile queue.
+  OFFERS: [
+    // { t: "Quick 2-minute survey", s: "Answer a few questions", u: "https://your-cpa-link", k: "SURVEY" },
+  ]
 };
 
-/* ================================================================
-   2. INTERSTITIAL AD — the primary tier-1 monetisation.
-      Put the network's onclick/interstitial snippet in
-      INTERSTITIAL_HTML above, or leave it and call fireAd() below.
-   ================================================================ */
-function fireAd(){
-  // Hook for networks exposing a JS trigger, e.g.:
-  // if (window.adsterraPop) window.adsterraPop();
-  if (window.__pop) { try { window.__pop(); } catch(e){} }
+/* ------------------------------- helpers -------------------------------- */
+const $ = id => document.getElementById(id);
+const ls = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const fmt = n => Number(n).toLocaleString('en-US');
+const siteUrl = () => (CONFIG.SITE_URL || location.origin).replace(/\/+$/, '');
+
+/* Whichever of these is still empty, the page says so in the console. */
+(function setupCheck() {
+  const keys = ['POPUNDER_TAG', 'INTERSTITIAL_HTML', 'AD_DIRECT_LINK', 'CAPTURE_ENDPOINT', 'FEED_URL', 'ONESIGNAL_APP_ID'];
+  const missing = keys.filter(k => !CONFIG[k]);
+  if (!CONFIG.OFFERS.length) missing.push('OFFERS');
+  window.__ppMissing = missing;
+  if (missing.length) {
+    console.warn('[PayoutPool] Not configured (see README.md): ' + missing.join(', '));
+  }
+})();
+
+const KEY = {
+  end: 'pp_end', queue: 'pp_queue', step: 'pp_step', done: 'pp_done',
+  code: 'pp_code', inbound: 'pp_inbound', sent: 'pp_sent_at', buf: 'pp_buf'
+};
+
+/* ------------------------- state: queue + timer -------------------------- */
+const HOLD_MS = 15 * 60 * 1000;
+
+/* Queue is generated once and persisted, so the number in the copy, the
+   number on the card and the number after a reload are always the same. */
+let queue = parseInt(ls.get(KEY.queue, '0'), 10);
+if (!queue || queue < 1) {
+  queue = 1100 + Math.floor(Math.random() * 500);
+}
+ls.set(KEY.queue, queue);
+let step = 0;                       /* 0-2 card, 3 interstitial, 4 capture, 5 done */
+
+/* Deadline re-rolls instead of pinning at 00:00. */
+function refreshDeadline() {
+  let end = parseInt(ls.get(KEY.end, '0'), 10) || 0;
+  if (!end || end - Date.now() <= 0) {
+    end = Date.now() + HOLD_MS;
+    ls.set(KEY.end, end);
+  }
+  return end;
+}
+let deadline = refreshDeadline();
+
+function reheld() {
+  deadline = refreshDeadline();
+  toast('Your slot was re-held for another 15 minutes.');
+  hit('rehold');
 }
 
+function tickClock() {
+  let left = deadline - Date.now();
+  if (left <= 0) { reheld(); left = HOLD_MS; }
+  const m = Math.floor(left / 60000);
+  const s = Math.floor((left % 60000) / 1000);
+  $('clock').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+setInterval(tickClock, 1000);
+/* ------------------------------- toast ---------------------------------- */
+let toastTimer = null;
+function toast(msg, ms) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), ms || 2800);
+}
+
+/* ------------------------------ tracking -------------------------------- */
+function hit(ev) {
+  if (!CONFIG.HIT_URL) return;
+  try {
+    const body = JSON.stringify({ e: ev, s: step, q: queue, ref: ls.get(KEY.inbound, '') });
+    if (navigator.sendBeacon) navigator.sendBeacon(CONFIG.HIT_URL, body);
+    else fetch(CONFIG.HIT_URL, { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'application/json' } }).catch(() => {});
+  } catch (e) {}
+}
+
+/* ------------------------------- ticker --------------------------------- */
 const NAMES = [
-  ["Marcus T.","Austin, TX","#00d54b"],["Dana R.","Calgary, AB","#8ea1c4"],
-  ["Brianna K.","Columbus, OH","#f5b942"],["Justin M.","Tampa, FL","#c9a4e0"],
-  ["Alyssa P.","Boise, ID","#00d54b"],["Devin S.","Mesa, AZ","#8ea1c4"],
-  ["Kim L.","Surrey, BC","#f5b942"],["Tyler B.","Wichita, KS","#c9a4e0"],
-  ["Rachel D.","Halifax, NS","#00d54b"],["Cody H.","Tulsa, OK","#8ea1c4"]
+  ['Marcus T.', 'Austin, TX', '$120'], ['Priya S.', 'Brampton, ON', '$250'],
+  ['Dylan R.', 'Phoenix, AZ', '$80'],  ['Chloe M.', 'Calgary, AB', '$500'],
+  ['Andre W.', 'Atlanta, GA', '$150'], ['Sarah K.', 'Ottawa, ON', '$200'],
+  ['Luis G.', 'San Antonio, TX', '$95'], ['Emma B.', 'Winnipeg, MB', '$320'],
+  ['Jordan P.', 'Charlotte, NC', '$75'], ['Aisha N.', 'Mississauga, ON', '$180'],
+  ['Tyler H.', 'Denver, CO', '$240'], ['Grace L.', 'Vancouver, BC', '$110'],
+  ['Omar F.', 'Columbus, OH', '$500'], ['Nina V.', 'Edmonton, AB', '$140'],
+  ['Caleb J.', 'Nashville, TN', '$90'], ['Leah D.', 'Halifax, NS', '$275'],
+  ['Ryan O.', 'Las Vegas, NV', '$160'], ['Mei C.', 'Victoria, BC', '$420'],
+  ['Isaac A.', 'Tampa, FL', '$85'], ['Zoe R.', 'Montreal, QC', '$300']
 ];
-const AMTS = ["$25.00","$50.00","$100.00","$150.00","$250.00","$500.00"];
-const rnd = a => a[Math.floor(Math.random()*a.length)];
+const HUES = ['#00d54b', '#2ee6a8', '#f5b942', '#7aa2ff', '#ff8f6b'];
 
-/* ---------- ticker ---------- */
-function renderFeed(list){
-  const row = x => `<div class="tR"><div class="tA" style="background:${x.c||"#00d54b"}">${(x.n||"?")[0]}</div>
-    <div><div class="tN">${x.n}</div><div class="tC">${x.p}</div></div>
-    <div class="tM">+${rnd(AMTS)}</div></div>`;
-  const base = list && list.length ? list
-    : Array.from({length:10},(_,i)=>({n:NAMES[i][0],p:NAMES[i][1],c:NAMES[i][2]}));
-  document.getElementById('ticker').innerHTML = base.map(row).join('') + base.map(row).join('');
+function rowHtml(r, i) {
+  return '<div class="tR"><div class="tA" style="background:' + HUES[i % HUES.length] + '">' +
+    r[0].charAt(0) + '</div><div><div class="tN">' + r[0] + '</div><div class="tC">' + r[1] +
+    '</div></div><div class="tM">' + r[2] + '</div></div>';
 }
-renderFeed(null);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+function renderTicker(rows) {
+  const once = rows.map(rowHtml).join('');
+  /* Duplicating the list only makes sense because the animation scrolls -50%.
+     With reduced motion there is no scroll, so show one static, scrollable copy. */
+  $('ticker').innerHTML = reduceMotion.matches ? once : once + once;
+  document.querySelector('.ticker-wrap').style.height = reduceMotion.matches ? 'auto' : '104px';
+}
+
+renderTicker(NAMES);
+
 if (CONFIG.FEED_URL) {
-  fetch(CONFIG.FEED_URL).then(r=>r.json())
-    .then(d => { if (Array.isArray(d) && d.length > 2) renderFeed(d.slice(0,12)); })
-    .catch(()=>{});
+  fetch(CONFIG.FEED_URL, { cache: 'no-store' })
+    .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+    .then(d => {
+      const rows = (Array.isArray(d) ? d : d.rows || [])
+        .filter(x => x && x.n && x.p)
+        .map(x => [String(x.n).slice(0, 22), String(x.p).slice(0, 22), x.m ? String(x.m) : 'joined']);
+      if (rows.length >= 5) renderTicker(rows);
+    })
+    .catch(e => console.warn('[PayoutPool] feed unavailable, using cached rows:', e.message));
 }
 
-/* ---------- slot countdown ---------- */
-let end = +localStorage.getItem('pp_end');
-if (!end || end < Date.now()) { end = Date.now() + 9e5; localStorage.setItem('pp_end', end); }
-const pad = n => String(n).padStart(2,'0');
-setInterval(()=>{
-  const r = Math.max(0, end - Date.now());
-  document.getElementById('clock').textContent = `${pad(Math.floor(r/6e4))}:${pad(Math.floor(r/1e3)%60)}`;
-}, 1000);
-
-/* ---------- live counter ---------- */
-setInterval(()=>{
-  const el = document.getElementById('liveN');
-  el.textContent = Math.max(90, Math.min(260, parseInt(el.textContent) + Math.floor(Math.random()*5) - 2)) + ' claiming';
+/* --------------------------- live claim counter -------------------------- */
+let claiming = 142;
+setInterval(() => {
+  const r = Math.random();
+  if (r < 0.62) claiming += 1 + Math.floor(Math.random() * 3);   /* bias upward */
+  else if (r < 0.88) claiming -= 1;
+  if (claiming > 420) claiming = 300 + Math.floor(Math.random() * 40);
+  claiming = Math.max(claiming, 64);
+  $('claiming').textContent = fmt(claiming);
 }, 2600);
 
-/* ---------- claim toasts ---------- */
-const TZ = [
-  ["Alyssa P.","Boise, ID",25],["Devin S.","Mesa, AZ",50],["Kim L.","Surrey, BC",100],
-  ["Tyler B.","Wichita, KS",25],["Rachel D.","Halifax, NS",50]
+/* ------------------------------ proof strip ------------------------------ */
+const PROOF = [
+  ['Cash App', '$500'], ['Venmo', '$250'], ['PayPal', '$120'],
+  ['Interac', '$320'], ['Cash App', '$180']
 ];
-let ti = 0;
-setInterval(()=>{
-  const t = document.getElementById('toast');
-  const x = TZ[ti++ % TZ.length];
-  t.textContent = `${x[0]} in ${x[1]} just claimed $${x[2]}`;
-  t.style.opacity = '1'; t.style.transform = 'translate(-50%,0)';
-  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translate(-50%,-10px)'; }, 2400);
-}, 9000);
+$('proof').innerHTML = PROOF.map(p =>
+  '<div class="pf"><div class="b">' + p[0] + '</div><div class="a">' + p[1] + '</div></div>').join('');
 
-/* ---------- queue position ---------- */
-let queue = 1100 + Math.floor(Math.random()*500);
-document.getElementById('qpos').textContent = queue.toLocaleString('en-US');
+/* -------------------------------- ads ----------------------------------- */
+let popunderDone = false;
+let adFires = 0;
 
-/* ---------- steps ---------- */
-const STEPS = [
-  ["Confirm your region","US &amp; CA only. Confirm to keep your slot.","View more →"],
-  ["Verify you're active","Quick check. A sponsored page opens in a background tab.","View more →"],
-  ["Save your position","Last step before we hold your place.","View more →"]
-];
-let step = 0;
-const btn = document.getElementById('btn');
-
-btn.addEventListener('click', () => {
-  step++;
-  fireAd();
-  document.getElementById('prog').style.width = [28,47,66][step-1] + '%';
-  if (step < 3) {
-    document.getElementById('t').innerHTML = STEPS[step][0];
-    document.getElementById('s').innerHTML = STEPS[step][1];
-    btn.textContent = STEPS[step][2];
-    document.getElementById('stepLbl').textContent = `STEP ${step+1} OF 5`;
-  } else {
-    openInterstitial();
-  }
-});
-
-/* ---------- interstitial ---------- */
-function openInterstitial(){
-  document.getElementById('stepLbl').textContent = 'STEP 4 OF 5';
-  const box = document.getElementById('inter');
-  box.style.display = 'flex';
-  if (CONFIG.INTERSTITIAL_HTML) {
-    document.getElementById('interAd').innerHTML = CONFIG.INTERSTITIAL_HTML;
-  }
-  fireAd();
-
-  let c = 5;
-  const lbl = document.getElementById('skipLbl');
-  const sb  = document.getElementById('skipBtn');
-  const iv = setInterval(()=>{
-    c--;
-    lbl.textContent = c > 0 ? 'SKIP IN ' + c : 'SKIP';
-    sb.textContent  = c > 0 ? 'Skip in ' + c : 'Continue →';
-    if (c <= 0) {
-      clearInterval(iv);
-      sb.disabled = false;
-      sb.style.cssText = 'width:100%;padding:14px;border:0;border-radius:10px;background:#00d54b;color:#00290f;font-size:13px;font-weight:800;cursor:pointer';
-    }
-  }, 1000);
-
-  sb.onclick = () => {
-    if (sb.disabled) return;
+function loadPopunder() {
+  if (popunderDone || !CONFIG.POPUNDER_TAG) return;
+  popunderDone = true;
+  const tag = String(CONFIG.POPUNDER_TAG).trim();
+  if (tag.charAt(0) === '<') {
+    /* innerHTML never executes scripts, so rebuild them by hand. */
+    const box = document.createElement('div');
     box.style.display = 'none';
-    document.getElementById('gate').style.display = 'none';
-    document.getElementById('capture').style.display = 'block';
-    document.getElementById('stepLbl').textContent = 'STEP 5 OF 5';
-    document.getElementById('prog').style.width = '84%';
-    window.scrollTo({top:0,behavior:'smooth'});
-  };
+    box.innerHTML = tag;
+    Array.prototype.forEach.call(box.querySelectorAll('script'), function (old) {
+      const s = document.createElement('script');
+      if (old.src) s.src = old.src; else s.textContent = old.textContent;
+      s.async = true;
+      document.head.appendChild(s);
+    });
+    document.body.appendChild(box);
+  } else {
+    const s = document.createElement('script');
+    s.src = tag;
+    s.async = true;
+    s.onerror = function () { console.error('[PayoutPool] popunder script failed to load: ' + tag); };
+    document.head.appendChild(s);
+  }
 }
 
-/* ---------- capture ---------- */
-document.getElementById('save').addEventListener('click', () => {
-  const em = document.getElementById('email');
-  const ph = document.getElementById('phone');
-  let ok = true;
-  if (!em.value.includes('@') || em.value.length < 5) { em.classList.add('err'); ok = false; } else em.classList.remove('err');
-  if (ph.value.replace(/\D/g,'').length < 10) { ph.classList.add('err'); ok = false; } else ph.classList.remove('err');
-  if (!ok) { (em.classList.contains('err') ? em : ph).focus(); return; }
-
-  const ref = localStorage.getItem('pp_ref') || '';
-  if (CONFIG.CAPTURE_ENDPOINT) {
-    try {
-      fetch(CONFIG.CAPTURE_ENDPOINT, {
-        method:'POST', keepalive:true,
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email:em.value.trim(), phone:ph.value.trim(), ref,
-                               step:step, tz:Intl.DateTimeFormat().resolvedOptions().timeZone })
-      }).catch(()=>{});
-    } catch(e){}
+function fireAd() {
+  adFires++;
+  window.__ppAdFires = adFires;
+  hit('ad');
+  loadPopunder();
+  if (typeof window.__pop === 'function') { try { window.__pop(); } catch (e) {} }
+  if (CONFIG.AD_DIRECT_LINK) {
+    try { window.open(CONFIG.AD_DIRECT_LINK, '_blank', 'noopener'); } catch (e) {}
   }
-  localStorage.setItem('pp_done','1');
-  document.getElementById('capture').style.display = 'none';
-  document.getElementById('done').style.display = 'block';
-  document.getElementById('prog').style.width = '100%';
-  window.scrollTo({top:0,behavior:'smooth'});
+  if (!CONFIG.POPUNDER_TAG && !CONFIG.AD_DIRECT_LINK && !CONFIG.INTERSTITIAL_HTML) {
+    console.warn('[PayoutPool] No ad network set - this tap earned nothing. Set POPUNDER_TAG / AD_DIRECT_LINK / INTERSTITIAL_HTML.');
+  }
+}
+
+/* --------------------------- interstitial gate --------------------------- */
+let interOpen = false;
+let lastFocus = null;
+let skipInterval = null;
+
+function openInterstitial() {
+  if (interOpen) return;
+  interOpen = true;
+  lastFocus = document.activeElement;
+
+  const ad = $('interAd');
+  if (CONFIG.INTERSTITIAL_HTML && !ad.getAttribute('data-filled')) {
+    ad.setAttribute('data-filled', '1');
+    ad.innerHTML = CONFIG.INTERSTITIAL_HTML;
+  }
+
+  $('inter').classList.add('on');
+  document.body.style.overflow = 'hidden';
+
+  const btn = $('skipBtn');
+  const bar = $('skipBar');
+  btn.disabled = true;
+  btn.classList.remove('ready');
+  btn.textContent = 'Continue in 5';
+
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+  void bar.offsetWidth;
+  bar.style.transition = 'width 5s linear';
+  bar.style.width = '100%';
+
+  $('inter').focus();
+
+  let n = 5;
+  clearInterval(skipInterval);
+  skipInterval = setInterval(function () {
+    n--;
+    if (n > 0) { btn.textContent = 'Continue in ' + n; return; }
+    clearInterval(skipInterval);
+    btn.disabled = false;
+    btn.classList.add('ready');
+    btn.textContent = 'Continue \u2192';
+    btn.focus();
+  }, 1000);
+}
+
+function closeInterstitial() {
+  if (!interOpen) return;
+  interOpen = false;
+  clearInterval(skipInterval);
+  $('inter').classList.remove('on');
+  document.body.style.overflow = '';
+  if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+}
+
+/* Focus trap: while the gate is open nothing behind it is reachable. */
+$('inter').addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') { e.preventDefault(); return; }
+  if (e.key !== 'Tab') return;
+  const f = Array.prototype.filter.call(
+    $('inter').querySelectorAll('button:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])'),
+    function (el) { return el.offsetParent !== null; }
+  );
+  if (!f.length) { e.preventDefault(); $('inter').focus(); return; }
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
 });
 
-/* ---------- offers ---------- */
-const OFFERS = [
-  ["Install a partner app","~60 sec · highest value","https://YOUR-OFFER-LINK"],
-  ["Complete a 2-minute survey","Fast credit","https://YOUR-OFFER-LINK"],
-  ["Start a free trial","No card required","https://YOUR-OFFER-LINK"],
-  ["Open today's sponsor offer","One tap","https://YOUR-OFFER-LINK"],
-  ["Invite 3 friends","+10 entries each","https://YOUR-OFFER-LINK"]
+$('skipBtn').addEventListener('click', function () {
+  if (this.disabled) return;
+  closeInterstitial();
+  showCapture();
+});
+/* --------------------------- steps + progress ---------------------------- */
+const TOTAL_STEPS = 5;
+const STEPS = [
+  { t: 'Confirm your region',
+    s: 'Payouts are limited to <strong>US &amp; Canada</strong> for this round. Confirm to keep your slot.',
+    b: 'Confirm and continue \u2192', tag: 'Position held' },
+  { t: 'Verify you\u2019re active',
+    s: 'Real entries only. Tap to confirm a person is completing this \u2014 automated entries are removed from the pool daily.',
+    b: 'I\u2019m active, continue \u2192', tag: 'Live check' },
+  { t: 'Save your position',
+    s: 'You are <strong>#__Q__</strong> in line. Save it now or it returns to the pool.',
+    b: 'Save my position \u2192', tag: 'Almost there' }
 ];
-document.getElementById('offers').innerHTML = OFFERS.map(o =>
-  `<a class="of" href="${o[2]}" target="_blank" rel="noopener sponsored" data-of><div><b>${o[0]}</b><span>${o[1]}</span></div><i>OPEN</i></a>`
-).join('');
 
-document.getElementById('offers').addEventListener('click', e => {
-  if (!e.target.closest('[data-of]')) return;
-  fireAd();
-  queue = Math.max(1, queue - 40);
-  document.getElementById('qpos').textContent = queue.toLocaleString('en-US');
+/* Progress = steps completed out of 5, so the bar and the label can never
+   disagree: STEP 1 OF 5 at 0%, STEP 5 OF 5 at 80%, submitted at 100%. */
+function setProgress(n, forceDone) {
+  const pct = forceDone ? 100 : Math.round(((n - 1) / TOTAL_STEPS) * 100);
+  $('prog').style.width = Math.max(pct, 3) + '%';
+  $('progbar').setAttribute('aria-valuenow', String(pct));
+  $('progbar').setAttribute('aria-valuetext', 'Step ' + n + ' of ' + TOTAL_STEPS);
+  $('pStep').textContent = 'STEP ' + n + ' OF ' + TOTAL_STEPS;
+  $('pPct').textContent = pct + '% complete';
+}
+
+function renderStep(i) {
+  const st = STEPS[i];
+  $('t').textContent = st.t;
+  $('s').innerHTML = st.s.replace('__Q__', fmt(queue));
+  $('btn').textContent = st.b;
+  $('badge').textContent = 'STEP ' + (i + 1);
+  $('tag').textContent = st.tag;
+  step = i;
+  ls.set(KEY.step, i);
+  setProgress(i + 1);
+}
+
+function showCapture() {
+  step = 4;
+  ls.set(KEY.step, 4);
+  $('reveal').classList.add('hide');
+  $('capture').classList.remove('hide');
+  setProgress(5);
+  hit('capture_view');
+  $('capture').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+}
+
+function finish() {
+  step = 5;
+  ls.set(KEY.step, 5);
+  ls.set(KEY.done, Date.now());
+  $('reveal').classList.add('hide');
+  $('capture').classList.add('hide');
+  $('done').classList.remove('hide');
+  setProgress(5, true);
+  $('myCode').textContent = myCode();
+  renderOffers();
+  hit('done');
+  $('done').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+}
+
+/* ------------------------------ queue boost ------------------------------ */
+function moveUp(by) {
+  queue = Math.max(1, queue - by);
+  ls.set(KEY.queue, queue);
+  toast('Moved up ' + by + ' places \u2014 you are now #' + fmt(queue));
+  hit('offer_click');
+}
+
+function renderOffers() {
+  if (!CONFIG.OFFERS.length) { $('boost').classList.add('hide'); return; }
+  $('boost').classList.remove('hide');
+  $('offerList').innerHTML = CONFIG.OFFERS.slice(0, 5).map(function (o, i) {
+    return '<a class="off" href="' + o.u + '" target="_blank" rel="noopener nofollow sponsored" data-i="' + i + '">' +
+      '<span class="ok-k">' + (o.k || 'OFFER') + '</span>' +
+      '<span><span class="ok-t">' + o.t + '</span>' +
+      '<span class="ok-s">' + (o.s || '') + '</span></span>' +
+      '<span class="ok-a">\u203a</span></a>';
+  }).join('');
+}
+
+$('offerList').addEventListener('click', function (e) {
+  const a = e.target.closest ? e.target.closest('a[data-i]') : null;
+  if (a) moveUp(40);
 });
 
-/* ---------- referral ---------- */
-const urlRef = new URLSearchParams(location.search).get('ref');
-if (urlRef) localStorage.setItem('pp_ref', urlRef);
+/* ----------------------------- capture / leads --------------------------- */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
-document.getElementById('shareBtn').addEventListener('click', async () => {
-  const myCode = (localStorage.getItem('pp_ref') || 'x' + Math.random().toString(36).slice(2,7));
-  localStorage.setItem('pp_ref', myCode);
-  const url = `${CONFIG.SHARE_URL}/?ref=${myCode}`;
-  const data = { title:'$5,000 payout pool', text:'Open to US & CA — five steps, forty seconds.', url };
-  if (navigator.share) { try { await navigator.share(data); } catch(e){} }
-  else { window.open('sms:?&body=' + encodeURIComponent(data.text + ' ' + url), '_blank'); }
+function normPhone(v) {
+  const d = String(v).replace(/\D/g, '');
+  return d.length === 11 && d.charAt(0) === '1' ? d.slice(1) : d;
+}
+function validPhone(d) { return /^[2-9]\d{9}$/.test(d); }
+
+function setErr(field, isBad) {
+  const inp = $(field);
+  const msg = $(field + 'Err');
+  inp.classList.toggle('bad', !!isBad);
+  inp.setAttribute('aria-invalid', isBad ? 'true' : 'false');
+  if (msg) msg.classList.toggle('on', !!isBad);
+}
+
+function readBuf() {
+  try { const v = JSON.parse(ls.get(KEY.buf, '[]')); return Array.isArray(v) ? v : []; }
+  catch (e) { return []; }
+}
+function writeBuf(a) { ls.set(KEY.buf, JSON.stringify(a.slice(-10))); }
+
+async function postLead(p) {
+  if (!CONFIG.CAPTURE_ENDPOINT) {
+    console.error('[PayoutPool] CAPTURE_ENDPOINT is empty - this lead was NOT stored. ' +
+      'Deploy /worker and paste its URL into CONFIG.CAPTURE_ENDPOINT.');
+    return false;
+  }
+  const r = await fetch(CONFIG.CAPTURE_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(p)
+  });
+  if (!r.ok) throw new Error('capture HTTP ' + r.status);
+  return true;
+}
+
+async function submitLead(p) {
+  try {
+    if (await postLead(p)) { flushBuf(); return true; }
+    writeBuf(readBuf().concat([p]));
+    return false;
+  } catch (err) {
+    /* Never swallow: the lead is buffered and retried, and the console says why. */
+    console.error('[PayoutPool] capture failed, queued for retry:', err.message);
+    writeBuf(readBuf().concat([p]));
+    toast('Saved on this device \u2014 we will retry when you reconnect.');
+    return false;
+  }
+}
+
+async function flushBuf() {
+  const q = readBuf();
+  if (!q.length || !CONFIG.CAPTURE_ENDPOINT) return;
+  const keep = [];
+  for (let i = 0; i < q.length; i++) {
+    try { if (!(await postLead(q[i]))) keep.push(q[i]); }
+    catch (e) { keep.push(q[i]); }
+  }
+  writeBuf(keep);
+}
+
+$('form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const btn = $('submitBtn');
+
+  /* Honeypot: hidden from humans, irresistible to bots. Bots get a fake success. */
+  if ($('company').value) { finish(); return; }
+
+  const email = $('email').value.trim();
+  const phone = normPhone($('phone').value);
+  const badEmail = !EMAIL_RE.test(email);
+  const badPhone = !validPhone(phone);
+
+  setErr('email', badEmail);
+  setErr('phone', badPhone);
+  if (badEmail) { $('email').focus(); return; }
+  if (badPhone) { $('phone').focus(); return; }
+
+  if (!$('sms').checked) {
+    $('consentErr').classList.add('on');
+    $('consentWrap').classList.add('bad');
+    $('sms').focus();
+    return;
+  }
+  $('consentErr').classList.remove('on');
+  $('consentWrap').classList.remove('bad');
+
+  /* Dedupe: one submission per device per 24h. */
+  const last = parseInt(ls.get(KEY.sent, '0'), 10) || 0;
+  if (last && Date.now() - last < 86400000) {
+    toast('You already entered today \u2014 position #' + fmt(queue) + ' is saved.');
+    finish();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Saving\u2026';
+
+  const payload = {
+    email: email,
+    phone: phone,
+    consent: true,
+    queue: queue,
+    ref: ls.get(KEY.inbound, ''),
+    code: myCode(),
+    at: new Date().toISOString(),
+    page: location.href,
+    tz: (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (x) { return ''; } })(),
+    ua: navigator.userAgent
+  };
+
+  await submitLead(payload);
+  ls.set(KEY.sent, Date.now());
+  btn.disabled = false;
+  btn.textContent = 'Claim my position \u2192';
+  finish();
 });
+/* --------------------------- referral + share ---------------------------- */
+/* The inbound code (?ref=) and MY OWN code are stored separately. Reusing
+   pp_ref for both made every downstream share point back at the original
+   referrer instead of the person doing the sharing. */
+(function captureInbound() {
+  try {
+    const ref = new URLSearchParams(location.search).get('ref');
+    if (ref && /^[a-z0-9]{4,12}$/i.test(ref)) {
+      ls.set(KEY.inbound, ref.toLowerCase());
+      hit('ref_land');
+    }
+  } catch (e) {}
+})();
 
-/* ---------- push ---------- */
+function myCode() {
+  let c = ls.get(KEY.code, '');
+  if (!c || !/^x[a-z0-9]{4}$/i.test(c)) {
+    c = 'x' + Math.random().toString(36).slice(2, 6);
+    ls.set(KEY.code, c);
+  }
+  return c;
+}
+
+async function share() {
+  const url = siteUrl() + '/?ref=' + myCode();
+  const text = 'I just entered the ' + CONFIG.POOL_AMOUNT +
+    ' PayoutPool. Use my link and we both move up the queue:';
+  if (navigator.share) {
+    try { await navigator.share({ title: 'PayoutPool', text: text, url: url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    toast('Invite link copied \u2014 your code is ' + myCode());
+  } catch (e) {
+    window.prompt('Copy your invite link:', url);
+  }
+}
+$('shareBtn').addEventListener('click', share);
+
+/* -------------------------------- push ----------------------------------- */
+/* Permission is only requested from this click, never on load: iOS Safari
+   rejects requestPermission() outside a user gesture. */
+async function askPush() {
+  const btn = $('pushBtn');
+  if (!CONFIG.ONESIGNAL_APP_ID) {
+    btn.textContent = 'Alerts not enabled yet';
+    btn.disabled = true;
+    $('pushNote').textContent = 'OneSignal is not connected on this build yet.';
+    console.warn('[PayoutPool] ONESIGNAL_APP_ID is empty - requestPermission() skipped.');
+    return;
+  }
+  const OneSignal = window.__oneSignal;
+  if (!OneSignal) { toast('Still loading alerts \u2014 try again in a moment.'); return; }
+  try {
+    await OneSignal.Notifications.requestPermission();
+    if (OneSignal.Notifications.permission) {
+      btn.textContent = 'Alerts on \u2713';
+      btn.disabled = true;
+      $('pushNote').textContent = 'You will get a notification when your position clears.';
+      OneSignal.User.addTag('entry_queue', String(queue));
+    } else {
+      $('pushNote').textContent = 'Alerts are blocked \u2014 you can re-enable them in your browser settings.';
+    }
+  } catch (err) {
+    console.error('[PayoutPool] push permission failed:', err);
+    toast('Could not enable alerts in this browser.');
+  }
+}
+$('pushBtn').addEventListener('click', askPush);
+
 if (CONFIG.ONESIGNAL_APP_ID) {
   window.OneSignalDeferred = window.OneSignalDeferred || [];
-  const s = document.createElement('script');
-  s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
-  s.defer = true;
-  document.head.appendChild(s);
-  window.OneSignalDeferred.push(async OneSignal => {
-    await OneSignal.init({ appId: CONFIG.ONESIGNAL_APP_ID, allowLocalhostAsSecureOrigin:true });
-    OneSignal.Notifications.addEventListener('permissionChange', granted => {
-      if (granted) localStorage.setItem('pp_push','1');
-    });
+  window.OneSignalDeferred.push(async function (OneSignal) {
+    try {
+      await OneSignal.init({ appId: CONFIG.ONESIGNAL_APP_ID, allowLocalhostAsSecureOrigin: true });
+      window.__oneSignal = OneSignal;
+    } catch (e) { console.error('[PayoutPool] OneSignal init failed:', e); }
   });
+  const os = document.createElement('script');
+  os.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+  os.defer = true;
+  document.head.appendChild(os);
 }
-
-/* ---------- returning visitor ---------- */
-if (localStorage.getItem('pp_done') === '1') {
-  document.getElementById('gate').style.display = 'none';
-  document.getElementById('done').style.display = 'block';
-  document.getElementById('prog').style.width = '100%';
+/* ----------------------------- exit intent ------------------------------- */
+/* Fires at every point before the entry is confirmed, including step 1 -
+   which is the highest-intent exit and was previously excluded. */
+let exitShown = false;
+function offerExit() {
+  if (exitShown || step >= 5 || interOpen) return;
+  exitShown = true;
+  if (step < 3) {
+    toast('Position #' + fmt(queue) + ' is only held for 15 minutes. Tap continue to keep it.', 4200);
+    $('btn').focus();
+    $('reveal').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+  } else {
+    toast('Your slot is still open \u2014 finish to lock position #' + fmt(queue) + '.', 4200);
+    $('capture').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+  }
+  hit('exit_intent');
 }
-
-/* ---------- exit intent (desktop) ---------- */
-let exited = false;
-document.addEventListener('mouseout', e => {
-  if (exited || e.relatedTarget || e.clientY > 4) return;
-  if (step === 0 || step >= 3) return;
-  exited = true;
-  btn.textContent = 'Finish your entry →';
-  document.getElementById('gate').scrollIntoView({behavior:'smooth', block:'center'});
+document.addEventListener('mouseout', function (e) {
+  if (!e.relatedTarget && e.clientY <= 0) offerExit();
 });
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'hidden' && step < 5) hit('hidden');
+});
+
+/* --------------------------------- boot ---------------------------------- */
+$('sponsor').textContent = CONFIG.SPONSOR;
+$('yr').textContent = String(new Date().getFullYear());
+
+$('btn').addEventListener('click', function () {
+  if (step < 2) { renderStep(step + 1); hit('step_' + (step + 1)); return; }
+  if (step === 2) {
+    fireAd();                       /* exactly one fire per tap */
+    $('badge').textContent = 'STEP 4';
+    $('tag').textContent = 'Sponsored';
+    setProgress(4);
+    openInterstitial();
+    hit('interstitial');
+  }
+});
+
+/* Returning visitor lands on the confirmed screen instead of the funnel. */
+const alreadyDone = parseInt(ls.get(KEY.done, '0'), 10) || 0;
+if (alreadyDone) {
+  $('reveal').classList.add('hide');
+  finish();
+} else {
+  const saved = parseInt(ls.get(KEY.step, '0'), 10) || 0;
+  if (saved === 4) { $('reveal').classList.add('hide'); showCapture(); }
+  else renderStep(saved >= 1 && saved <= 2 ? saved : 0);
+}
+
+tickClock();
+flushBuf();
+hit('view');
 </script>
-</body>
-</html>
+</script>

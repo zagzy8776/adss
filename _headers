@@ -1,0 +1,22 @@
+# Cloudflare Pages header rules.
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Long cache for static art.
+/favicon.svg
+  Cache-Control: public, max-age=604800
+/og.jpg
+  Cache-Control: public, max-age=604800
+
+# NOTE: a Content-Security-Policy header is intentionally NOT set here because
+# a stricter policy than the <meta> one in index.html would break ad-network
+# scripts. When your networks are known, add:
+#
+#   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://your-network.com https://cdn.onesignal.com; frame-src https://your-network.com; img-src 'self' data: https:; connect-src 'self' https://api.yourdomain.com
