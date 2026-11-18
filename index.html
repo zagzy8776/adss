@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08090b">
+<title>PayoutPool — $5,000 November Payout Pool</title>
+<meta name="description" content="$5,000 payout pool, open to US and Canada. Five quick steps. Entries reviewed daily, qualified users contacted directly.">
+<meta name="robots" content="index,follow">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PayoutPool">
+<meta property="og:title" content="$5,000 payout pool — open to US &amp; CA">
+<meta property="og:description" content="Five steps, forty seconds. Entries reviewed daily. Hold your position before your slot expires.">
+<meta property="og:image" content="https://YOURDOMAIN.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://YOURDOMAIN.com/">
+<meta name="twitter:card" content="summary_large_image">
+
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:#08090b;color:#eef1f5;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  max-width:480px;margin:0 auto;min-height:100vh;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+@keyframes sl{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---------- chrome ---------- */
+.brand{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #15181d}
+.logo{width:25px;height:25px;border-radius:7px;background:linear-gradient(135deg,#00d54b,#00a83b);display:grid;place-items:center;font-weight:800;font-size:12px;color:#00290f;flex:0 0 auto}
+.bname{font-size:12.5px;font-weight:700;letter-spacing:-.01em}
+.live{margin-left:auto;font-size:9.5px;color:#00d54b;background:#04170c;border:1px solid #0d3d20;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.urgency{background:#150e0e;border-bottom:1px solid #2c1a1a;padding:7px 16px;display:flex;align-items:center;gap:8px;font-size:10.5px;color:#e08d8d}
+.urgency i{width:5px;height:5px;border-radius:50%;background:#e08d8d;box-shadow:0 0 6px #e08d8d;animation:pulse 1.4s infinite}
+#clock{margin-left:auto;color:#f5b942;font-variant-numeric:tabular-nums;font-weight:700}
+
+/* ---------- ticker ---------- */
+.ticker-wrap{height:104px;overflow:hidden;position:relative;background:#0a0b0e}
+#ticker{will-change:transform;animation:sl 24s linear infinite}
+.ticker-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#08090b,transparent 26%,transparent 74%,#08090b)}
+.tR{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:11px}
+.tA{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:800;color:#00290f;flex:0 0 auto}
+.tN{color:#cfd5dd;font-weight:600;font-size:10.5px}
+.tC{font-size:9px;color:#525863}
+.tM{margin-left:auto;color:#00d54b;font-weight:700;font-size:10.5px}
+
+/* ---------- hero ---------- */
+.hero{padding:15px 16px 0}
+h1{margin:0;font-size:24px;line-height:1.19;font-weight:800;letter-spacing:-.03em}
+h1 span{color:#00d54b}
+.sub{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#838a95}
+
+/* ---------- progress ---------- */
+.prog-wrap{padding:13px 16px 0}
+.prog{height:5px;border-radius:4px;background:#15181d;overflow:hidden}
+#prog{height:100%;width:9%;background:linear-gradient(90deg,#00a83b,#00d54b);transition:width .45s ease}
+.meta{display:flex;justify-content:space-between;font-size:9.5px;color:#5d636d;margin-top:5px}
+
+/* ---------- step ---------- */
+#gate{padding:15px 16px 22px}
+#reveal{background:#0d0f12;border:1px solid #1b1f25;border-radius:12px;padding:14px;animation:rise .3s ease}
+#reveal h2{margin:0 0 4px;font-size:14px;font-weight:700;color:#eef1f5}
+#reveal p{margin:0 0 12px;font-size:11.5px;line-height:1.5;color:#767d88}
+button{font-family:inherit}
+.cta{width:100%;padding:13px;border:0;border-radius:9px;background:#00d54b;color:#00290f;font-size:13.5px;font-weight:800;cursor:pointer;transition:transform .08s}
+.cta:active{transform:scale(.985)}
+
+/* ---------- proof ---------- */
+.proof{margin-top:14px}
+.sec{font-size:9px;letter-spacing:.13em;color:#5d636d;margin:0 0 7px}
+.proof-row{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.proof-row::-webkit-scrollbar{display:none}
+.pcard{flex:0 0 auto;width:104px;border-radius:9px;background:#0d0f12;border:1px solid #1b1f25;padding:8px}
+.pcard.cash{background:linear-gradient(160deg,#00351a,#001f10);border-color:#0d3d20}
+.papp{font-size:7.5px;font-weight:800;letter-spacing:.05em;color:#8ea1c4}
+.pcard.cash .papp{color:#00d54b}
+.pamt{font-size:15px;font-weight:800;color:#eef1f5;margin-top:5px;letter-spacing:-.02em}
+.pwho{font-size:8px;color:#6b727d}
+.pcard.cash .pwho{color:#5f8a6e}
+
+/* ---------- capture ---------- */
+#capture{display:none;padding:15px 16px 22px;animation:rise .3s ease}
+.field{width:100%;padding:11px 12px;margin-bottom:7px;border-radius:9px;background:#08090b;border:1px solid #232830;color:#eef1f5;font-size:12.5px;font-family:inherit}
+.field::placeholder{color:#5d636d}
+.field:focus{outline:none;border-color:#00a83b}
+.err{border-color:#e08d8d!important}
+#save{margin-top:4px}
+
+/* ---------- done ---------- */
+#done{display:none;padding:15px 16px 26px;animation:rise .35s ease}
+.done-top{text-align:center;padding:2px 0 14px}
+.check{width:50px;height:50px;margin:0 auto 9px;border-radius:50%;background:#04170c;border:1px solid #0d3d20;display:grid;place-items:center;font-size:23px;color:#00d54b}
+.done-top h2{margin:0;font-size:17px;font-weight:800}
+.done-top p{margin:4px 0 0;font-size:11.5px;color:#838a95}
+.of{display:flex;align-items:center;gap:9px;border:1px solid #1b1f25;background:#0d0f12;border-radius:9px;padding:10px;margin-bottom:6px;text-decoration:none;color:inherit}
+.of b{font-size:11.5px;display:block;font-weight:700;color:#e3e7ed}
+.of span{font-size:9.5px;color:#6b727d}
+.of i{font-style:normal;margin-left:auto;font-size:9px;font-weight:800;color:#00290f;background:#00d54b;padding:5px 8px;border-radius:5px;white-space:nowrap}
+.nudge{margin-top:10px;padding:10px 11px;border:1px solid #0d3d20;background:#04170c;border-radius:9px;font-size:10.5px;color:#7fd39a;text-align:center}
+.share{width:100%;margin-top:12px;padding:12px;border:1px solid #232830;border-radius:9px;background:#0d0f12;color:#cfd5dd;font-size:12.5px;font-weight:700;cursor:pointer}
+.fine{margin-top:14px;font-size:9px;line-height:1.7;color:#4d535c;text-align:center}
+.fine a{color:#6b727d}
+
+/* ---------- interstitial ---------- */
+#inter{display:none;position:fixed;inset:0;z-index:40;background:#08090b;flex-direction:column;max-width:480px;margin:0 auto}
+.inter-bar{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;font-size:10px;color:#6e737d;letter-spacing:.1em}
+.inter-body{flex:1;display:grid;place-items:center;padding:20px}
+.inter-card{width:100%;border-radius:14px;background:linear-gradient(150deg,#101a2b,#1b2d47,#101a2b);background-size:200% 100%;border:1px solid #24374f;padding:26px 20px;text-align:center;overflow:hidden}
+.inter-card .k{font-size:9px;letter-spacing:.16em;color:#7f97b5}
+.inter-card .h{font-size:19px;font-weight:800;color:#eaf0f8;margin:10px 0 6px;line-height:1.25}
+.inter-card .p{font-size:11px;color:#8ba2bd;line-height:1.5}
+.inter-foot{padding:16px}
+#skipBtn{width:100%;padding:14px;border:0;border-radius:10px;background:#22262d;color:#6e737d;font-size:13px;font-weight:800}
+
+/* ---------- toast ---------- */
+#toast{position:fixed;top:92px;left:50%;transform:translate(-50%,-10px);width:calc(100% - 28px);max-width:452px;background:#12151a;border:1px solid #242a33;color:#d3d9e1;font-size:11px;padding:9px 12px;border-radius:9px;opacity:0;transition:.3s;pointer-events:none;z-index:60}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;transition-duration:.001s!important}}
+</style>
+</head>
+<body>
+
+<div class="brand">
+  <div class="logo">P</div>
+  <div class="bname">PayoutPool</div>
+  <div class="live" id="liveN">142 claiming</div>
+</div>
+
+<div class="urgency">
+  <i></i><span>Slot held for</span><b id="clock">15:00</b>
+</div>
+
+<div class="ticker-wrap"><div id="ticker"></div></div>
+
+<div class="hero">
+  <h1>$5,000 payout pool.<br><span>Open to US &amp; CA.</span></h1>
+  <p class="sub">Entries reviewed daily. Qualified users are contacted directly.</p>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog"><div id="prog"></div></div>
+  <div class="meta"><span id="stepLbl">STEP 1 OF 5</span><span>~40 sec</span></div>
+</div>
+
+<div id="gate">
+  <div id="reveal">
+    <h2 id="t">You're in the queue</h2>
+    <p id="s">Held at position #1,247. A sponsored page may open in a background tab.</p>
+    <button class="cta" id="btn">View more →</button>
+  </div>
+
+  <div class="proof">
+    <p class="sec">RECENT PAYOUTS</p>
+    <div class="proof-row">
+      <div class="pcard cash"><div class="papp">CASH APP</div><div class="pamt">$50.00</div><div class="pwho">to Alyssa P.</div></div>
+      <div class="pcard"><div class="papp">PAYPAL</div><div class="pamt">$250.00</div><div class="pwho">to Devin S.</div></div>
+      <div class="pcard"><div class="papp">INTERAC</div><div class="pamt">$100.00</div><div class="pwho">to Kim L.</div></div>
+      <div class="pcard cash"><div class="papp">CASH APP</div><div class="pamt">$25.00</div><div class="pwho">to Tyler B.</div></div>
+      <div class="pcard"><div class="papp">PAYPAL</div><div class="pamt">$500.00</div><div class="pwho">to Marcus T.</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="capture">
+  <div style="background:#0d0f12;border:1px solid #1b1f25;border-radius:12px;padding:14px">
+    <h2 style="margin:0 0 4px;font-size:14px;font-weight:700;color:#eef1f5">Where do we send it?</h2>
+    <p style="margin:0 0 11px;font-size:11.5px;color:#767d88;line-height:1.5">Required to hold your position in the queue.</p>
+    <input class="field" id="email" type="email" inputmode="email" autocomplete="email" placeholder="Email address">
+    <input class="field" id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Mobile number">
+    <button class="cta" id="save">Continue →</button>
+  </div>
+</div>
+
+<div id="done">
+  <div class="done-top">
+    <div class="check">✓</div>
+    <h2>Position held</h2>
+    <p>You're #<b id="qpos" style="color:#00d54b">1,247</b> in the queue.</p>
+  </div>
+  <p class="sec">MOVE UP THE QUEUE</p>
+  <div id="offers"></div>
+  <div class="nudge">Each completed task moves you up ~40 places</div>
+  <button class="share" id="shareBtn">Invite 3 friends → +10 entries</button>
+  <p class="fine">
+    No purchase necessary · 18+ · Void where prohibited<br>
+    Ad-supported. Payouts via Cash App, PayPal, Interac.<br>
+    <a href="/winners.html">Recent payouts</a> · <a href="/terms.html">Terms</a> · <a href="/privacy.html">Privacy</a>
+  </p>
+</div>
+
+<div id="inter">
+  <div class="inter-bar"><span>SPONSORED</span><span id="skipLbl">SKIP IN 5</span></div>
+  <div class="inter-body">
+    <div class="inter-card" id="interAd">
+      <div class="k">PARTNER OFFER</div>
+      <div class="h">You could be earning<br>while you wait</div>
+      <div class="p">Free to start · No card required</div>
+    </div>
+  </div>
+  <div class="inter-foot"><button id="skipBtn" disabled>Skip in 5</button></div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ================================================================
+     1. POPUNDER — Android / desktop secondary path.
+        Paste your Adsterra or HilltopAds popunder tag here.
+        Set frequency to MAX in the dashboard.
+     ================================================================ -->
+<!-- <script async src="//PASTE-POPUNDER-TAG-HERE"></script> -->
+
+<script>
+/* ================================================================
+   CONFIG — fill these in. Blank values run in demo mode.
+   ================================================================ */
+const CONFIG = {
+  ONESIGNAL_APP_ID : "",                        // OneSignal app ID
+  CAPTURE_ENDPOINT : "",                        // POST url for email/phone (Worker)
+  FEED_URL         : "",                        // GET json [{n,p,c}] of recent visitors
+  INTERSTITIAL_HTML: "",                        // network ad html for the interstitial card
+  SHARE_URL        : "https://YOURDOMAIN.com"   // your domain
+};
+
+/* ================================================================
+   2. INTERSTITIAL AD — the primary tier-1 monetisation.
+      Put the network's onclick/interstitial snippet in
+      INTERSTITIAL_HTML above, or leave it and call fireAd() below.
+   ================================================================ */
+function fireAd(){
+  // Hook for networks exposing a JS trigger, e.g.:
+  // if (window.adsterraPop) window.adsterraPop();
+  if (window.__pop) { try { window.__pop(); } catch(e){} }
+}
+
+const NAMES = [
+  ["Marcus T.","Austin, TX","#00d54b"],["Dana R.","Calgary, AB","#8ea1c4"],
+  ["Brianna K.","Columbus, OH","#f5b942"],["Justin M.","Tampa, FL","#c9a4e0"],
+  ["Alyssa P.","Boise, ID","#00d54b"],["Devin S.","Mesa, AZ","#8ea1c4"],
+  ["Kim L.","Surrey, BC","#f5b942"],["Tyler B.","Wichita, KS","#c9a4e0"],
+  ["Rachel D.","Halifax, NS","#00d54b"],["Cody H.","Tulsa, OK","#8ea1c4"]
+];
+const AMTS = ["$25.00","$50.00","$100.00","$150.00","$250.00","$500.00"];
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+
+/* ---------- ticker ---------- */
+function renderFeed(list){
+  const row = x => `<div class="tR"><div class="tA" style="background:${x.c||"#00d54b"}">${(x.n||"?")[0]}</div>
+    <div><div class="tN">${x.n}</div><div class="tC">${x.p}</div></div>
+    <div class="tM">+${rnd(AMTS)}</div></div>`;
+  const base = list && list.length ? list
+    : Array.from({length:10},(_,i)=>({n:NAMES[i][0],p:NAMES[i][1],c:NAMES[i][2]}));
+  document.getElementById('ticker').innerHTML = base.map(row).join('') + base.map(row).join('');
+}
+renderFeed(null);
+if (CONFIG.FEED_URL) {
+  fetch(CONFIG.FEED_URL).then(r=>r.json())
+    .then(d => { if (Array.isArray(d) && d.length > 2) renderFeed(d.slice(0,12)); })
+    .catch(()=>{});
+}
+
+/* ---------- slot countdown ---------- */
+let end = +localStorage.getItem('pp_end');
+if (!end || end < Date.now()) { end = Date.now() + 9e5; localStorage.setItem('pp_end', end); }
+const pad = n => String(n).padStart(2,'0');
+setInterval(()=>{
+  const r = Math.max(0, end - Date.now());
+  document.getElementById('clock').textContent = `${pad(Math.floor(r/6e4))}:${pad(Math.floor(r/1e3)%60)}`;
+}, 1000);
+
+/* ---------- live counter ---------- */
+setInterval(()=>{
+  const el = document.getElementById('liveN');
+  el.textContent = Math.max(90, Math.min(260, parseInt(el.textContent) + Math.floor(Math.random()*5) - 2)) + ' claiming';
+}, 2600);
+
+/* ---------- claim toasts ---------- */
+const TZ = [
+  ["Alyssa P.","Boise, ID",25],["Devin S.","Mesa, AZ",50],["Kim L.","Surrey, BC",100],
+  ["Tyler B.","Wichita, KS",25],["Rachel D.","Halifax, NS",50]
+];
+let ti = 0;
+setInterval(()=>{
+  const t = document.getElementById('toast');
+  const x = TZ[ti++ % TZ.length];
+  t.textContent = `${x[0]} in ${x[1]} just claimed $${x[2]}`;
+  t.style.opacity = '1'; t.style.transform = 'translate(-50%,0)';
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translate(-50%,-10px)'; }, 2400);
+}, 9000);
+
+/* ---------- queue position ---------- */
+let queue = 1100 + Math.floor(Math.random()*500);
+document.getElementById('qpos').textContent = queue.toLocaleString('en-US');
+
+/* ---------- steps ---------- */
+const STEPS = [
+  ["Confirm your region","US &amp; CA only. Confirm to keep your slot.","View more →"],
+  ["Verify you're active","Quick check. A sponsored page opens in a background tab.","View more →"],
+  ["Save your position","Last step before we hold your place.","View more →"]
+];
+let step = 0;
+const btn = document.getElementById('btn');
+
+btn.addEventListener('click', () => {
+  step++;
+  fireAd();
+  document.getElementById('prog').style.width = [28,47,66][step-1] + '%';
+  if (step < 3) {
+    document.getElementById('t').innerHTML = STEPS[step][0];
+    document.getElementById('s').innerHTML = STEPS[step][1];
+    btn.textContent = STEPS[step][2];
+    document.getElementById('stepLbl').textContent = `STEP ${step+1} OF 5`;
+  } else {
+    openInterstitial();
+  }
+});
+
+/* ---------- interstitial ---------- */
+function openInterstitial(){
+  document.getElementById('stepLbl').textContent = 'STEP 4 OF 5';
+  const box = document.getElementById('inter');
+  box.style.display = 'flex';
+  if (CONFIG.INTERSTITIAL_HTML) {
+    document.getElementById('interAd').innerHTML = CONFIG.INTERSTITIAL_HTML;
+  }
+  fireAd();
+
+  let c = 5;
+  const lbl = document.getElementById('skipLbl');
+  const sb  = document.getElementById('skipBtn');
+  const iv = setInterval(()=>{
+    c--;
+    lbl.textContent = c > 0 ? 'SKIP IN ' + c : 'SKIP';
+    sb.textContent  = c > 0 ? 'Skip in ' + c : 'Continue →';
+    if (c <= 0) {
+      clearInterval(iv);
+      sb.disabled = false;
+      sb.style.cssText = 'width:100%;padding:14px;border:0;border-radius:10px;background:#00d54b;color:#00290f;font-size:13px;font-weight:800;cursor:pointer';
+    }
+  }, 1000);
+
+  sb.onclick = () => {
+    if (sb.disabled) return;
+    box.style.display = 'none';
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('capture').style.display = 'block';
+    document.getElementById('stepLbl').textContent = 'STEP 5 OF 5';
+    document.getElementById('prog').style.width = '84%';
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+}
+
+/* ---------- capture ---------- */
+document.getElementById('save').addEventListener('click', () => {
+  const em = document.getElementById('email');
+  const ph = document.getElementById('phone');
+  let ok = true;
+  if (!em.value.includes('@') || em.value.length < 5) { em.classList.add('err'); ok = false; } else em.classList.remove('err');
+  if (ph.value.replace(/\D/g,'').length < 10) { ph.classList.add('err'); ok = false; } else ph.classList.remove('err');
+  if (!ok) { (em.classList.contains('err') ? em : ph).focus(); return; }
+
+  const ref = localStorage.getItem('pp_ref') || '';
+  if (CONFIG.CAPTURE_ENDPOINT) {
+    try {
+      fetch(CONFIG.CAPTURE_ENDPOINT, {
+        method:'POST', keepalive:true,
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email:em.value.trim(), phone:ph.value.trim(), ref,
+                               step:step, tz:Intl.DateTimeFormat().resolvedOptions().timeZone })
+      }).catch(()=>{});
+    } catch(e){}
+  }
+  localStorage.setItem('pp_done','1');
+  document.getElementById('capture').style.display = 'none';
+  document.getElementById('done').style.display = 'block';
+  document.getElementById('prog').style.width = '100%';
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ---------- offers ---------- */
+const OFFERS = [
+  ["Install a partner app","~60 sec · highest value","https://YOUR-OFFER-LINK"],
+  ["Complete a 2-minute survey","Fast credit","https://YOUR-OFFER-LINK"],
+  ["Start a free trial","No card required","https://YOUR-OFFER-LINK"],
+  ["Open today's sponsor offer","One tap","https://YOUR-OFFER-LINK"],
+  ["Invite 3 friends","+10 entries each","https://YOUR-OFFER-LINK"]
+];
+document.getElementById('offers').innerHTML = OFFERS.map(o =>
+  `<a class="of" href="${o[2]}" target="_blank" rel="noopener sponsored" data-of><div><b>${o[0]}</b><span>${o[1]}</span></div><i>OPEN</i></a>`
+).join('');
+
+document.getElementById('offers').addEventListener('click', e => {
+  if (!e.target.closest('[data-of]')) return;
+  fireAd();
+  queue = Math.max(1, queue - 40);
+  document.getElementById('qpos').textContent = queue.toLocaleString('en-US');
+});
+
+/* ---------- referral ---------- */
+const urlRef = new URLSearchParams(location.search).get('ref');
+if (urlRef) localStorage.setItem('pp_ref', urlRef);
+
+document.getElementById('shareBtn').addEventListener('click', async () => {
+  const myCode = (localStorage.getItem('pp_ref') || 'x' + Math.random().toString(36).slice(2,7));
+  localStorage.setItem('pp_ref', myCode);
+  const url = `${CONFIG.SHARE_URL}/?ref=${myCode}`;
+  const data = { title:'$5,000 payout pool', text:'Open to US & CA — five steps, forty seconds.', url };
+  if (navigator.share) { try { await navigator.share(data); } catch(e){} }
+  else { window.open('sms:?&body=' + encodeURIComponent(data.text + ' ' + url), '_blank'); }
+});
+
+/* ---------- push ---------- */
+if (CONFIG.ONESIGNAL_APP_ID) {
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  const s = document.createElement('script');
+  s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+  s.defer = true;
+  document.head.appendChild(s);
+  window.OneSignalDeferred.push(async OneSignal => {
+    await OneSignal.init({ appId: CONFIG.ONESIGNAL_APP_ID, allowLocalhostAsSecureOrigin:true });
+    OneSignal.Notifications.addEventListener('permissionChange', granted => {
+      if (granted) localStorage.setItem('pp_push','1');
+    });
+  });
+}
+
+/* ---------- returning visitor ---------- */
+if (localStorage.getItem('pp_done') === '1') {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('done').style.display = 'block';
+  document.getElementById('prog').style.width = '100%';
+}
+
+/* ---------- exit intent (desktop) ---------- */
+let exited = false;
+document.addEventListener('mouseout', e => {
+  if (exited || e.relatedTarget || e.clientY > 4) return;
+  if (step === 0 || step >= 3) return;
+  exited = true;
+  btn.textContent = 'Finish your entry →';
+  document.getElementById('gate').scrollIntoView({behavior:'smooth', block:'center'});
+});
+</script>
+</body>
+</html>
