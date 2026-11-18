@@ -19,6 +19,7 @@ const PHONE_RE = /^[2-9]\d{9}$/;
 
 const ALLOW_EVENTS = new Set([
   'view', 'step_1', 'step_2', 'step_3', 'interstitial', 'ad',
+  'ad_pop', 'ad_direct', 'ad_inter', 'ad_second',
   'capture_view', 'done', 'offer_click', 'ref_land', 'rehold',
   'exit_intent', 'hidden'
 ]);

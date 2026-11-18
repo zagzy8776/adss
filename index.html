@@ -310,8 +310,15 @@ const CONFIG = {
   POPUNDER_TAG: "",
   // Interstitial placement HTML or iframe URL (Monetag vignette, Adsterra...).
   INTERSTITIAL_HTML: "",
-  // Direct-link fallback: opened in a new tab on taps. Best iOS earner.
+  // Direct link: opens in a new tab. Best iOS earner (popunders are weak there).
   AD_DIRECT_LINK: "",
+  // When that tab opens. "done" (default) = only after the entry is captured, so
+  // the tab cannot steal the lead. "gate" = on the sponsored tap, next to the
+  // interstitial (aggressive: the new tab usually hides the interstitial).
+  AD_DIRECT_LINK_ON: "done",
+  // Re-call window.__pop() once on the confirmed screen. No-op unless your
+  // network exposes that hook (Adsterra does; most others do not).
+  SECOND_POP: true,
 
   // --- capture + feed (Cloudflare Worker in /worker) ------------------------
   CAPTURE_ENDPOINT: "",   // https://api.YOURDOMAIN.com/capture
@@ -481,8 +488,17 @@ const PROOF = [
 $('proof').innerHTML = PROOF.map(p =>
   '<div class="pf"><div class="b">' + p[0] + '</div><div class="a">' + p[1] + '</div></div>').join('');
 
-/* -------------------------------- ads ----------------------------------- */
+/* -------------------------------- ads -----------------------------------
+   Four independently configurable slots, each tracked under its own /hit
+   event so the counters tell you which network actually pays:
+     1. POPUNDER_TAG     script loaded on the gate tap, once per session
+     2. window.__pop()   the network's own re-call hook, if it exposes one
+     3. AD_DIRECT_LINK   new tab, opened where AD_DIRECT_LINK_ON says
+     4. INTERSTITIAL_HTML  overlay at the gate, 5s skip
+   ------------------------------------------------------------------------ */
 let popunderDone = false;
+let directFired = false;
+let secondPopDone = false;
 let adFires = 0;
 
 function loadPopunder() {
@@ -510,19 +526,59 @@ function loadPopunder() {
   }
 }
 
+/* The network's own re-call hook, when it has one. Returns whether it fired. */
+function popCall(tag) {
+  if (typeof window.__pop !== 'function') return false;
+  try { window.__pop(); hit(tag); return true; }
+  catch (e) { console.error('[PayoutPool] window.__pop() threw: ' + e.message); return false; }
+}
+
+/* At most one direct-link tab per visitor, whatever asks for it. */
+function openDirect(tag) {
+  if (!CONFIG.AD_DIRECT_LINK || directFired) return false;
+  directFired = true;
+  try {
+    window.open(CONFIG.AD_DIRECT_LINK, '_blank', 'noopener');
+    hit(tag);
+    return true;
+  } catch (e) {
+    console.error('[PayoutPool] direct link blocked: ' + e.message);
+    return false;
+  }
+}
+
 function fireAd() {
   adFires++;
   window.__ppAdFires = adFires;
   hit('ad');
   loadPopunder();
-  if (typeof window.__pop === 'function') { try { window.__pop(); } catch (e) {} }
-  if (CONFIG.AD_DIRECT_LINK) {
-    try { window.open(CONFIG.AD_DIRECT_LINK, '_blank', 'noopener'); } catch (e) {}
-  }
+  popCall('ad_pop');
+  if (CONFIG.AD_DIRECT_LINK_ON === 'gate') openDirect('ad_direct');
   if (!CONFIG.POPUNDER_TAG && !CONFIG.AD_DIRECT_LINK && !CONFIG.INTERSTITIAL_HTML) {
     console.warn('[PayoutPool] No ad network set - this tap earned nothing. Set POPUNDER_TAG / AD_DIRECT_LINK / INTERSTITIAL_HTML.');
   }
 }
+
+/* Confirmed screen only. Delayed so it cannot compete with the entry submit. */
+function secondPop() {
+  if (secondPopDone || !CONFIG.SECOND_POP) return;
+  secondPopDone = true;
+  setTimeout(function () { popCall('ad_second'); }, 1200);
+}
+
+/* Lets you confirm in the console which slots actually fired this session. */
+window.__ppAdReport = function () {
+  return {
+    configured: {
+      popunder: !!CONFIG.POPUNDER_TAG,
+      popHook: typeof window.__pop === 'function',
+      direct: !!CONFIG.AD_DIRECT_LINK,
+      interstitial: !!CONFIG.INTERSTITIAL_HTML,
+      offers: CONFIG.OFFERS.length
+    },
+    fired: { gateTaps: adFires, directTab: directFired, secondPop: secondPopDone }
+  };
+};
 
 /* --------------------------- interstitial gate --------------------------- */
 let interOpen = false;
@@ -542,6 +598,7 @@ function openInterstitial() {
 
   $('inter').classList.add('on');
   document.body.style.overflow = 'hidden';
+  hit('ad_inter');
 
   const btn = $('skipBtn');
   const bar = $('skipBar');
@@ -656,6 +713,9 @@ function finish() {
   $('myCode').textContent = myCode();
   renderOffers();
   hit('done');
+  /* The lead is already in KV at this point, so monetising here cannot cost it. */
+  openDirect('ad_direct');
+  secondPop();
   $('done').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
 }
 
@@ -901,6 +961,9 @@ function offerExit() {
   } else {
     toast('Your slot is still open \u2014 finish to lock position #' + fmt(queue) + '.', 4200);
     $('capture').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+    /* They saw the gate but are leaving before submitting: this is the last
+       chance to earn from them. Still capped at one tab per visitor. */
+    openDirect('ad_direct');
   }
   hit('exit_intent');
 }

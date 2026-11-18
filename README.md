@@ -37,7 +37,9 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | `SITE_URL` | `https://yourdomain.com` (blank = auto-detect from the browser) | your domain |
 | `POPUNDER_TAG` | network script URL **or** the full `<script>` snippet | Adsterra → Websites → Add site → Popunder tag |
 | `INTERSTITIAL_HTML` | the vignette/interstitial `<script>` or `<iframe>` snippet | Monetag → OnClick/Vignette zone |
-| `AD_DIRECT_LINK` | a direct-link URL, opened on taps | any network's Direct Link product |
+| `AD_DIRECT_LINK` | a direct-link URL, opened in a new tab | any network's Direct Link product |
+| `AD_DIRECT_LINK_ON` | `"done"` (default) or `"gate"` | see ad slots below |
+| `SECOND_POP` | `true`/`false` — re-call `window.__pop()` on the confirmed screen | Adsterra exposes the hook |
 | `CAPTURE_ENDPOINT` | `https://api.yourdomain.com/capture` | your Worker (below) |
 | `FEED_URL` | `https://api.yourdomain.com/feed` | same Worker |
 | `HIT_URL` | `https://api.yourdomain.com/hit` | same Worker |
@@ -52,6 +54,33 @@ Those must be absolute URLs — scrapers do not run JavaScript, so they cannot b
 **Nothing fails silently.** Any key left empty logs a `[PayoutPool]` warning to the console at
 boot, an empty `CAPTURE_ENDPOINT` logs a hard error on submit, and a failed POST is buffered in
 localStorage and retried on the next visit. `window.__ppMissing` lists every unset key.
+
+## Ad slots
+
+| Slot | Key | Fires | Cap per visitor | `/hit` event |
+|---|---|---|---|---|
+| Popunder script | `POPUNDER_TAG` | gate tap (step 2 → 3) | 1 | `ad_pop` |
+| Network re-call | `SECOND_POP` | confirmed screen, +1.2s | 1 | `ad_second` |
+| Direct link | `AD_DIRECT_LINK` | `AD_DIRECT_LINK_ON` | 1 tab total | `ad_direct` |
+| Interstitial | `INTERSTITIAL_HTML` | gate tap, 5s skip | 1 per pageload | `ad_inter` |
+| CPA offers | `OFFERS` | confirmed screen | 5 links shown | `offer_click` |
+
+The direct link deliberately **does not** fire on the gate tap by default. `window.open` on that
+tap moves focus to the new tab, so the visitor never sees the interstitial and never submits the
+form — you would trade a lead (worth $0.50–$3) for a direct-link click (worth $0.005–$0.02).
+With `AD_DIRECT_LINK_ON: "gate"` you get the aggressive variant; the default opens the tab after
+the lead is in KV, or on exit-intent if the visitor saw the form and started leaving.
+
+Verify what actually fired, in the console:
+
+```js
+__ppAdReport()
+// { configured: { popunder: true, popHook: true, direct: true, interstitial: true, offers: 3 },
+//   fired: { gateTaps: 1, directTab: true, secondPop: true } }
+```
+
+`popHook: false` means your network does not expose `window.__pop`, so `SECOND_POP` cannot do
+anything regardless of the setting.
 
 ## Worker — storage for captures and the feed
 
@@ -91,7 +120,8 @@ Fixed:
   `STEP 5 OF 5` is 80%, and submitted is 100%. The step array is indexed before any increment,
   so step 1 actually renders.
 - **One ad fire per tap.** `fireAd()` runs on the tap that opens the gate, and `openInterstitial()`
-  no longer fires it a second time.
+  no longer fires it a second time. The direct link is capped at one tab per visitor and waits for
+  the lead instead of competing with the interstitial (see *Ad slots*).
 - **Reduced motion freezes the ticker** (`animation: none`, single non-duplicated list, scrollable)
   instead of snapping to a random offset.
 - **Push is actually requested** — `OneSignal.Notifications.requestPermission()` runs from the

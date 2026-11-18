@@ -1,0 +1,17 @@
+Sequence the four ad slots so the direct link stops eating the lead
+
+The gate tap used to fire the popunder, open a direct-link tab and render the
+interstitial simultaneously. The new tab takes focus, so the interstitial was
+never seen and the visitor left the page before submitting the form: a lead
+worth $0.50-$3 traded for a click worth $0.005-$0.02.
+
+- direct link now opens after the lead is in KV, or on exit-intent when a
+  step-4 visitor bails; capped at one tab per visitor via directFired
+- AD_DIRECT_LINK_ON="gate" restores the old aggressive behaviour
+- SECOND_POP re-calls window.__pop() once on the confirmed screen, +1.2s
+- per-slot /hit events: ad_pop, ad_direct, ad_inter, ad_second
+- window.__ppAdReport() reports which slots are configured and which fired
+- worker allow-list extended for the new events
+
+Verified in headless Chrome (390x844): 13/13 assertions, zero uncaught
+exceptions, zero console errors, entry still completes.
