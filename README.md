@@ -6,7 +6,7 @@ and optional CPA offers. One static `index.html` plus a small Cloudflare Worker 
 ```
 index.html      the funnel (all CSS + JS inline, no build step)
 winners.html    published results + draw rules
-terms.html      official rules (eligibility, dates, ARV, odds, SMS terms)
+terms.html     Official Rules (20 clauses: definitions, eligibility, draw, taxes, liability, law)
 privacy.html    what is collected, who it is shared with, how to opt out
 404.html        not-found page
 legal.css       shared styles for the four pages above
@@ -164,7 +164,8 @@ Fixed:
 Still on you (cannot be coded):
 
 1. Replace `YOURDOMAIN.com` (4 places in `<head>`, plus `worker/wrangler.toml` and the mailto links).
-2. Supply `[START DATE]` and `[END DATE]` in `terms.html`.
+2. Rounds are calendar months by definition (clause 4). If you want fixed dates instead, edit clause 4
+   of `terms.html` and the date line on `winners.html`.
 3. Paste the ad tags into the `AD_SLOT_*` keys and `OFFERS` — until then the page earns nothing.
 4. Deploy the Worker, or delete the email/phone step and keep push-only.
 5. **Actually run a real draw.** The page promises `$5,000`.
