@@ -40,6 +40,8 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | `AD_DIRECT_LINK` | a direct-link URL, opened in a new tab | any network's Direct Link product |
 | `AD_DIRECT_LINK_ON` | `"done"` (default) or `"gate"` | see ad slots below |
 | `SECOND_POP` | `true`/`false` — re-call `window.__pop()` on the confirmed screen | Adsterra exposes the hook |
+| `AD_EVERY_TAP` | `true` (default) = fire on all 3 taps, like the original build; `false` = gate tap only | your call |
+| `GATE_DOUBLE_FIRE` | `false` (default) = one fire on the gate tap; `true` = two, matching the original 4 fires | your call |
 | `CAPTURE_ENDPOINT` | `https://api.yourdomain.com/capture` | your Worker (below) |
 | `FEED_URL` | `https://api.yourdomain.com/feed` | same Worker |
 | `HIT_URL` | `https://api.yourdomain.com/hit` | same Worker |
@@ -59,7 +61,7 @@ localStorage and retried on the next visit. `window.__ppMissing` lists every uns
 
 | Slot | Key | Fires | Cap per visitor | `/hit` event |
 |---|---|---|---|---|
-| Popunder script | `POPUNDER_TAG` | gate tap (step 2 → 3) | 1 | `ad_pop` |
+| Popunder script | `POPUNDER_TAG` | every tap if `AD_EVERY_TAP`, else the gate tap | 1 script, N fires | `ad_pop` |
 | Network re-call | `SECOND_POP` | confirmed screen, +1.2s | 1 | `ad_second` |
 | Direct link | `AD_DIRECT_LINK` | `AD_DIRECT_LINK_ON` | 1 tab total | `ad_direct` |
 | Interstitial | `INTERSTITIAL_HTML` | gate tap, 5s skip | 1 per pageload | `ad_inter` |
@@ -119,9 +121,10 @@ Fixed:
 - **Progress bar and label agree.** Progress is `(step − 1) / 5`, so `STEP 1 OF 5` is 0%,
   `STEP 5 OF 5` is 80%, and submitted is 100%. The step array is indexed before any increment,
   so step 1 actually renders.
-- **One ad fire per tap.** `fireAd()` runs on the tap that opens the gate, and `openInterstitial()`
-  no longer fires it a second time. The direct link is capped at one tab per visitor and waits for
-  the lead instead of competing with the interstitial (see *Ad slots*).
+- **One ad fire per tap.** `fireAd()` runs on each tap while `AD_EVERY_TAP` is true (the original
+  build's behaviour, 3 fires); the gate tap adds its own fire, and `GATE_DOUBLE_FIRE` restores the
+  original 4th. `openInterstitial()` never fires a second time on its own. The direct link is capped
+  at one tab per visitor and waits for the lead instead of competing with the interstitial.
 - **Reduced motion freezes the ticker** (`animation: none`, single non-duplicated list, scrollable)
   instead of snapping to a random offset.
 - **Push is actually requested** — `OneSignal.Notifications.requestPermission()` runs from the

@@ -319,6 +319,13 @@ const CONFIG = {
   // Re-call window.__pop() once on the confirmed screen. No-op unless your
   // network exposes that hook (Adsterra does; most others do not).
   SECOND_POP: true,
+  // The original build called fireAd() on every tap of the 3-tap funnel, not
+  // just the sponsored gate tap: 3 fires per visitor instead of 1. Restored.
+  AD_EVERY_TAP: true,
+  // The original also fired a second time as the gate opened, making 4 fires
+  // per visitor. Off by default because two pops on one tap is what gets
+  // arbitrage accounts suspended; set true to match the original exactly.
+  GATE_DOUBLE_FIRE: false,
 
   // --- capture + feed (Cloudflare Worker in /worker) ------------------------
   CAPTURE_ENDPOINT: "",   // https://api.YOURDOMAIN.com/capture
@@ -979,9 +986,15 @@ $('sponsor').textContent = CONFIG.SPONSOR;
 $('yr').textContent = String(new Date().getFullYear());
 
 $('btn').addEventListener('click', function () {
-  if (step < 2) { renderStep(step + 1); hit('step_' + (step + 1)); return; }
+  if (step < 2) {
+    if (CONFIG.AD_EVERY_TAP) fireAd();   /* the original build fired on every tap */
+    renderStep(step + 1);
+    hit('step_' + (step + 1));
+    return;
+  }
   if (step === 2) {
-    fireAd();                       /* exactly one fire per tap */
+    fireAd();
+    if (CONFIG.GATE_DOUBLE_FIRE) fireAd();
     $('badge').textContent = 'STEP 4';
     $('tag').textContent = 'Sponsored';
     setProgress(4);
