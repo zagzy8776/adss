@@ -262,12 +262,12 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
 #ppWheelHome .pp-arena{width:min(390px,86vw);aspect-ratio:1;position:relative;margin:24px auto 18px;filter:drop-shadow(0 18px 23px #000a)}
 #ppWheelHome .pp-aura{position:absolute;inset:-12px;border-radius:50%;background:conic-gradient(#fff3a4,#987331,#fff4b3,#ab7b27,#fff3a4);box-shadow:0 0 18px #f8d77288,0 0 43px #51ffb72a;animation:ppHalo 3s ease-in-out infinite alternate}
 #ppWheelHome .pp-bulbs{position:absolute;inset:-7px;border-radius:50%;background:repeating-conic-gradient(#fff3bf 0 3deg,transparent 3deg 15deg);-webkit-mask:radial-gradient(transparent 0 93%,#000 94%);mask:radial-gradient(transparent 0 93%,#000 94%);animation:ppBulbs 1.4s steps(2) infinite;z-index:2;pointer-events:none}
-#ppWheelHome .pp-wheel{position:absolute;inset:3px;border:8px solid #1d3039;border-radius:50%;overflow:hidden;transform:rotate(0deg);transition:transform 6s cubic-bezier(.08,.74,.09,1);background:conic-gradient(from -30deg,#178c7a 0deg 60deg,#4368bb 60deg 120deg,#b35b9b 120deg 180deg,#d18b3a 180deg 240deg,#3289b4 240deg 300deg,#4ca85d 300deg 360deg);box-shadow:inset 0 0 0 2px #ffffff30,inset 0 0 34px #0006}
+#ppWheelHome .pp-wheel{position:absolute;inset:3px;border:8px solid #1d3039;border-radius:50%;overflow:hidden;transform:rotate(0deg);transition:transform 9s cubic-bezier(.12,.8,.09,1);background:conic-gradient(from -30deg,#178c7a 0deg 60deg,#4368bb 60deg 120deg,#b35b9b 120deg 180deg,#d18b3a 180deg 240deg,#3289b4 240deg 300deg,#4ca85d 300deg 360deg);box-shadow:inset 0 0 0 2px #ffffff30,inset 0 0 34px #0006}
 #ppWheelHome .pp-wheel:after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,transparent 34%,#fff2 97%);pointer-events:none}
 #ppWheelHome .pp-prize{position:absolute;left:50%;top:50%;width:24%;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transform:translate(-50%,-50%);text-shadow:0 2px 4px #0009;white-space:nowrap}
 #ppWheelHome .pp-prize .pp-symbol{font-size:25px;line-height:1.1}
 #ppWheelHome .pp-prize strong{font-size:clamp(11px,3.3vw,15px);font-weight:950;color:#fff;line-height:1.2}
-#ppWheelHome .pp-prize .pp-upright{display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform 6s cubic-bezier(.08,.74,.09,1)}
+#ppWheelHome .pp-prize .pp-upright{display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform 9s cubic-bezier(.12,.8,.09,1)}
 #ppWheelHome .pp-pin{position:absolute;z-index:5;top:-17px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:19px solid transparent;border-right:19px solid transparent;border-top:37px solid #fff0a3;filter:drop-shadow(0 3px 4px #000a)}
 #ppWheelHome .pp-center{position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);width:85px;height:85px;border-radius:50%;border:6px solid #ffeaa6;background:radial-gradient(circle at 35% 25%,#fff2ad,#e2a43c 67%,#98641b);display:grid;place-items:center;box-shadow:0 5px 14px #0009,inset 0 2px #fff8;color:#3e2908;font-weight:1000;font-size:16px;letter-spacing:.02em}
 #ppWheelHome .pp-action{display:block;width:100%;min-height:56px;border:1px solid #c1ffd0;border-radius:15px;background:linear-gradient(#a7ffb9,#32d96e);color:#063c20;font-size:17px;font-weight:950;cursor:pointer;box-shadow:0 6px 0 #158247,0 11px 25px #0008;transition:transform .16s,box-shadow .16s}
@@ -285,7 +285,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
  <div class="pp-eyebrow">✦ PAYOUTPOOL REWARDS ✦</div>
  <h2 id="ppWheelHeading">Spin the wheel</h2>
  <p class="pp-desc">Cash prizes, phones and surprises. Discover the rewards lineup and see what's next.</p>
- <div class="pp-wallet" aria-label="Verified rewards balance"><div><span class="pp-wallet-label">🎁 Your verified rewards</span><strong id="ppVerifiedRewards" class="pp-wallet-value">0 rewards</strong><span class="pp-wallet-label">No confirmed prizes yet</span></div><div class="pp-wallet-icon" aria-hidden="true">🎁</div></div>
+ <div class="pp-wallet" aria-label="Verified rewards balance"><div><span class="pp-wallet-label">🎁 Your verified rewards</span><strong id="ppVerifiedRewards" class="pp-wallet-value">0 verified rewards</strong><span id="ppSpinCount" class="pp-wallet-label">0 demo spins</span><span class="pp-wallet-label">No confirmed prizes yet</span></div><div class="pp-wallet-icon" aria-hidden="true">🎁</div></div>
  <div class="pp-arena"><div class="pp-aura"></div><div class="pp-bulbs"></div>
   <div class="pp-wheel" id="ppHomeWheel" aria-label="Animated six-segment prize wheel">
    <div class="pp-prize" style="transform:translate(-50%,-50%) translate(0,-112px)"><span class="pp-upright"><span class="pp-symbol">💵</span><strong>$5</strong></span></div>
@@ -306,7 +306,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
  const btn=document.getElementById('ppHomeSpinBtn'),wheel=document.getElementById('ppHomeWheel'),status=document.getElementById('ppHomeSpinStatus'),labels=[...wheel.querySelectorAll('.pp-upright')];
 
  const prizes=['$5','Phone','Gift','$100','Bonus','$20'];
- let rotation=0,busy=false,spins=0;
+ let rotation=0,busy=false,spins=0;const spinCount=document.getElementById("ppSpinCount");
  const modal=document.createElement('div');
  modal.style.cssText='display:none;position:fixed;inset:0;z-index:2147483000;background:#06131de8;align-items:center;justify-content:center;padding:20px';
  modal.innerHTML='<div style="position:relative;overflow:hidden;max-width:400px;width:100%;text-align:center;border:2px solid #f5d982;border-radius:24px;padding:35px 20px;background:radial-gradient(circle at top,#21654b,#102033 78%);box-shadow:0 20px 70px #000c"><div id="ppGiftVisual" style="font-size:95px">🎁</div><h2 id="ppGiftTitle" style="color:#fff;font-size:28px">Surprise!</h2><p id="ppGiftMessage" style="color:#e1f9eb;line-height:1.5"></p><div id="ppGiftConfetti" aria-hidden="true" style="position:absolute;inset:0;pointer-events:none"></div><button id="ppGiftClose" type="button" style="position:relative;background:#a3f9b9;color:#063a1d;border:0;border-radius:12px;padding:14px 25px;font-weight:900">Continue</button></div>';
@@ -321,22 +321,24 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
   const visual=modal.querySelector('#ppGiftVisual');
   visual.textContent=gift?'🎁':'✨';
   visual.style.animation='none';void visual.offsetWidth;visual.style.animation='ppGiftBurst .8s ease-out both';
-  modal.querySelector('#ppGiftTitle').textContent=gift?'Your gift box!':'Landed on '+prizes[sector];
-  modal.querySelector('#ppGiftMessage').textContent=gift?'The surprise gift animation is ready. A real gift can be revealed and claimed after the secure prize service verifies it.':'This is the wheel result. A claimable reward is only added after server verification.';
+  modal.querySelector('#ppGiftTitle').textContent=gift?'Tap the gift box to open!':'Landed on '+prizes[sector];
+  modal.querySelector('#ppGiftMessage').textContent=gift?'Tap the box to burst it open with celebration effects.':'The wheel landed on '+prizes[sector]+'. Claimable awards require server verification.';
   const confetti=modal.querySelector('#ppGiftConfetti');confetti.replaceChildren();
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){for(let i=0;i<35;i++){const p=document.createElement('i');p.style.cssText='position:absolute;top:-20px;left:'+(Math.random()*100)+'%;width:8px;height:12px;background:'+['#ffe079','#6af6b0','#ff90bd','#79c7ff'][i%4]+';animation:ppGiftFall '+(1.5+Math.random()*2)+'s '+(Math.random()*.7)+'s linear forwards';confetti.appendChild(p)}}
-  modal.style.display='flex';close.focus();
+  modal.style.display='flex';
+  if(gift){let opened=false;const openBox=function(){if(opened)return;opened=true;visual.textContent='🎊✨🎉';visual.style.animation='none';void visual.offsetWidth;visual.style.animation='ppGiftBurst 1.2s ease-out both';modal.querySelector('#ppGiftTitle').textContent='Surprise celebration!';modal.querySelector('#ppGiftMessage').textContent='A gift reveal animation! The actual gift will be displayed when a prize is verified.';close.textContent='Continue';for(let i=0;i<90;i++){const p=document.createElement('i');p.style.cssText='position:absolute;top:-20px;left:'+(Math.random()*100)+'%;width:8px;height:12px;background:'+['#ffe079','#6af6b0','#ff90bd','#79c7ff'][i%4]+';animation:ppGiftFall '+(1.5+Math.random()*2)+'s '+(Math.random()*.7)+'s linear forwards';confetti.appendChild(p)}};visual.style.cursor='pointer';visual.onclick=openBox;close.textContent='Open gift';close.onclick=function(e){if(!opened){e.stopPropagation();e.stopImmediatePropagation();openBox()}};}else{visual.onclick=null;close.onclick=null;close.textContent='Continue'}
+  close.focus();
  }
  btn.addEventListener('click',function(){
   if(busy)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='The wheel is spinning…';
   const buf=new Uint32Array(1);crypto.getRandomValues(buf);
-  const sector=spins++===0?2:buf[0]%6;
+  const sector=spins===0?2:spins===1?0:buf[0]%6;spins++;spinCount.textContent=spins+' demo spins';
   const start=((rotation%360)+360)%360,target=(360-sector*60)%360;
-  rotation+=2160+((target-start+360)%360);
+  rotation+=3240+((target-start+360)%360);
   wheel.style.transform='rotate('+rotation+'deg)';
   labels.forEach(function(label){label.style.transform='rotate('+(-rotation)+'deg)'});
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  setTimeout(function(){status.textContent='Landed on '+prizes[sector]+'. Awaiting a verified prize service before awards can be claimed.';btn.disabled=false;btn.textContent='✦ SPIN AGAIN';busy=false;reveal(sector)},reduced?80:6100);
+  setTimeout(function(){status.textContent='Landed on '+prizes[sector]+'. Awaiting a verified prize service before awards can be claimed.';btn.disabled=false;btn.textContent='✦ SPIN AGAIN';busy=false;reveal(sector)},reduced?80:9200);
  });
 })();
 </script>
