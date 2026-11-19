@@ -41,6 +41,21 @@ module.exports=async(req,res)=>{try{
  });return json(res,200,result)
  }
  if(req.method==='GET'&&path==='/claims'){const v=await ensureVisitor(req,res);const r=await pool.query("SELECT c.id,c.status,c.created_at,p.title,p.kind FROM pp_prize_claims c JOIN pp_prizes p ON p.id=c.prize_id WHERE c.anonymous_visitor_id=$1 ORDER BY c.created_at DESC LIMIT 100",[v.id]);return json(res,200,{claims:r.rows})}
+
+ if(req.method==='POST'&&path==='/claim-contact'){
+  const b=await body(req),v=await getVisitor(req,pool);
+  if(!v)throw fail(401,'This browser has no visitor session');
+  const email=String(b.email||'').trim().toLowerCase(),phone=String(b.phone||'').trim();
+  if(!uuid(b.claim_id)||email.length>254||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||phone.length>24||!/^\\+?[0-9 ()-]{7,24}$/.test(phone))throw fail(400,'Valid claim ID, email and phone required');
+  const r=await pool.query(`INSERT INTO pp_claim_contacts(claim_id,visitor_id,email,phone) SELECT c.id,$2,$3,$4 FROM pp_prize_claims c WHERE c.id=$1 AND c.anonymous_visitor_id=$2 AND c.status NOT IN ('rejected','cancelled') ON CONFLICT(claim_id) DO UPDATE SET email=EXCLUDED.email,phone=EXCLUDED.phone,updated_at=now() RETURNING claim_id`,[b.claim_id,v.id,email,phone]);
+  if(!r.rowCount)throw fail(404,'Claim not found for this visitor');
+  return json(res,200,{ok:true,claim_id:r.rows[0].claim_id,message:'Contact submitted to admin; email and phone are not yet independently verified'})
+ }
+ if(req.method==='GET'&&path==='/notifications'){
+  const v=await getVisitor(req,pool);if(!v)throw fail(401,'No visitor session');
+  const r=await pool.query('SELECT n.id,n.claim_id,n.title,n.message,n.created_at,n.read_at FROM pp_claim_notifications n JOIN pp_prize_claims c ON c.id=n.claim_id WHERE c.anonymous_visitor_id=$1 ORDER BY n.created_at DESC LIMIT 50',[v.id]);
+  return json(res,200,{notifications:r.rows})
+ }
  if(path.startsWith('/admin/')){
  admin(req);
  if(req.method==='POST'&&path==='/admin/campaigns'){
@@ -59,6 +74,22 @@ module.exports=async(req,res)=>{try{
  if(b.status==='active')throw fail(409,'Campaign activation requires independently verified funding; manual API activation is disabled');
  const r=await pool.query('UPDATE pp_campaigns SET status=$2 WHERE id=$1 RETURNING id,status',[b.id,b.status]);if(!r.rowCount)throw fail(404,'Campaign not found');
  await pool.query("INSERT INTO pp_admin_audit(action,target_type,target_id,metadata) VALUES('campaign_status','campaign',$1,$2)",[b.id,JSON.stringify({status:b.status})]);return json(res,200,{campaign:r.rows[0]})
+ }
+
+ if(req.method==='GET'&&path==='/admin/claim-contacts'){
+  const r=await pool.query('SELECT c.claim_id,c.email,c.phone,c.submitted_at,p.status,pr.title AS prize_title,pr.kind,pr.currency,pr.amount_minor FROM pp_claim_contacts c JOIN pp_prize_claims p ON p.id=c.claim_id JOIN pp_prizes pr ON pr.id=p.prize_id ORDER BY c.submitted_at DESC LIMIT 100');
+  return json(res,200,{items:r.rows})
+ }
+ if(req.method==='POST'&&path==='/admin/notify-claim'){
+  const b=await body(req),title=String(b.title||'').trim(),message=String(b.message||'').trim();
+  if(!uuid(b.claim_id)||!title||title.length>120||!message||message.length>2000)throw fail(400,'Claim, title and message required');
+  const r=await tx(async db=>{
+   const found=await db.query('SELECT claim_id FROM pp_claim_contacts WHERE claim_id=$1',[b.claim_id]);
+   if(!found.rowCount)throw fail(404,'Winner has not submitted contact information');
+   const n=await db.query('INSERT INTO pp_claim_notifications(claim_id,title,message) VALUES($1,$2,$3) RETURNING id',[b.claim_id,title,message]);
+   await db.query("INSERT INTO pp_admin_audit(action,target_type,target_id,metadata) VALUES('notify_claim','claim',$1,$2)",[b.claim_id,JSON.stringify({notification_id:n.rows[0].id})]);
+   return n.rows[0]
+  });return json(res,201,{notification:r,delivery:'website_inbox_only'})
  }
  if(req.method==='GET'&&path==='/admin/overview'){const [users,spins,claims,payouts,campaigns]=await Promise.all(['pp_users','pp_spins','pp_prize_claims','pp_payouts','pp_campaigns'].map(t=>pool.query('SELECT count(*)::int AS count FROM '+t)));return json(res,200,{users:users.rows[0].count,spins:spins.rows[0].count,claims:claims.rows[0].count,payouts:payouts.rows[0].count,campaigns:campaigns.rows[0].count})}
  if(req.method==='GET'&&['/admin/claims','/admin/payouts','/admin/campaigns'].includes(path)){const table={'/admin/claims':'pp_prize_claims','/admin/payouts':'pp_payouts','/admin/campaigns':'pp_campaigns'}[path];const r=await pool.query('SELECT * FROM '+table+' ORDER BY created_at DESC LIMIT 100');return json(res,200,{items:r.rows})}
