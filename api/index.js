@@ -66,6 +66,23 @@ try{
  if(req.method==='GET'&&path==='/payouts'){const u=await requireUser(req);const r=await pool.query('SELECT id,currency,amount_minor,status,created_at,paid_at FROM pp_payouts WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100',[u.id]);return json(res,200,{payouts:r.rows})}
  if(path.startsWith('/admin/')){
  admin(req);
+ if(req.method==='POST'&&path==='/admin/campaigns'){
+ const b=await body(req);if(!String(b.title||'').trim()||!String(b.rules_url||'').startsWith('https://'))throw fail(400,'Title and HTTPS rules URL required');
+ const r=await pool.query("INSERT INTO pp_campaigns(title,description,rules_url,status) VALUES($1,$2,$3,'draft') RETURNING id,title,status",[String(b.title).slice(0,120),String(b.description||'').slice(0,2000),String(b.rules_url).slice(0,1000)]);
+ await pool.query("INSERT INTO pp_admin_audit(action,target_type,target_id) VALUES('create_campaign','campaign',$1)",[r.rows[0].id]);return json(res,201,{campaign:r.rows[0]})
+ }
+ if(req.method==='POST'&&path==='/admin/prizes'){
+ const b=await body(req);if(!uuid(b.campaign_id)||!['cash','phone','gift_card','other'].includes(b.kind)||!String(b.title||'').trim()||!Number.isInteger(b.inventory)||b.inventory<0||!Number.isInteger(b.weight)||b.weight<1||b.weight>100000)throw fail(400,'Invalid prize details');
+ if(b.kind==='cash'&&(!/^[A-Z]{3}$/.test(b.currency||'')||!Number.isSafeInteger(b.amount_minor)||b.amount_minor<=0))throw fail(400,'Cash prizes require currency and positive amount_minor');
+ const r=await pool.query('INSERT INTO pp_prizes(campaign_id,title,kind,currency,amount_minor,inventory,weight) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id,title,inventory',[b.campaign_id,String(b.title).slice(0,120),b.kind,b.kind==='cash'?b.currency:null,b.kind==='cash'?b.amount_minor:null,b.inventory,b.weight]);
+ await pool.query("INSERT INTO pp_admin_audit(action,target_type,target_id) VALUES('create_prize','prize',$1)",[r.rows[0].id]);return json(res,201,{prize:r.rows[0]})
+ }
+ if(req.method==='POST'&&path==='/admin/campaign-status'){
+ const b=await body(req);if(!uuid(b.id)||!['draft','paused','closed','active'].includes(b.status))throw fail(400,'Invalid campaign status');
+ if(b.status==='active')throw fail(409,'Campaign activation requires independently verified funding; manual API activation is disabled');
+ const r=await pool.query('UPDATE pp_campaigns SET status=$2 WHERE id=$1 RETURNING id,status',[b.id,b.status]);if(!r.rowCount)throw fail(404,'Campaign not found');
+ await pool.query("INSERT INTO pp_admin_audit(action,target_type,target_id,metadata) VALUES('campaign_status','campaign',$1,$2)",[b.id,JSON.stringify({status:b.status})]);return json(res,200,{campaign:r.rows[0]})
+ }
  if(req.method==='GET'&&path==='/admin/overview'){const [users,spins,claims,payouts,campaigns]=await Promise.all(['pp_users','pp_spins','pp_prize_claims','pp_payouts','pp_campaigns'].map(t=>pool.query('SELECT count(*)::int AS count FROM '+t)));return json(res,200,{users:users.rows[0].count,spins:spins.rows[0].count,claims:claims.rows[0].count,payouts:payouts.rows[0].count,campaigns:campaigns.rows[0].count})}
  if(req.method==='GET'&&['/admin/claims','/admin/payouts','/admin/campaigns'].includes(path)){const table={'/admin/claims':'pp_prize_claims','/admin/payouts':'pp_payouts','/admin/campaigns':'pp_campaigns'}[path];const r=await pool.query('SELECT * FROM '+table+' ORDER BY created_at DESC LIMIT 100');return json(res,200,{items:r.rows})}
  if(req.method==='POST'&&path==='/admin/review-claim'){const b=await body(req);if(!uuid(b.id)||!['verified','approved','fulfilled','rejected'].includes(b.status))throw fail(400,'Invalid claim review');const result=await tx(async db=>{const r=await db.query('SELECT * FROM pp_prize_claims WHERE id=$1 FOR UPDATE',[b.id]);if(!r.rowCount)throw fail(404,'Claim not found');if(!['pending','verified','approved'].includes(r.rows[0].status))throw fail(409,'Claim already finalized');await db.query('UPDATE pp_prize_claims SET status=$2,reviewed_at=now(),updated_at=now(),fulfilled_at=CASE WHEN $2=\'fulfilled\' THEN now() ELSE fulfilled_at END WHERE id=$1',[b.id,b.status]);if(b.status==='verified'||b.status==='approved'){await db.query(`UPDATE pp_reward_ledger SET status='verified' WHERE spin_id=$1 AND status='pending'`,[r.rows[0].spin_id])}if(b.status==='rejected')await db.query(`UPDATE pp_reward_ledger SET status='reversed' WHERE spin_id=$1 AND status='pending'`,[r.rows[0].spin_id]);await db.query(`INSERT INTO pp_admin_audit(action,target_type,target_id,metadata) VALUES('review_claim','claim',$1,$2)`,[b.id,JSON.stringify({status:b.status})]);return {id:b.id,status:b.status}});return json(res,200,result)}
