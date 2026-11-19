@@ -60,6 +60,9 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | `FEED_URL` | `https://api.yourdomain.com/feed` | same Worker |
 | `HIT_URL` | `https://api.yourdomain.com/hit` | same Worker |
 | `ONESIGNAL_APP_ID` | the UUID from OneSignal | OneSignal → Settings → Keys & IDs |
+| `GOOGLE_ADSENSE_CLIENT` | the publisher client ID (`ca-pub-...`) | Google AdSense → Ads → Ads.txt |
+| `SUPPORT_EMAIL` | a monitored inbox | you |
+| `ONESIGNAL_APP_ID` | the UUID from OneSignal | OneSignal → Settings → Keys & IDs |
 | `SUPPORT_EMAIL` | a monitored inbox | you |
 | `POOL_AMOUNT` | the prize string every `data-pool` element is rewritten from (`"$500"` shipped) | your call — keep `terms.html` 5.1, the `<title>` and `og:title` in step |
 | `OFFERS` | array of `{t,s,u,k}` CPA links | CPAGrip / OGAds, filtered to your traffic |
@@ -72,14 +75,42 @@ Those must be absolute URLs — scrapers do not run JavaScript, so they cannot b
 cannot break the inline block below. Two zones on one page means two OnClick passes per tap: if the
 dashboard flags it or fill drops, delete the `312446` line and keep the other.
 
+below `<meta charset>` instead, and re-check the offset after touching the top of `<head>`.
+
+An async Google AdSense tag (`adsbygoogle.js?client=ca-pub-9906406019954985`) sits next to them. It loads from
+`https://pagead2.googlesyndication.com` and the CSP `script-src https:` already allows it; the client ID is
+read from `CONFIG.GOOGLE_ADSENSE_CLIENT`.
+
+ClickAdy ownership is proven by `<meta name="clckd" content="…">`, taken from ClickAdy → Add site.
 Both sit **above** `<meta charset>`, because MultiTag must be the first thing after `<head>`. That
 puts a hard limit on the block: HTML only honours a charset declaration inside the first 1024 bytes,
 and this page declares it at byte 680. Any comment added above those tags eats that window — move it
 below `<meta charset>` instead, and re-check the offset after touching the top of `<head>`.
 
-ClickAdy ownership is proven by `<meta name="clckd" content="…">`, taken from ClickAdy → Add site.
 It has to be in the HTML the crawler downloads — a script-injected meta will not verify — so it
 lives in `<head>` and stays there after approval. ClickAdy's zone snippet is a normal ad tag, not a
+popunder helper: put it in `CONFIG.POPUNDER_TAG` like any other network tag.
+
+### Google AdSense
+
+An async AdSense tag sits in `<head>` next to the Monetag zones:
+```html
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9906406019954985" crossorigin="anonymous"></script>
+```
+The client ID is also in `CONFIG.GOOGLE_ADSENSE_CLIENT`, so it is one string to change. The tag is
+`async` and `crossorigin="anonymous"` — both are required for the script to load at all. The CSP
+`script-src https:` already permits it, so nothing else needs to move.
+
+AdSense does not have its own slot container here: it fills whatever `<ins class="adsbygoogle">` or
+`<ins>` the creative itself injects, so it runs alongside the seven reserved boxes rather than in
+one of them. That keeps it out of the funnel's reserved positions and means an AdSense creative never
+collides with a Monetag or Adsterra unit. If you want it in a specific box, paste an
+`adsbygoogle` `<ins>` into `AD_SLOT_*` like any other banner HTML.
+
+To turn it off, set `GOOGLE_ADSENSE_CLIENT: ""` — the `<script>` is skipped and the page still
+renders. The probe `_head.mjs` checks that the tag is present and inside `<head>`.
+
+**Nothing fails silently.**
 popunder helper: put it in `CONFIG.POPUNDER_TAG` like any other network tag.
 
 **Nothing fails silently.** Any key left empty logs a `[PayoutPool]` warning to the console at
