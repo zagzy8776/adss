@@ -247,6 +247,38 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
   <div class="meta"><span id="pStep">STEP 1 OF 5</span><span id="pPct">20% complete</span></div>
 </div>
 
+<!-- Rewards wheel: independent demo, does not change existing ad scripts or funnel -->
+<section id="ppWheelHome" aria-labelledby="ppWheelHeading" style="margin:14px 16px;padding:18px;background:#111b2b;border:1px solid #2d465c;border-radius:16px;text-align:center">
+  <div style="font-size:10px;color:#71e7af;font-weight:800;letter-spacing:.1em">REWARDS HUB</div>
+  <h2 id="ppWheelHeading" style="font-size:21px;margin:8px 0">Spin the prize wheel</h2>
+  <p style="font-size:12px;color:#b9c9db;line-height:1.5">Explore cash, phone, gift-card and surprise prize concepts. Demo only — no prizes are awarded yet.</p>
+  <div style="position:relative;width:230px;max-width:80vw;margin:25px auto">
+    <div aria-hidden="true" style="position:absolute;top:-21px;left:calc(50% - 10px);color:white;z-index:2;font-size:22px">▼</div>
+    <div id="ppHomeWheel" aria-label="Animated demonstration prize wheel" style="width:100%;aspect-ratio:1;border-radius:50%;border:8px solid #31435c;background:conic-gradient(#24886f 0 60deg,#344d91 60deg 120deg,#925b7e 120deg 180deg,#286b87 180deg 240deg,#a17d3a 240deg 300deg,#465e99 300deg);display:grid;place-items:center;transition:transform 4.8s cubic-bezier(.12,.72,.12,1)">
+      <span style="background:#0e1a2a;border:3px solid #d7eaff;border-radius:50%;padding:20px 12px;color:white;font-size:12px;font-weight:800">SPIN<br>DEMO</span>
+    </div>
+  </div>
+  <button id="ppHomeSpinBtn" type="button" style="width:100%;min-height:46px;border:0;border-radius:10px;background:#00d54b;color:#00290f;font-weight:800;font-size:14px;cursor:pointer">Try demo spin</button>
+  <p id="ppHomeSpinStatus" role="status" aria-live="polite" style="font-size:11px;color:#b9c9db">Demo mode — no real rewards or cash balances.</p>
+  <a href="/rewards.html" style="display:inline-block;margin-top:4px;color:#8cefc0;font-size:12px">Explore all prize concepts →</a>
+</section>
+<script>
+(function(){
+  const btn=document.getElementById('ppHomeSpinBtn');
+  const wheel=document.getElementById('ppHomeWheel');
+  const status=document.getElementById('ppHomeSpinStatus');
+  let rotation=0,busy=false;
+  btn.addEventListener('click',function(){
+    if(busy)return;
+    busy=true;btn.disabled=true;status.textContent='Spinning demonstration…';
+    const bytes=new Uint32Array(1);crypto.getRandomValues(bytes);
+    rotation+=1800+(bytes[0]%360);
+    wheel.style.transform='rotate('+rotation+'deg)';
+    setTimeout(function(){status.textContent='Demo finished. No prize was awarded.';btn.disabled=false;busy=false;},4900);
+  });
+})();
+</script>
+
 <main id="gate">
   <section class="card" id="reveal" aria-labelledby="t">
     <div class="h"><b id="badge">STEP 1</b><span id="tag">Position held</span></div>
