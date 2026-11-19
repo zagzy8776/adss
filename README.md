@@ -273,14 +273,15 @@ is not obvious, and pasting the wrong one is why a box renders empty:
 | What Adsterra gives you | Where it goes | Form |
 |---|---|---|
 | **Banner** `300x250`, `320x50`, `728x90` … | `AD_NETWORKS[].slots` | `adsterra:<key>/<w>x<h>` |
-| **Popunder → Script URL** | `AD_NETWORKS[].popunder` | bare URL |
+| **Popunder → Script URL** | `AD_NETWORKS[].popunder` | bare URL, injected on the tap |
 | **Native banner** | `AD_SLOT_*` | raw HTML: its script *and* its `<div id="container-…">` |
 | **Direct link** | `AD_DIRECT_LINK` | bare URL, one tab per visitor |
 
 `<key>` is the last path segment of the `invoke.js` URL Adsterra shows you
 (`https://bancadeltempoidea.org/22/<key>`), and `<w>x<h>` is the size the zone was created
 with. Six units are wired today — `HELD 320x50`, `CARD 300x250`, `AFTER 468x60`,
-`BELOW 728x90`, `CAPTURE 160x300`, `DONE 160x600`.
+`BELOW 728x90`, `CAPTURE 160x300`, `DONE 160x600` — plus the Popunder zone on the same network
+object, so one `/hit` id (`ad_adsterra`) covers the banners and the pops.
 
 **Do not paste the two-`<script>` snippet**, even though it looks self-contained. `atOptions`
 is one global, and the loader reads it and then deletes it:
@@ -307,7 +308,7 @@ Two rules that come with that:
 ```js
 AD_NETWORKS: [
   { id: 'adsterra',
-    popunder: '',                      // ← paste Popunder → Script URL here
+    popunder: 'https://aarems.org/1/7e78107f…',   // ← Popunder → Script URL
     fireOn: 'gate',
     weight: 1,
     slots: {
@@ -322,9 +323,15 @@ AD_NETWORKS: [
 ]
 ```
 
-`popunder` is deliberately empty: the banners earn impressions, but nothing pops until the
-Popunder Script URL is pasted there. `node _admap.mjs` shows that as `popunder none` on all five
-taps, which is the honest state of the page until then.
+`popunder` is the Popunder zone's own Script URL, not a snippet: the tag arms itself when it loads
+and pops on the visitor's **next** click. That is why it is loaded from the tap that asks for it
+(`fireAd`) instead of sitting in `<head>` — a tag loaded at boot would spend the visitor's first tap
+before the funnel has engaged anyone, and one loaded on the confirmed screen would wait for a click
+that never comes. The injected `<script>` keeps the `data-cfasync="false"` the network's snippet
+ships with; without it a Cloudflare Rocket Loader zone defers the tag past the tap and the pop
+never happens. `node _admap.mjs` walks the funnel and asserts one load per `fireAd` (five taps,
+four fires — the `Continue` out of the break does not fire again), with no false
+"earned nothing" warning.
 
 A network only counts as wired once it has a `popunder` or at least one slot; an entry with every
 URL still empty does **not** silence the boot warning, so a half-pasted block cannot look healthy.
@@ -470,9 +477,11 @@ Still on you (cannot be coded):
 1. Replace `YOURDOMAIN.com` (4 places in `<head>`, plus `worker/wrangler.toml` and the mailto links).
 2. Rounds are calendar months by definition (section 2). If you want fixed dates instead, edit section 2
    of `terms.html` and the date line on `winners.html`.
-3. Paste the ad tags into the eight `AD_SLOT_*` keys, `AD_NETWORKS` (or the single-network
-   `POPUNDER_TAG`) / `AD_DIRECT_LINK`, and `OFFERS` — until then the page earns nothing. The
-   full-screen break needs no paste: it uses the zone already in `<head>` (`INTERSTITIAL_TRIGGER`).
+3. Adsterra's popunder and its six banner units are wired; what is still blank is `AD_DIRECT_LINK`,
+   `OFFERS`, push (`ONESIGNAL_APP_ID` / `PUSH_TAG`), and the two boxes that need units of their own
+   (`GATE` 300x250, `STICKY` 320x50) — until those are pasted the page earns from banners and pops
+   only. The full-screen break needs no paste: it uses the zone already in `<head>`
+   (`INTERSTITIAL_TRIGGER`).
 4. Deploy the Worker, set `ADMIN_TOKEN`, and paste its URLs into `CONFIG` plus `WINNERS_URL`.
    The same token is what `bot/pp_analytics.py` passes as `--token` (or `PP_ADMIN_TOKEN`) to read
    `/stats`.
