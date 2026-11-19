@@ -22,6 +22,7 @@ module.exports=async(req,res)=>{try{
  if(req.method==='GET'&&path==='/health'){await pool.query('SELECT 1');return json(res,200,{ok:true,database:'connected'})}
  if(req.method==='GET'&&path==='/visitor'){const v=await ensureVisitor(req,res);return json(res,200,{anonymous:true,visitor_id:v.id,registration_required:false})}
  if(req.method==='GET'&&path==='/campaigns'){const r=await pool.query('SELECT id,title,description,rules_url FROM pp_campaigns WHERE '+active);return json(res,200,{campaigns:r.rows})}
+ if(req.method==='GET'&&path==='/prize-wheel'){const r=await pool.query("SELECT p.id,p.title,p.kind,p.currency,p.amount_minor,p.inventory,p.weight FROM pp_prizes p JOIN pp_campaigns c ON c.id=p.campaign_id WHERE "+active+" AND p.inventory>0 ORDER BY p.amount_minor ASC NULLS LAST,p.id");return json(res,200,{prizes:r.rows})}
  if(req.method==='GET'&&path==='/activity'){const v=await ensureVisitor(req,res);const r=await pool.query("SELECT s.id,s.status,s.created_at,p.title AS prize_title,p.kind FROM pp_spins s LEFT JOIN pp_prizes p ON p.id=s.prize_id WHERE s.anonymous_visitor_id=$1 ORDER BY s.created_at DESC LIMIT 50",[v.id]);const d=await pool.query("SELECT used FROM pp_anonymous_global_daily_spins WHERE visitor_id=$1 AND spin_date=(now() AT TIME ZONE 'UTC')::date",[v.id]);const w=await pool.query("SELECT currency,COALESCE(sum(amount_minor) FILTER (WHERE status='pending'),0)::text AS pending_minor,COALESCE(sum(amount_minor) FILTER (WHERE status='verified'),0)::text AS verified_minor FROM pp_reward_ledger WHERE anonymous_visitor_id=$1 GROUP BY currency",[v.id]);return json(res,200,{spins:r.rows,usage:d.rows,wallet:w.rows})}
  if(req.method==='POST'&&path==='/spin'){
  const b=await body(req);if(!uuid(b.campaign_id)||!uuid(b.request_id))throw fail(400,'Valid campaign and request ID required');
@@ -46,7 +47,7 @@ module.exports=async(req,res)=>{try{
   const b=await body(req),v=await getVisitor(req,pool);
   if(!v)throw fail(401,'This browser has no visitor session');
   const email=String(b.email||'').trim().toLowerCase(),phone=String(b.phone||'').trim();
-  if(!uuid(b.claim_id)||email.length>254||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||phone.length>24||!/^\\+?[0-9 ()-]{7,24}$/.test(phone))throw fail(400,'Valid claim ID, email and phone required');
+  if(!uuid(b.claim_id)||email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||phone.length>24||!/^\+?[0-9 ()-]{7,24}$/.test(phone))throw fail(400,'Valid claim ID, email and phone required');
   const r=await pool.query(`INSERT INTO pp_claim_contacts(claim_id,visitor_id,email,phone) SELECT c.id,$2,$3,$4 FROM pp_prize_claims c WHERE c.id=$1 AND c.anonymous_visitor_id=$2 AND c.status NOT IN ('rejected','cancelled') ON CONFLICT(claim_id) DO UPDATE SET email=EXCLUDED.email,phone=EXCLUDED.phone,updated_at=now() RETURNING claim_id`,[b.claim_id,v.id,email,phone]);
   if(!r.rowCount)throw fail(404,'Claim not found for this visitor');
   return json(res,200,{ok:true,claim_id:r.rows[0].claim_id,message:'Contact submitted to admin; email and phone are not yet independently verified'})
