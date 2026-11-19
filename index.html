@@ -518,11 +518,31 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
       <p style="margin:0 0 9px;font-size:11.5px;color:#9aa1ad">Complete any one offer below and we move you up 40 places in the queue.</p>
       <div id="offerList" style="display:grid;gap:6px"></div>
     </div>
-    <button class="btn ghost" id="shareBtn" type="button" style="margin-top:12px">Share for +1 entry</button>
-    <button class="btn" id="pushBtn" type="button" style="margin-top:8px">Get payout alerts</button>
-    <p class="note" id="pushNote">We'll notify you the moment your position clears.</p>
+    <section id="ppKeepExploring" aria-labelledby="ppExploreHeading" style="margin-top:20px;text-align:left">
+      <h3 id="ppExploreHeading" style="font-size:20px;margin:0 0 7px;color:#f1fff3">Keep exploring</h3>
+      <p style="color:#afc9bf;font-size:13px;line-height:1.55;margin:0 0 14px">Your entry is saved. Discover more activities, videos and reward updates while you're here.</p>
+      <a href="/videos.html" style="display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:#092c1b;background:linear-gradient(120deg,#b1ffc5,#38df83);border-radius:15px;padding:17px 16px;font-weight:900;margin-bottom:9px"><span>▶ Watch videos & discover more</span><span aria-hidden="true">→</span></a>
+      <a href="/#ppWheelHome" style="display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:#eafff1;background:#193b32;border:1px solid #4b846c;border-radius:13px;padding:15px 16px;font-weight:800;margin-bottom:9px"><span>🎡 Daily wheel & rewards</span><span aria-hidden="true">→</span></a>
+      <a href="/rewards.html" style="display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:#eafff1;background:#193b32;border:1px solid #4b846c;border-radius:13px;padding:15px 16px;font-weight:800;margin-bottom:9px"><span>🎁 Explore rewards</span><span aria-hidden="true">→</span></a>
+      <div style="border:1px solid #36584d;border-radius:14px;padding:13px 14px;margin-top:14px"><strong style="font-size:13px;color:#fff">Share the experience</strong><p style="font-size:12px;color:#b5d3c5;margin:6px 0 10px">Invite friends to discover PayoutPool. Sharing does not guarantee an extra entry or prize.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><a href="https://twitter.com/intent/tweet?text=Explore%20PayoutPool%20rewards&url=https%3A%2F%2Fadss-roan.vercel.app%2F" target="_blank" rel="noopener noreferrer" style="color:#b5ffce;font-weight:800;font-size:13px">Post on X ↗</a><button type="button" id="ppCopySiteLink" style="border:1px solid #579b75;border-radius:9px;background:#214e39;color:#e9fff0;padding:9px 12px;font-weight:800">Copy site link</button></div><p id="ppCopyFeedback" role="status" style="font-size:11px;color:#a7e9bf;margin:7px 0 0"></p></div>
+    </section>
+    <button class="btn ghost" id="shareBtn" type="button" hidden style="display:none">Share</button>
+    <button class="btn" id="pushBtn" type="button" hidden style="display:none">Notifications unavailable</button>
+    <p class="note" id="pushNote" hidden style="display:none"></p>
   </section>
 </main>
+
+<script>
+(function(){
+ const b=document.getElementById('ppCopySiteLink'),s=document.getElementById('ppCopyFeedback');
+ if(!b||!s)return;
+ b.addEventListener('click',async function(){
+  const url=location.origin+'/';
+  try{await navigator.clipboard.writeText(url);s.textContent='Link copied!'}
+  catch(e){s.textContent='Copy this link: '+url}
+ });
+})();
+</script>
 
 <div class="adbox" id="adStick" data-slot="sticky" aria-label="Advertisement">
   <button id="adStickX" type="button" aria-label="Close advertisement" title="Close">✕</button>
