@@ -173,6 +173,56 @@ __ppAdReport()
 `popHook: false` means your network does not expose `window.__pop`, so `SECOND_POP` cannot do
 anything regardless of the setting.
 
+## Wiring Adsterra
+
+Adsterra hands out four different kinds of code. Three of them map straight onto a key; the mapping
+is not obvious, and pasting the wrong one is why a box renders empty:
+
+| What Adsterra gives you | Where it goes | Notes |
+|---|---|---|
+| **Popunder → Script URL** (`https://pl…profitablecpmgate.com/xx/yy/zz/script.js`) | `AD_NETWORKS[].popunder` | loads on every gate tap; tracked as `ad_adsterra` |
+| **Banner** `300x250`, `468x60`, `320x50` | `AD_SLOT_*` or `AD_NETWORKS[].slots` | copy the **invoke.js** URL, prefix it with `script:` |
+| **Native banner** | `AD_SLOT_*` as raw HTML | needs its script *and* its `<div id="container-…">` together |
+| **Direct link** | `AD_DIRECT_LINK` | one tab per visitor, after the lead by default |
+
+The banner snippet Adsterra shows is two `<script>` tags — `atOptions = {...}` then `invoke.js`.
+`runScripts()` rebuilds them in document order, so the inline one defines `atOptions` before
+`invoke.js` runs: **paste just the `invoke.js` URL** with a `script:` prefix and it works. If you
+prefer the whole snippet, paste it as raw HTML and write the closing tags as `<\/script>`.
+
+```js
+AD_NETWORKS: [
+  { id: 'adsterra',
+    popunder: 'https://pl01234567.profitablecpmgate.com/xx/yy/zz/script.js',
+    fireOn: 'gate',
+    weight: 1,
+    slots: {
+      HELD: 'script:https://www.highperformanceformat.com/abcdef/invoke.js',
+      CARD: 'script:https://www.highperformanceformat.com/abcdef/invoke.js',
+      AFTER: '',
+      BELOW: '',
+      CAPTURE: 'script:https://www.highperformanceformat.com/ghijkl/invoke.js',
+      DONE: 'script:https://www.highperformanceformat.com/mnopqr/invoke.js',
+      GATE: '',
+      STICKY: 'script:https://www.highperformanceformat.com/stuvwx/invoke.js'
+    } }
+]
+```
+
+Fill `AFTER` and `GATE` last, if at all: the gate already carries the popunder and the sponsored
+break, and two units stacked there is the placement that gets a visitor to close the tab.
+
+A network only counts as wired once it has a `popunder` or at least one slot; an entry with every
+URL still empty does **not** silence the boot warning, so a half-pasted block cannot look healthy.
+
+Verify the page before and after, in the console:
+
+```js
+__ppAdReport().networks        // [] before, [{ id: 'adsterra', popped: … }] after
+document.querySelectorAll('.ad.fill, .adBox.filled').length   // boxes that took a creative
+```
+
+
 ## Worker — storage for captures and the feed
 
 ```bash

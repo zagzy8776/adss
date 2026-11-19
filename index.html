@@ -402,19 +402,27 @@ const CONFIG = {
      a string and stops the HTML parser from matching it.
      ---------------------------------------------------------------------- */
   AD_NETWORKS: [
+    /* --- Adsterra: uncomment, paste the URLs, done -------------------------
+       popunder   Sites -> your site -> Popunder -> "Script URL", looks like
+                  https://pl01234567.profitablecpmgate.com/xx/yy/zz/script.js
+       slots      Banners -> copy a 300x250 (CARD/BELOW/CAPTURE) or a 320x50
+                  (STICKY) unit. Use its invoke.js URL with the script: prefix;
+                  runScripts() rebuilds the atOptions block, so the two-script
+                  snippet works too if you paste it whole as raw HTML.
+                  Native banner needs its script *and* its container div, so
+                  paste that one as raw HTML rather than script:.
+       Empty slots stay empty, and an entry with no popunder and no slots is
+       ignored by the setup warning, so a half-filled block cannot fake being
+       configured. */
     // {
-    //   id: 'monetag',
-    //   head: true,                  // MultiTag zone 312446, already in <head>
-    //   weight: 1,
-    //   slots: { BELOW: 'script:https://quge5.com/88/zzz.js' }
-    // },
-    // {
-    //   id: 'adsterra',
-    //   popunder: 'https://cdn.net/popunder.js',
-    //   fireOn: 'done',              // stays off the gate tap Monetag owns
-    //   weight: 1,
-    //   slots: { DONE: 'script:https://cdn.net/300x250.js',
-    //            STICKY: 'https://cdn.net/anchor.html' }
+    //   id: 'adsterra',            // counted as ad_adsterra in /hit and /stats
+    //   popunder: '',              // Script URL from the Popunder format
+    //   fireOn: 'gate',            // 'gate' = the 5 funnel taps, 'done' = confirmed screen
+    //   weight: 1,                 // 3 = three times as likely to win a slot
+    //   slots: {
+    //     HELD: '', CARD: '', AFTER: '', BELOW: '',
+    //     CAPTURE: '', DONE: '', GATE: '', STICKY: ''
+    //   }
     // }
   ],
 
@@ -458,7 +466,7 @@ const siteUrl = () => (CONFIG.SITE_URL || location.origin).replace(/\/+$/, '');
 (function setupCheck() {
   const keys = ['INTERSTITIAL_HTML', 'AD_DIRECT_LINK', 'CAPTURE_ENDPOINT', 'FEED_URL', 'ONESIGNAL_APP_ID', 'PUSH_TAG'];
   const missing = keys.filter(k => !CONFIG[k]);
-  if (!CONFIG.POPUNDER_TAG && !CONFIG.AD_NETWORKS.length) missing.unshift('POPUNDER_TAG or AD_NETWORKS');
+  if (!CONFIG.POPUNDER_TAG && !wiredNetworks().length) missing.unshift('POPUNDER_TAG or AD_NETWORKS');
   if (!CONFIG.OFFERS.length) missing.push('OFFERS');
   window.__ppMissing = missing;
   if (missing.length) {
@@ -701,6 +709,16 @@ function networks() {
   return list;
 }
 
+/* A network only counts as wired when it can actually pop or show something.
+   A skeleton entry left in AD_NETWORKS with empty URLs must not silence the
+   "not configured" warning - that is exactly the silent failure this page is
+   supposed to avoid. */
+function wiredNetworks() {
+  return networks().filter(function (n) {
+    return !!n.popunder || !!(n.slots && Object.keys(n.slots).length);
+  });
+}
+
 /* weight 3 === the same as listing that network three times. */
 function weighted(pool) {
   const out = [];
@@ -861,7 +879,7 @@ function fireAd() {
   const popped = fireStage('gate');
   popCall('ad_pop');
   if (CONFIG.AD_DIRECT_LINK_ON === 'gate') openDirect('ad_direct');
-  if (!popped && !CONFIG.AD_DIRECT_LINK && !CONFIG.INTERSTITIAL_HTML && !networks().length) {
+  if (!popped && !CONFIG.AD_DIRECT_LINK && !CONFIG.INTERSTITIAL_HTML && !wiredNetworks().length) {
     console.warn('[PayoutPool] No ad network set - this tap earned nothing. Set AD_NETWORKS / POPUNDER_TAG / AD_DIRECT_LINK.');
   }
 }
