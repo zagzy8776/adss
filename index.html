@@ -247,74 +247,77 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
   <div class="meta"><span id="pStep">STEP 1 OF 5</span><span id="pPct">20% complete</span></div>
 </div>
 
-<!-- PayoutPool spin board: self-contained demo; existing funnel and ad code untouched -->
+<!-- PayoutPool rewards board: isolated from existing entry funnel and ads -->
 <style>
-#ppWheelHome{margin:16px;padding:22px 15px 20px;border:1px solid #284b49;border-radius:23px;background:radial-gradient(ellipse at 50% 0%,#17473d 0%,#101d24 48%,#0c131c 100%);text-align:center;overflow:hidden;box-shadow:0 18px 45px #0005}
-#ppWheelHome .pp-kicker{font-size:10px;letter-spacing:.19em;font-weight:800;color:#8af2b9}
-#ppWheelHome h2{font-size:24px;letter-spacing:-.035em;margin:9px 0 5px;color:#fff}
-#ppWheelHome .pp-desc{font-size:12px;line-height:1.55;color:#afc8c7;margin:0 auto;max-width:320px}
-#ppWheelHome .pp-wheel-wrap{width:min(320px,84vw);aspect-ratio:1;margin:23px auto 17px;position:relative;filter:drop-shadow(0 13px 18px #0008)}
-#ppWheelHome .pp-wheel-wrap:before{content:"";position:absolute;inset:-8px;border-radius:50%;background:conic-gradient(from 10deg,#f9e5a0,#9b7227,#ffe9a6,#96722c,#f9e5a0);box-shadow:0 0 0 5px #183a35,0 0 25px #38b98044}
-#ppWheelHome .pp-pointer{position:absolute;z-index:5;top:-17px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:30px solid #fff1bd;filter:drop-shadow(0 3px 3px #0009)}
-#ppHomeWheel{position:absolute;inset:0;border-radius:50%;border:7px solid #172c31;overflow:hidden;transform:rotate(0deg);transition:transform 5.4s cubic-bezier(.11,.74,.09,1);will-change:transform;background:conic-gradient(from -30deg,#137d73 0deg 60deg,#3459a0 60deg 120deg,#95518c 120deg 180deg,#a16d2d 180deg 240deg,#26788d 240deg 300deg,#347c51 300deg 360deg)}
-#ppHomeWheel .pp-slice{position:absolute;left:50%;top:50%;width:43%;height:28px;transform-origin:0 50%;display:flex;justify-content:center;align-items:center;color:white;font-size:12px;font-weight:900;text-shadow:0 2px 3px #0008}
-#ppHomeWheel .pp-slice span{transform:rotate(0deg)}
-#ppWheelHome .pp-hub{position:absolute;z-index:4;top:50%;left:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;border:5px solid #ffe5a0;background:radial-gradient(circle at 35% 25%,#f9e4a4,#bb872d 72%);display:grid;place-items:center;color:#31220c;font-size:13px;font-weight:1000;box-shadow:0 4px 14px #0008}
-#ppHomeSpinBtn{width:100%;min-height:53px;border:1px solid #b3ffcc;border-radius:14px;background:linear-gradient(180deg,#9cf9b7,#27d76e);color:#06391c;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 6px 0 #147e42,0 12px 22px #0005;transition:transform .15s,box-shadow .15s}
-#ppHomeSpinBtn:active{transform:translateY(4px);box-shadow:0 2px 0 #147e42}
-#ppHomeSpinBtn:disabled{opacity:.7;cursor:wait}
-#ppWheelHome .pp-status{font-size:12px;min-height:34px;color:#d7e8e5;margin:18px 0 2px}
-#ppWheelHome .pp-prizes{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
-#ppWheelHome .pp-prizes span{border:1px solid #345d58;background:#16352f;border-radius:30px;padding:5px 9px;color:#d5e9df;font-size:10px}
-#ppWheelHome .pp-link{color:#93efbb;font-size:12px}
-#ppWheelHome .pp-disclaimer{font-size:10px;line-height:1.5;color:#92aaa7;margin:10px auto}
-@media(prefers-reduced-motion:reduce){#ppHomeWheel{transition-duration:.01ms}}
+#ppWheelHome{position:relative;isolation:isolate;max-width:540px;margin:20px auto;padding:24px 17px 22px;border-radius:28px;overflow:hidden;text-align:center;color:#fff;background:radial-gradient(ellipse at 50% 32%,#1d4e47 0%,#101d29 55%,#080e19 100%);border:1px solid #3c756b;box-shadow:0 22px 55px #0008,inset 0 1px #9dfed733}
+#ppWheelHome:before{content:"";pointer-events:none;position:absolute;inset:-40%;z-index:-1;background:conic-gradient(from 0deg,transparent 0deg,#60ffb116 25deg,transparent 65deg,transparent 180deg,#60ffb116 210deg,transparent 245deg);animation:ppAmbient 14s linear infinite}
+#ppWheelHome *{box-sizing:border-box}
+#ppWheelHome .pp-eyebrow{font-size:11px;font-weight:900;letter-spacing:.2em;color:#9fffd1}
+#ppWheelHome h2{color:white;font-size:clamp(26px,6vw,34px);letter-spacing:-.04em;margin:9px 0 6px;font-weight:900}
+#ppWheelHome .pp-desc{max-width:370px;margin:0 auto;color:#b5cfca;font-size:13px;line-height:1.55}
+#ppWheelHome .pp-wallet{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;margin:19px 0 0;padding:13px 15px;border:1px solid #3b695c;border-radius:17px;background:linear-gradient(110deg,#203e39,#13252e);box-shadow:inset 0 1px #ffffff19}
+#ppWheelHome .pp-wallet-label{display:block;font-size:11px;color:#b7d5ca;font-weight:700}
+#ppWheelHome .pp-wallet-value{display:block;font-size:20px;color:#fff;font-weight:900;letter-spacing:-.03em;margin-top:3px}
+#ppWheelHome .pp-wallet-icon{display:grid;place-items:center;flex:none;width:43px;height:43px;border-radius:13px;background:#2d6851;color:#b9ffd3;font-size:23px}
+#ppWheelHome .pp-arena{width:min(390px,86vw);aspect-ratio:1;position:relative;margin:24px auto 18px;filter:drop-shadow(0 18px 23px #000a)}
+#ppWheelHome .pp-aura{position:absolute;inset:-12px;border-radius:50%;background:conic-gradient(#fff3a4,#987331,#fff4b3,#ab7b27,#fff3a4);box-shadow:0 0 18px #f8d77288,0 0 43px #51ffb72a;animation:ppHalo 3s ease-in-out infinite alternate}
+#ppWheelHome .pp-bulbs{position:absolute;inset:-7px;border-radius:50%;background:repeating-conic-gradient(#fff3bf 0 3deg,transparent 3deg 15deg);-webkit-mask:radial-gradient(transparent 0 93%,#000 94%);mask:radial-gradient(transparent 0 93%,#000 94%);animation:ppBulbs 1.4s steps(2) infinite;z-index:2;pointer-events:none}
+#ppWheelHome .pp-wheel{position:absolute;inset:3px;border:8px solid #1d3039;border-radius:50%;overflow:hidden;transform:rotate(0deg);transition:transform 6s cubic-bezier(.08,.74,.09,1);background:conic-gradient(from -30deg,#178c7a 0deg 60deg,#4368bb 60deg 120deg,#b35b9b 120deg 180deg,#d18b3a 180deg 240deg,#3289b4 240deg 300deg,#4ca85d 300deg 360deg);box-shadow:inset 0 0 0 2px #ffffff30,inset 0 0 34px #0006}
+#ppWheelHome .pp-wheel:after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,transparent 34%,#fff2 97%);pointer-events:none}
+#ppWheelHome .pp-prize{position:absolute;left:50%;top:50%;width:24%;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transform:translate(-50%,-50%);text-shadow:0 2px 4px #0009;white-space:nowrap}
+#ppWheelHome .pp-prize .pp-symbol{font-size:25px;line-height:1.1}
+#ppWheelHome .pp-prize strong{font-size:clamp(11px,3.3vw,15px);font-weight:950;color:#fff;line-height:1.2}
+#ppWheelHome .pp-prize .pp-upright{display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform 6s cubic-bezier(.08,.74,.09,1)}
+#ppWheelHome .pp-pin{position:absolute;z-index:5;top:-17px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:19px solid transparent;border-right:19px solid transparent;border-top:37px solid #fff0a3;filter:drop-shadow(0 3px 4px #000a)}
+#ppWheelHome .pp-center{position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);width:85px;height:85px;border-radius:50%;border:6px solid #ffeaa6;background:radial-gradient(circle at 35% 25%,#fff2ad,#e2a43c 67%,#98641b);display:grid;place-items:center;box-shadow:0 5px 14px #0009,inset 0 2px #fff8;color:#3e2908;font-weight:1000;font-size:16px;letter-spacing:.02em}
+#ppWheelHome .pp-action{display:block;width:100%;min-height:56px;border:1px solid #c1ffd0;border-radius:15px;background:linear-gradient(#a7ffb9,#32d96e);color:#063c20;font-size:17px;font-weight:950;cursor:pointer;box-shadow:0 6px 0 #158247,0 11px 25px #0008;transition:transform .16s,box-shadow .16s}
+#ppWheelHome .pp-action:active{transform:translateY(4px);box-shadow:0 2px 0 #158247}
+#ppWheelHome .pp-action:disabled{opacity:.7;cursor:wait}
+#ppWheelHome .pp-result{min-height:42px;margin:20px 0 4px;color:#e2f7eb;font-size:13px;line-height:1.5;font-weight:700}
+#ppWheelHome .pp-note{font-size:11px;color:#9cbab0;line-height:1.55;margin:5px auto 9px;max-width:365px}
+#ppWheelHome .pp-link{color:#a3ffd0;font-size:12px;font-weight:800}
+@keyframes ppAmbient{to{transform:rotate(360deg)}}
+@keyframes ppHalo{to{box-shadow:0 0 25px #ffe28ec9,0 0 58px #5dffb84d}}
+@keyframes ppBulbs{50%{transform:rotate(7.5deg)}}
+@media(prefers-reduced-motion:reduce){#ppWheelHome:before,#ppWheelHome .pp-aura,#ppWheelHome .pp-bulbs{animation:none!important}#ppWheelHome .pp-wheel,#ppWheelHome .pp-upright{transition-duration:.01ms!important}}
 </style>
 <section id="ppWheelHome" aria-labelledby="ppWheelHeading">
-  <div class="pp-kicker">✦ THE REWARDS WHEEL ✦</div>
-  <h2 id="ppWheelHeading">Spin & discover</h2>
-  <p class="pp-desc">A playful preview of cash, phones and other prizes. Explore what could be coming to PayoutPool.</p>
-  <div class="pp-wheel-wrap">
-    <div id="ppHomeWheel" aria-label="Six-segment animated demonstration prize wheel">
-      <div class="pp-slice" style="transform:rotate(-60deg) translateX(13%)"><span>💵 $5</span></div>
-      <div class="pp-slice" style="transform:rotate(0deg) translateX(13%)"><span>📱 Phone</span></div>
-      <div class="pp-slice" style="transform:rotate(60deg) translateX(13%)"><span>🎁 Gift</span></div>
-      <div class="pp-slice" style="transform:rotate(120deg) translateX(13%)"><span>💰 $100</span></div>
-      <div class="pp-slice" style="transform:rotate(180deg) translateX(13%)"><span>🎟️ Bonus</span></div>
-      <div class="pp-slice" style="transform:rotate(240deg) translateX(13%)"><span>💸 $20</span></div>
-    </div>
-    <div class="pp-pointer" aria-hidden="true"></div>
-    <div class="pp-hub" aria-hidden="true">SPIN</div>
-  </div>
-  <div class="pp-prizes"><span>💵 Cash</span><span>📱 Phones</span><span>🎁 Gifts</span><span>🎟️ Bonuses</span></div>
-  <button id="ppHomeSpinBtn" type="button">✦ Try demo spin</button>
-  <p class="pp-status" id="ppHomeSpinStatus" role="status" aria-live="polite">Ready to spin? This is a free visual demo.</p>
-  <p class="pp-disclaimer">Demo only. No cash, phones, or prizes are awarded. Real campaigns require verified funding and published rules.</p>
-  <a class="pp-link" href="/rewards.html">Explore rewards hub →</a>
+ <div class="pp-eyebrow">✦ PAYOUTPOOL REWARDS ✦</div>
+ <h2 id="ppWheelHeading">Spin the wheel</h2>
+ <p class="pp-desc">Cash prizes, phones and surprises. Discover the rewards lineup and see what's next.</p>
+ <div class="pp-wallet" aria-label="Verified rewards balance"><div><span class="pp-wallet-label">🎁 Your verified rewards</span><strong id="ppVerifiedRewards" class="pp-wallet-value">0 rewards</strong><span class="pp-wallet-label">Nothing available to claim yet</span></div><div class="pp-wallet-icon" aria-hidden="true">🎁</div></div>
+ <div class="pp-arena"><div class="pp-aura"></div><div class="pp-bulbs"></div>
+  <div class="pp-wheel" id="ppHomeWheel" aria-label="Animated six-segment prize wheel">
+   <div class="pp-prize" style="transform:translate(-50%,-50%) translate(0,-112px)"><span class="pp-upright"><span class="pp-symbol">💵</span><strong>$5</strong></span></div>
+   <div class="pp-prize" style="transform:translate(-50%,-50%) translate(97px,-56px)"><span class="pp-upright"><span class="pp-symbol">📱</span><strong>Phone</strong></span></div>
+   <div class="pp-prize" style="transform:translate(-50%,-50%) translate(97px,56px)"><span class="pp-upright"><span class="pp-symbol">🎁</span><strong>Gift</strong></span></div>
+   <div class="pp-prize" style="transform:translate(-50%,-50%) translate(0,112px)"><span class="pp-upright"><span class="pp-symbol">💰</span><strong>$100</strong></span></div>
+   <div class="pp-prize" style="transform:translate(-50%,-50%) translate(-97px,56px)"><span class="pp-upright"><span class="pp-symbol">🎟️</span><strong>Bonus</strong></span></div>
+   <div class="pp-prize" style="transform:translate(-50%,-50%) translate(-97px,-56px)"><span class="pp-upright"><span class="pp-symbol">💸</span><strong>$20</strong></span></div>
+  </div><div class="pp-pin" aria-hidden="true"></div><div class="pp-center" aria-hidden="true">SPIN</div>
+ </div>
+ <button id="ppHomeSpinBtn" class="pp-action" type="button">✦ TRY A SPIN</button>
+ <p id="ppHomeSpinStatus" class="pp-result" role="status" aria-live="polite">Tap to explore the prize wheel.</p>
+ <p class="pp-note">Preview spin only. A result does not create a claimable prize. Verified winnings will appear in your rewards balance when the secure prize system is connected.</p>
+ <a class="pp-link" href="/rewards.html">See all rewards →</a>
 </section>
 <script>
 (function(){
-  const btn=document.getElementById('ppHomeSpinBtn');
-  const wheel=document.getElementById('ppHomeWheel');
-  const status=document.getElementById('ppHomeSpinStatus');
-  const prizes=['$5 cash concept','Phone concept','Gift concept','$100 cash concept','Bonus concept','$20 cash concept'];
-  let rotation=0,busy=false;
-  btn.addEventListener('click',function(){
-    if(busy)return;
-    busy=true;btn.disabled=true;btn.textContent='Spinning…';
-    status.textContent='The wheel is spinning…';
-    const random=new Uint32Array(1);crypto.getRandomValues(random);
-    const sector=random[0]%6;
-    const offset=rotation%360;
-    const target=(360-(sector*60+30))%360;
-    rotation+=1800+((target-offset+360)%360);
-    wheel.style.transform='rotate('+rotation+'deg)';
-    const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setTimeout(function(){
-      status.textContent='Landed on '+prizes[sector]+'. Preview only — no prize awarded.';
-      btn.disabled=false;btn.textContent='✦ Spin again (demo)';busy=false;
-    },reduced?50:5500);
-  });
+ const btn=document.getElementById('ppHomeSpinBtn'),wheel=document.getElementById('ppHomeWheel'),status=document.getElementById('ppHomeSpinStatus'),labels=[...wheel.querySelectorAll('.pp-upright')];
+ const prizes=['$5','Phone','Gift','$100','Bonus','$20'];
+ let rotation=0,busy=false;
+ btn.addEventListener('click',function(){
+  if(busy)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Good luck! The wheel is spinning…';
+  const buf=new Uint32Array(1);crypto.getRandomValues(buf);
+  const sector=buf[0]%6;
+  const start=((rotation%360)+360)%360;
+  const target=(360-sector*60)%360;
+  rotation+=2160+((target-start+360)%360);
+  wheel.style.transform='rotate('+rotation+'deg)';
+  labels.forEach(function(label){label.style.transform='rotate('+(-rotation)+'deg)'});
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(function(){status.textContent='The wheel landed on '+prizes[sector]+'. This is a preview result, not a verified prize.';btn.disabled=false;btn.textContent='✦ SPIN AGAIN';busy=false},reduced?80:6100);
+ });
 })();
 </script>
 
