@@ -69,6 +69,16 @@ Those must be absolute URLs — scrapers do not run JavaScript, so they cannot b
 cannot break the inline block below. Two zones on one page means two OnClick passes per tap: if the
 dashboard flags it or fill drops, delete the `312446` line and keep the other.
 
+Both sit **above** `<meta charset>`, because MultiTag must be the first thing after `<head>`. That
+puts a hard limit on the block: HTML only honours a charset declaration inside the first 1024 bytes,
+and this page declares it at byte 680. Any comment added above those tags eats that window — move it
+below `<meta charset>` instead, and re-check the offset after touching the top of `<head>`.
+
+ClickAdy ownership is proven by `<meta name="clckd" content="…">`, taken from ClickAdy → Add site.
+It has to be in the HTML the crawler downloads — a script-injected meta will not verify — so it
+lives in `<head>` and stays there after approval. ClickAdy's zone snippet is a normal ad tag, not a
+popunder helper: put it in `CONFIG.POPUNDER_TAG` like any other network tag.
+
 **Nothing fails silently.** Any key left empty logs a `[PayoutPool]` warning to the console at
 boot, an empty `CAPTURE_ENDPOINT` logs a hard error on submit, and a failed POST is buffered in
 localStorage and retried on the next visit. `window.__ppMissing` lists every unset key.

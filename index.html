@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Monetag MultiTag / OnClick, zone 312446. Placed immediately after <head>
-     as the network requires. The charset meta still lands far inside the first
-     1024 bytes, so encoding detection is unaffected, and the CSP meta below is
-     parsed after this node while script-src already allows https:. -->
+<!-- Monetag MultiTag, zones 312446 (quge5.com) + 12299927 (al5sm.com). MultiTag
+     must sit immediately after <head>, which pushes the charset meta down, so
+     this whole block has to stay under 1024 bytes or encoding detection fails.
+     Keep the comments short; the CSP meta further down already allows https:. -->
 <script src="https://quge5.com/88/tag.min.js" data-zone="312446" async data-cfasync="false"></script>
-<!-- Second Monetag zone 12299927 (al5sm.com), pasted verbatim as supplied.
-     It is its own script element, so it does not disturb the inline block
-     below. Two zones on one page means two OnClick passes per tap: if the
-     dashboard flags it or fill drops, delete the 312446 tag above. -->
 <script>(function(s){s.dataset.zone='12299927',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#08090b">
+<!-- ClickAdy site ownership. Must be in the served HTML on the URL they verify:
+     a tag injected by JavaScript does not pass, and removing it later can get
+     the site re-flagged on a crawl. Zone scripts go in CONFIG.POPUNDER_TAG. -->
+<meta name="clckd" content="e5c196e8dbe19d49d0cd747facabdaab">
 
 <!-- ==========================================================================
      SETUP — replace YOURDOMAIN.com below (4 places: canonical, og:url,
