@@ -42,20 +42,21 @@ try{
  const u=await requireUser(req,db);
  const c=await db.query(`SELECT id FROM pp_campaigns WHERE id=$1 AND status='active' AND funding_verified_at IS NOT NULL AND rules_url IS NOT NULL AND (starts_at IS NULL OR starts_at<=now()) AND (ends_at IS NULL OR ends_at>now())`,[b.campaign_id]);if(!c.rowCount)throw fail(409,'No active funded campaign');
  await db.query('SELECT pg_advisory_xact_lock(hashtext($1),hashtext($2))',[u.id,b.campaign_id]);
- const old=await db.query('SELECT id,prize_id,status,reward_snapshot_minor,reward_currency FROM pp_spins WHERE user_id=$1 AND request_id=$2',[u.id,b.request_id]);if(old.rowCount)return {...old.rows[0],replayed:true};
+ const old=await db.query('SELECT s.id,s.prize_id,s.status,s.reward_snapshot_minor,s.reward_currency,p.title AS prize_title FROM pp_spins s LEFT JOIN pp_prizes p ON p.id=s.prize_id WHERE s.user_id=$1 AND s.request_id=$2',[u.id,b.request_id]);if(old.rowCount)return {...old.rows[0],replayed:true};
  const day=(await db.query("SELECT (now() AT TIME ZONE 'UTC')::date AS d")).rows[0].d;
  const usage=await db.query(`INSERT INTO pp_daily_spin_usage(user_id,campaign_id,spin_date,used) VALUES($1,$2,$3,1) ON CONFLICT(user_id,campaign_id,spin_date) DO UPDATE SET used=pp_daily_spin_usage.used+1,updated_at=now() WHERE pp_daily_spin_usage.used<2 RETURNING used`,[u.id,b.campaign_id,day]);
  if(!usage.rowCount)throw fail(429,'Daily spin limit reached');
- const prizes=await db.query('SELECT id,kind,currency,amount_minor,weight,inventory FROM pp_prizes WHERE campaign_id=$1 AND inventory>0 ORDER BY id FOR UPDATE',[b.campaign_id]);
+ const prizes=await db.query('SELECT id,title,kind,currency,amount_minor,weight,inventory FROM pp_prizes WHERE campaign_id=$1 AND inventory>0 ORDER BY id FOR UPDATE',[b.campaign_id]);
  const total=prizes.rows.reduce((a,p)=>a+p.weight,0);let chosen=null;
  if(total>0){let n=randomInt(total);for(const p of prizes.rows){n-=p.weight;if(n<0){chosen=p;break}}}
  if(chosen)await db.query('UPDATE pp_prizes SET inventory=inventory-1 WHERE id=$1 AND inventory>0',[chosen.id]);
  const spin=await db.query(`INSERT INTO pp_spins(campaign_id,user_id,prize_id,status,spin_date,request_id,reward_snapshot_minor,reward_currency,resolved_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,now()) RETURNING id,prize_id,status,reward_snapshot_minor,reward_currency`,[b.campaign_id,u.id,chosen?.id||null,chosen?'awarded':'no_prize',day,b.request_id,chosen?.kind==='cash'?chosen.amount_minor:null,chosen?.kind==='cash'?chosen.currency:null]);
  if(chosen){await db.query(`INSERT INTO pp_prize_claims(user_id,spin_id,prize_id) VALUES($1,$2,$3)`,[u.id,spin.rows[0].id,chosen.id]);if(chosen.kind==='cash')await db.query(`INSERT INTO pp_reward_ledger(user_id,spin_id,source_type,currency,amount_minor,status) VALUES($1,$2,'prize_award',$3,$4,'pending')`,[u.id,spin.rows[0].id,chosen.currency,chosen.amount_minor])}
  await db.query(`INSERT INTO pp_streaks(user_id,campaign_id,last_played_date,consecutive_days,loyalty_points) VALUES($1,$2,$3,1,10) ON CONFLICT(user_id,campaign_id) DO UPDATE SET consecutive_days=CASE WHEN pp_streaks.last_played_date=$3 THEN pp_streaks.consecutive_days WHEN pp_streaks.last_played_date=$3::date-1 THEN pp_streaks.consecutive_days+1 ELSE 1 END,last_played_date=$3,loyalty_points=pp_streaks.loyalty_points+CASE WHEN pp_streaks.last_played_date=$3 THEN 0 ELSE 10 END,updated_at=now()`,[u.id,b.campaign_id,day]);
- return {...spin.rows[0],used:usage.rows[0].used,replayed:false}
+ return {...spin.rows[0],prize_title:chosen?.title||null,used:usage.rows[0].used,replayed:false}
  });return json(res,200,result)
  }
+ if(req.method==='GET'&&path==='/activity'){const u=await requireUser(req);const r=await pool.query("SELECT s.id,s.created_at,s.status,p.title AS prize_title FROM pp_spins s LEFT JOIN pp_prizes p ON p.id=s.prize_id WHERE s.user_id=$1 ORDER BY s.created_at DESC LIMIT 50",[u.id]);const d=await pool.query("SELECT used FROM pp_daily_spin_usage WHERE user_id=$1 AND spin_date=(now() AT TIME ZONE 'UTC')::date ORDER BY updated_at DESC LIMIT 1",[u.id]);return json(res,200,{spins:r.rows,used:d.rows[0]?.used||0})}
  if(req.method==='GET'&&path==='/wallet'){const u=await requireUser(req);const r=await pool.query('SELECT id,source_type,currency,amount_minor,status,created_at FROM pp_reward_ledger WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100',[u.id]);return json(res,200,{balances:await money(pool,u.id),transactions:r.rows})}
  if(req.method==='GET'&&path==='/claims'){const u=await requireUser(req);const r=await pool.query('SELECT c.id,c.status,c.created_at,p.title,p.kind FROM pp_prize_claims c JOIN pp_prizes p ON p.id=c.prize_id WHERE c.user_id=$1 ORDER BY c.created_at DESC LIMIT 100',[u.id]);return json(res,200,{claims:r.rows})}
  if(req.method==='POST'&&path==='/payouts'){
