@@ -541,10 +541,10 @@ const CONFIG = {
   AD_DIRECT_LINK_ON: "done",
   // Re-call window.__pop() once on the confirmed screen. No-op unless your
   // network exposes that hook (Adsterra does; most others do not).
-  SECOND_POP: false,
+  SECOND_POP: true,
   // The original build called fireAd() on every tap of the 3-tap funnel, not
   // just the sponsored gate tap: 3 fires per visitor instead of 1. Restored.
-  AD_EVERY_TAP: false,
+  AD_EVERY_TAP: true,
   // The original also fired a second time as the gate opened, making 4 fires
   // per visitor.
   GATE_DOUBLE_FIRE: false,
