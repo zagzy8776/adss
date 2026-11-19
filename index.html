@@ -247,34 +247,73 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
   <div class="meta"><span id="pStep">STEP 1 OF 5</span><span id="pPct">20% complete</span></div>
 </div>
 
-<!-- Rewards wheel: independent demo, does not change existing ad scripts or funnel -->
-<section id="ppWheelHome" aria-labelledby="ppWheelHeading" style="margin:14px 16px;padding:18px;background:#111b2b;border:1px solid #2d465c;border-radius:16px;text-align:center">
-  <div style="font-size:10px;color:#71e7af;font-weight:800;letter-spacing:.1em">REWARDS HUB</div>
-  <h2 id="ppWheelHeading" style="font-size:21px;margin:8px 0">Spin the prize wheel</h2>
-  <p style="font-size:12px;color:#b9c9db;line-height:1.5">Explore cash, phone, gift-card and surprise prize concepts. Demo only — no prizes are awarded yet.</p>
-  <div style="position:relative;width:230px;max-width:80vw;margin:25px auto">
-    <div aria-hidden="true" style="position:absolute;top:-21px;left:calc(50% - 10px);color:white;z-index:2;font-size:22px">▼</div>
-    <div id="ppHomeWheel" aria-label="Animated demonstration prize wheel" style="width:100%;aspect-ratio:1;border-radius:50%;border:8px solid #31435c;background:conic-gradient(#24886f 0 60deg,#344d91 60deg 120deg,#925b7e 120deg 180deg,#286b87 180deg 240deg,#a17d3a 240deg 300deg,#465e99 300deg);display:grid;place-items:center;transition:transform 4.8s cubic-bezier(.12,.72,.12,1)">
-      <span style="background:#0e1a2a;border:3px solid #d7eaff;border-radius:50%;padding:20px 12px;color:white;font-size:12px;font-weight:800">SPIN<br>DEMO</span>
+<!-- PayoutPool spin board: self-contained demo; existing funnel and ad code untouched -->
+<style>
+#ppWheelHome{margin:16px;padding:22px 15px 20px;border:1px solid #284b49;border-radius:23px;background:radial-gradient(ellipse at 50% 0%,#17473d 0%,#101d24 48%,#0c131c 100%);text-align:center;overflow:hidden;box-shadow:0 18px 45px #0005}
+#ppWheelHome .pp-kicker{font-size:10px;letter-spacing:.19em;font-weight:800;color:#8af2b9}
+#ppWheelHome h2{font-size:24px;letter-spacing:-.035em;margin:9px 0 5px;color:#fff}
+#ppWheelHome .pp-desc{font-size:12px;line-height:1.55;color:#afc8c7;margin:0 auto;max-width:320px}
+#ppWheelHome .pp-wheel-wrap{width:min(320px,84vw);aspect-ratio:1;margin:23px auto 17px;position:relative;filter:drop-shadow(0 13px 18px #0008)}
+#ppWheelHome .pp-wheel-wrap:before{content:"";position:absolute;inset:-8px;border-radius:50%;background:conic-gradient(from 10deg,#f9e5a0,#9b7227,#ffe9a6,#96722c,#f9e5a0);box-shadow:0 0 0 5px #183a35,0 0 25px #38b98044}
+#ppWheelHome .pp-pointer{position:absolute;z-index:5;top:-17px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:30px solid #fff1bd;filter:drop-shadow(0 3px 3px #0009)}
+#ppHomeWheel{position:absolute;inset:0;border-radius:50%;border:7px solid #172c31;overflow:hidden;transform:rotate(0deg);transition:transform 5.4s cubic-bezier(.11,.74,.09,1);will-change:transform;background:conic-gradient(from -30deg,#137d73 0deg 60deg,#3459a0 60deg 120deg,#95518c 120deg 180deg,#a16d2d 180deg 240deg,#26788d 240deg 300deg,#347c51 300deg 360deg)}
+#ppHomeWheel .pp-slice{position:absolute;left:50%;top:50%;width:43%;height:28px;transform-origin:0 50%;display:flex;justify-content:center;align-items:center;color:white;font-size:12px;font-weight:900;text-shadow:0 2px 3px #0008}
+#ppHomeWheel .pp-slice span{transform:rotate(0deg)}
+#ppWheelHome .pp-hub{position:absolute;z-index:4;top:50%;left:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;border:5px solid #ffe5a0;background:radial-gradient(circle at 35% 25%,#f9e4a4,#bb872d 72%);display:grid;place-items:center;color:#31220c;font-size:13px;font-weight:1000;box-shadow:0 4px 14px #0008}
+#ppHomeSpinBtn{width:100%;min-height:53px;border:1px solid #b3ffcc;border-radius:14px;background:linear-gradient(180deg,#9cf9b7,#27d76e);color:#06391c;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 6px 0 #147e42,0 12px 22px #0005;transition:transform .15s,box-shadow .15s}
+#ppHomeSpinBtn:active{transform:translateY(4px);box-shadow:0 2px 0 #147e42}
+#ppHomeSpinBtn:disabled{opacity:.7;cursor:wait}
+#ppWheelHome .pp-status{font-size:12px;min-height:34px;color:#d7e8e5;margin:18px 0 2px}
+#ppWheelHome .pp-prizes{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+#ppWheelHome .pp-prizes span{border:1px solid #345d58;background:#16352f;border-radius:30px;padding:5px 9px;color:#d5e9df;font-size:10px}
+#ppWheelHome .pp-link{color:#93efbb;font-size:12px}
+#ppWheelHome .pp-disclaimer{font-size:10px;line-height:1.5;color:#92aaa7;margin:10px auto}
+@media(prefers-reduced-motion:reduce){#ppHomeWheel{transition-duration:.01ms}}
+</style>
+<section id="ppWheelHome" aria-labelledby="ppWheelHeading">
+  <div class="pp-kicker">✦ THE REWARDS WHEEL ✦</div>
+  <h2 id="ppWheelHeading">Spin & discover</h2>
+  <p class="pp-desc">A playful preview of cash, phones and other prizes. Explore what could be coming to PayoutPool.</p>
+  <div class="pp-wheel-wrap">
+    <div id="ppHomeWheel" aria-label="Six-segment animated demonstration prize wheel">
+      <div class="pp-slice" style="transform:rotate(-60deg) translateX(13%)"><span>💵 $5</span></div>
+      <div class="pp-slice" style="transform:rotate(0deg) translateX(13%)"><span>📱 Phone</span></div>
+      <div class="pp-slice" style="transform:rotate(60deg) translateX(13%)"><span>🎁 Gift</span></div>
+      <div class="pp-slice" style="transform:rotate(120deg) translateX(13%)"><span>💰 $100</span></div>
+      <div class="pp-slice" style="transform:rotate(180deg) translateX(13%)"><span>🎟️ Bonus</span></div>
+      <div class="pp-slice" style="transform:rotate(240deg) translateX(13%)"><span>💸 $20</span></div>
     </div>
+    <div class="pp-pointer" aria-hidden="true"></div>
+    <div class="pp-hub" aria-hidden="true">SPIN</div>
   </div>
-  <button id="ppHomeSpinBtn" type="button" style="width:100%;min-height:46px;border:0;border-radius:10px;background:#00d54b;color:#00290f;font-weight:800;font-size:14px;cursor:pointer">Try demo spin</button>
-  <p id="ppHomeSpinStatus" role="status" aria-live="polite" style="font-size:11px;color:#b9c9db">Demo mode — no real rewards or cash balances.</p>
-  <a href="/rewards.html" style="display:inline-block;margin-top:4px;color:#8cefc0;font-size:12px">Explore all prize concepts →</a>
+  <div class="pp-prizes"><span>💵 Cash</span><span>📱 Phones</span><span>🎁 Gifts</span><span>🎟️ Bonuses</span></div>
+  <button id="ppHomeSpinBtn" type="button">✦ Try demo spin</button>
+  <p class="pp-status" id="ppHomeSpinStatus" role="status" aria-live="polite">Ready to spin? This is a free visual demo.</p>
+  <p class="pp-disclaimer">Demo only. No cash, phones, or prizes are awarded. Real campaigns require verified funding and published rules.</p>
+  <a class="pp-link" href="/rewards.html">Explore rewards hub →</a>
 </section>
 <script>
 (function(){
   const btn=document.getElementById('ppHomeSpinBtn');
   const wheel=document.getElementById('ppHomeWheel');
   const status=document.getElementById('ppHomeSpinStatus');
+  const prizes=['$5 cash concept','Phone concept','Gift concept','$100 cash concept','Bonus concept','$20 cash concept'];
   let rotation=0,busy=false;
   btn.addEventListener('click',function(){
     if(busy)return;
-    busy=true;btn.disabled=true;status.textContent='Spinning demonstration…';
-    const bytes=new Uint32Array(1);crypto.getRandomValues(bytes);
-    rotation+=1800+(bytes[0]%360);
+    busy=true;btn.disabled=true;btn.textContent='Spinning…';
+    status.textContent='The wheel is spinning…';
+    const random=new Uint32Array(1);crypto.getRandomValues(random);
+    const sector=random[0]%6;
+    const offset=rotation%360;
+    const target=(360-(sector*60+30))%360;
+    rotation+=1800+((target-offset+360)%360);
     wheel.style.transform='rotate('+rotation+'deg)';
-    setTimeout(function(){status.textContent='Demo finished. No prize was awarded.';btn.disabled=false;busy=false;},4900);
+    const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(function(){
+      status.textContent='Landed on '+prizes[sector]+'. Preview only — no prize awarded.';
+      btn.disabled=false;btn.textContent='✦ Spin again (demo)';busy=false;
+    },reduced?50:5500);
   });
 })();
 </script>
