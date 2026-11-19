@@ -169,9 +169,14 @@ html.addebug .adbox:not(:has(iframe,img,ins,div,span,a))::before{content:attr(da
 #inter:focus{outline:none}
 .iTop{display:flex;align-items:center;gap:8px;font-size:9.5px;color:#7b8390;letter-spacing:.09em;text-transform:uppercase;font-weight:700}
 .iTop span:last-child{margin-left:auto;color:#5f6673}
-#interAd{flex:1;display:grid;place-items:center;margin:12px 0;border-radius:14px;overflow:hidden;
+#interAd{flex:1;display:grid;place-items:center;align-content:center;margin:12px 0;border-radius:14px;overflow:hidden;
   background:#0e1014;border:1px solid #1b1f26;min-height:300px}
 #interAd iframe,#interAd img{max-width:100%;border:0}
+#interAd .iFill{max-width:100%;display:grid;place-items:center}
+/* A pasted partner tag plus the house copy has to fit one phone screen, so the
+   panel shrinks instead of pushing Continue off the bottom. */
+#interAd.withFill .iHouse{padding:14px 16px}
+#interAd.withFill .iHouse .v{font-size:20px;margin:6px 0 3px}
 .iHouse{text-align:center;padding:26px 20px}
 .iHouse .k{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#5f6673;font-weight:700}
 .iHouse .v{font-size:27px;font-weight:800;color:#00d54b;margin:9px 0 5px;letter-spacing:-.03em}
@@ -337,8 +342,23 @@ const CONFIG = {
   // --- ads -----------------------------------------------------------------
   // Popunder network script URL (Adsterra/Hilltop/etc). Loaded on first tap.
   POPUNDER_TAG: "",
-  // Interstitial placement HTML or iframe URL (Monetag vignette, Adsterra...).
+  // Interstitial placement: paste the network's snippet, or an https:// iframe
+  // URL, or leave blank for the house preview. Adsterra has no interstitial
+  // format - its full-page products are popunder and social bar - so this slot
+  // is for a Monetag vignette or a display unit used as the creative.
+  // ESCAPING: a snippet pasted here sits inside this <script> block, so its
+  // closing tag must be written <\/script> (one backslash). A literal closing
+  // tag ends this block and takes the whole page down with it.
   INTERSTITIAL_HTML: "",
+  // Where that full-screen break runs. "gate" (default) = on the third tap,
+  // before the contact form. "done" = on the confirmed screen, as the last
+  // thing they see. "both" = both moments. "off" = never built.
+  // A network's own vignette (Monetag) fires wherever its script decides; this
+  // key only owns our overlay.
+  INTERSTITIAL_ON: "gate",
+  // Seconds the break is held before Continue unlocks. 0 = Continue is live at
+  // once, which is what most verified programs require of an interstitial.
+  INTERSTITIAL_SKIP: 5,
   // Direct link: opens in a new tab. Best iOS earner (popunders are weak there).
   AD_DIRECT_LINK: "",
   // When that tab opens. "done" (default) = only after the entry is captured, so
@@ -901,7 +921,8 @@ mountAd('adGate', slotHtml('GATE', CONFIG.AD_SLOT_GATE), 'AD · SPONSORED');
      1. popunder        one network per tap, rotated across AD_NETWORKS
      2. window.__pop()  the network's own re-call hook, if it exposes one
      3. AD_DIRECT_LINK  new tab, opened where AD_DIRECT_LINK_ON says
-     4. INTERSTITIAL_HTML  overlay at the gate, 5s skip
+     4. INTERSTITIAL_HTML  full-screen overlay, at the gate and/or on the
+                           confirmed screen (INTERSTITIAL_ON), 5s skip
    ------------------------------------------------------------------------ */
 let directFired = false;
 let secondPopDone = false;
@@ -940,6 +961,35 @@ function pickPopunders(stage) {
     if (out.indexOf(n) < 0) out.push(n);
   }
   return out;
+}
+
+/* A pasted placement is real markup, and innerHTML never executes <script>, so
+   every script node has to be rebuilt by hand - otherwise a vignette snippet
+   pasted into CONFIG loads nothing and the screen silently earns zero. A bare
+   https:// URL means "show this in an iframe". Shared by the popunder tag and
+   the interstitial placement so both paste paths behave the same way. */
+function injectPlacement(box, html) {
+  const tag = String(html).trim();
+  if (/^https?:\/\/[^\s"'<>]+$/i.test(tag)) {
+    const f = document.createElement('iframe');
+    f.src = tag;
+    f.width = '300';
+    f.height = '250';
+    f.setAttribute('scrolling', 'no');
+    f.setAttribute('title', 'Advertisement');
+    box.appendChild(f);
+    return;
+  }
+  box.innerHTML = tag;
+  Array.prototype.forEach.call(box.querySelectorAll('script'), function (old) {
+    const s = document.createElement('script');
+    for (let i = 0; i < old.attributes.length; i++) {
+      s.setAttribute(old.attributes[i].name, old.attributes[i].value);
+    }
+    s.async = true;
+    if (old.src) s.src = old.src; else s.textContent = old.textContent;
+    old.parentNode.replaceChild(s, old);
+  });
 }
 
 function loadPopunder(net) {
@@ -1040,20 +1090,48 @@ window.__ppAdReport = function () {
   };
 };
 
-/* --------------------------- interstitial gate --------------------------- */
+/* --------------------------- interstitial gate ---------------------------
+   One overlay, two possible moments. INTERSTITIAL_ON picks between them, so a
+   stage that is switched off never builds the overlay at all. */
 let interOpen = false;
+let interStage = 'gate';
 let lastFocus = null;
 let skipInterval = null;
 
-function openInterstitial() {
+const INTER_TEXT = {
+  gate: { label: 'Step 4 of 5 \u00b7 Sponsored',
+          desc: 'Your position is still held. This partner placement is what keeps the pool free to enter.' },
+  done: { label: 'Sponsored \u00b7 Final step',
+          desc: 'Your entry is confirmed. This partner placement is what keeps the pool free to enter.' }
+};
+
+function interstitialDue(stage) {
+  const on = String(CONFIG.INTERSTITIAL_ON || 'gate').toLowerCase();
+  return on !== 'off' && (on === stage || on === 'both' || on === 'all');
+}
+
+function openInterstitial(stage) {
   if (interOpen) return;
   interOpen = true;
+  interStage = stage === 'done' ? 'done' : 'gate';
   lastFocus = document.activeElement;
+
+  /* Same overlay, honest copy for the stage it is standing on. */
+  const copy = INTER_TEXT[interStage];
+  $('interLabel').textContent = copy.label;
+  $('interDesc').textContent = copy.desc;
 
   const ad = $('interAd');
   if (CONFIG.INTERSTITIAL_HTML && !ad.getAttribute('data-filled')) {
     ad.setAttribute('data-filled', '1');
-    ad.innerHTML = CONFIG.INTERSTITIAL_HTML;
+    ad.classList.add('withFill');
+    /* The partner tag goes in its own column below the house copy, so the
+       "$5,000" panel the screen is built around survives a real tag instead of
+       being wiped by it. */
+    const fill = document.createElement('div');
+    fill.className = 'iFill';
+    injectPlacement(fill, CONFIG.INTERSTITIAL_HTML);
+    ad.insertBefore(fill, $('adGate'));
   }
   /* A real gate tag replaces the house preview instead of stacking under it. */
   const house = ad.querySelector('.iHouse');
@@ -1061,24 +1139,27 @@ function openInterstitial() {
 
   $('inter').classList.add('on');
   document.body.style.overflow = 'hidden';
-  hit('ad_inter');
+  hit(interStage === 'done' ? 'interstitial_done' : 'ad_inter');
 
+  const hold = Math.max(0, parseInt(CONFIG.INTERSTITIAL_SKIP, 10) || 0);
   const btn = $('skipBtn');
   const bar = $('skipBar');
-  btn.disabled = true;
+  btn.disabled = hold > 0;
   btn.classList.remove('ready');
-  btn.textContent = 'Continue in 5';
+  btn.textContent = hold ? 'Continue in ' + hold : 'Continue \u2192';
 
   bar.style.transition = 'none';
-  bar.style.width = '0%';
+  bar.style.width = hold ? '0%' : '100%';
   void bar.offsetWidth;
-  bar.style.transition = 'width 5s linear';
+  bar.style.transition = 'width ' + hold + 's linear';
   bar.style.width = '100%';
 
   $('inter').focus();
 
-  let n = 5;
   clearInterval(skipInterval);
+  if (!hold) { btn.classList.add('ready'); btn.focus(); return; }
+
+  let n = hold;
   skipInterval = setInterval(function () {
     n--;
     if (n > 0) { btn.textContent = 'Continue in ' + n; return; }
@@ -1115,11 +1196,19 @@ $('inter').addEventListener('keydown', function (e) {
 
 $('skipBtn').addEventListener('click', function () {
   if (this.disabled) return;
-  /* "Continue" out of the sponsored break is the highest-intent tap left:
-     they are one field away from the lead, and it is a real user gesture. */
-  fireAd();
+  const stage = interStage;
+  /* "Continue" out of the gate is the highest-intent tap left: they are one
+     field away from the lead, and it is a real user gesture, so it earns.
+     After the entry is submitted there is nobody left to move anywhere, so the
+     same tap only closes the break - firing again there would be a second pop
+     for one visit. */
+  if (stage === 'gate') {
+    fireAd();
+    closeInterstitial();
+    showCapture();
+    return;
+  }
   closeInterstitial();
-  showCapture();
 });
 /* --------------------------- steps + progress ---------------------------- */
 const TOTAL_STEPS = 5;
@@ -1168,7 +1257,7 @@ function showCapture() {
   $('capture').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
 }
 
-function finish() {
+function finish(fresh) {
   step = 5;
   ls.set(KEY.step, 5);
   ls.set(KEY.done, Date.now());
@@ -1179,8 +1268,13 @@ function finish() {
   $('myCode').textContent = myCode();
   renderOffers();
   hit('done');
-  /* The lead is already in KV at this point, so monetising here cannot cost it. */
-  openDirect('ad_direct');
+  /* The lead is already in KV at this point, so monetising here cannot cost it.
+     A full-screen break and a new tab at the same instant would be two
+     full-screen monetisations for one visit - the visitor gets whichever
+     overlay loads last and one of them is wasted. The break wins; the tab only
+     opens on a visit where no break is due. */
+  const breakHere = !!fresh && interstitialDue('done');
+  if (!breakHere) openDirect('ad_direct');
   secondPop();
   /* Networks configured fireOn:'done' fire here, where they cannot collide
      with an OnClick tag that already owns the gate tap. */
@@ -1189,6 +1283,7 @@ function finish() {
      cannot cost it. */
   mountPush();
   $('done').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+  if (breakHere) openInterstitial('done');
 }
 
 /* ------------------------------ queue boost ------------------------------ */
@@ -1347,7 +1442,10 @@ $('form').addEventListener('submit', async function (e) {
   ls.set(KEY.sent, Date.now());
   btn.disabled = false;
   btn.textContent = 'Claim my position \u2192';
-  finish();
+  /* fresh=true: this is a real completion, so the end-of-funnel break (if
+     INTERSTITIAL_ON includes it) may run. Re-visits and the honeypot pass
+     nothing, so a returning visitor is never trapped behind it on load. */
+  finish(true);
 });
 /* --------------------------- referral + share ---------------------------- */
 /* The inbound code (?ref=) and MY OWN code are stored separately. Reusing
@@ -1475,8 +1573,10 @@ $('btn').addEventListener('click', function () {
     $('badge').textContent = 'STEP 4';
     $('tag').textContent = 'Sponsored';
     setProgress(4);
-    openInterstitial();
-    hit('interstitial');
+    /* With the break switched off this tap goes straight to the form instead of
+       dropping the visitor onto a screen with nothing to do. */
+    if (interstitialDue('gate')) { openInterstitial('gate'); hit('interstitial'); }
+    else showCapture();
   }
 });
 

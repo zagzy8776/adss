@@ -37,7 +37,9 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | `SITE_URL` | `https://yourdomain.com` (blank = auto-detect from the browser) | your domain |
 | `POPUNDER_TAG` | one popunder script URL — shorthand for a single-entry `AD_NETWORKS` | Adsterra → Websites → Add site → Popunder tag |
 | `AD_NETWORKS` | array of network objects, so two networks can share the funnel — see [Two networks at once](#two-networks-at-once) | any network |
-| `INTERSTITIAL_HTML` | the vignette/interstitial `<script>` or `<iframe>` snippet | Monetag → OnClick/Vignette zone |
+| `INTERSTITIAL_HTML` | the full-screen break's tag: a vignette `<script>`, an `<img>`/`<iframe>` block, or a bare `https://` iframe URL | Monetag → Vignette zone (Adsterra has no interstitial format) |
+| `INTERSTITIAL_ON` | `"gate"` (default), `"done"`, `"both"` or `"off"` — which moment the break runs | your call |
+| `INTERSTITIAL_SKIP` | seconds Continue stays locked, `5` by default, `0` = live at once | your call |
 | `AD_DIRECT_LINK` | a direct-link URL, opened in a new tab | any network's Direct Link product |
 | `AD_DIRECT_LINK_ON` | `"done"` (default) or `"gate"` | see ad slots below |
 | `SECOND_POP` | `true`/`false` — re-call `window.__pop()` on the confirmed screen | Adsterra exposes the hook |
@@ -98,7 +100,7 @@ localStorage and retried on the next visit. `window.__ppMissing` lists every uns
 | Popunder script | `POPUNDER_TAG` / `AD_NETWORKS[].popunder` | on every monetisable tap (see below) | `AD_BURST` per tap, repeat per `AD_REPEAT_POP` | `ad_<id>`, `ad_pop` |
 | Network re-call | `SECOND_POP` | confirmed screen, +1.2s | 1 | `ad_second` |
 | Direct link | `AD_DIRECT_LINK` | `AD_DIRECT_LINK_ON` | 1 tab total | `ad_direct` |
-| Interstitial | `INTERSTITIAL_HTML` | gate tap, 5s skip | 1 per pageload | `ad_inter` |
+| Interstitial | `INTERSTITIAL_HTML` | `INTERSTITIAL_ON` = gate (default) or the confirmed screen, `INTERSTITIAL_SKIP`s hold | 1 per pageload per stage | `ad_inter`, `interstitial_done` |
 | CPA offers | `OFFERS` | confirmed screen | 5 links shown | `offer_click` |
 
 The eight `AD_SLOT_*` boxes are real reserved containers: each accepts banner HTML (an `<iframe>`,
@@ -123,6 +125,63 @@ tap moves focus to the new tab, so the visitor never sees the interstitial and n
 form — you would trade a lead (worth $0.50–$3) for a direct-link click (worth $0.005–$0.02).
 With `AD_DIRECT_LINK_ON: "gate"` you get the aggressive variant; the default opens the tab after
 the lead is in KV, or on exit-intent if the visitor saw the form and started leaving.
+
+## The full-screen break — and what to paste into it
+
+The overlay (`#inter`) is a real full-screen placement: it covers the page, freezes scrolling, and
+holds its Continue button for `INTERSTITIAL_SKIP` seconds. It needs no tag to run — with
+`INTERSTITIAL_HTML` empty it shows the house panel (the big `$5,000`, "your position is still held"),
+which is why the funnel looks complete out of the box.
+
+`INTERSTITIAL_ON` decides *when* it runs:
+
+| Value | Gate tap (step 3) | Confirmed screen (after submit) |
+|---|---|---|
+| `"gate"` (default) | break opens, Continue → form | nothing |
+| `"done"` | tap goes straight to the form | break opens over the confirmed card |
+| `"both"` | break opens | break opens again |
+| `"off"` | tap goes straight to the form | nothing |
+
+### What you actually paste there
+
+**A network vignette / interstitial** — the only thing that turns this screen into paid inventory:
+
+```js
+INTERSTITIAL_ON: "done",                        // last screen, where the $5,000 lands
+INTERSTITIAL_HTML: "<div id='z1'></div><script src='//libtl.com/sdk.js' data-zone='1234567' data-sdk='show_1234567'><\/script>",
+```
+
+Three rules, and each one is a page-killer if ignored:
+
+1. **Escape the closing tag.** A literal `</script>` inside `CONFIG` ends the page's `<script>` block
+   and the entire funnel stops working. Write `<\/script>`. (A tag with no closing tag — a bare
+   `<img>` or `<iframe>` — needs no escaping.)
+2. **The tag goes in its own column, under the house panel.** The `$5,000` copy stays visible while
+   the partner creative renders below it, instead of the tag wiping the panel out.
+3. **Scripts are re-created after insertion**, because `innerHTML` never executes them. That is what
+   makes a pasted `data-zone` snippet actually load rather than quietly render an empty div.
+
+**A hosted creative URL only?** Paste just the `https://…` URL: it renders as a 300×250 iframe
+(`?click=`, `?size=` and the like still work). No escaping needed.
+
+**Adsterra has no interstitial format.** Its full-page products are Popunder and Social Bar, and its
+display units are iframes. So there are two honest options for this screen on Adsterra: put a
+320×50/300×250 unit in `AD_SLOT_GATE` (or `AD_SLOT_DONE`) and let it sit *inside* the break, or fill
+the break from Monetag and keep Adsterra for the banners and the popunder.
+
+### Behaviour worth knowing
+
+- A network vignette usually opens itself on load, wherever its script runs. If you paste one and it
+  already covers the page, set `INTERSTITIAL_ON: "off"` — otherwise you are stacking two full-screen
+  ads on one visit, which is the double-billing pattern that gets accounts suspended.
+- When the break is due on the confirmed screen, the direct-link tab is **skipped** for that visit
+  (`finish(true)`): two full-screen monetisations at the same instant means the visitor sees whichever
+  loads last and the other is wasted.
+- A returning visitor who reloads the confirmed screen is **not** trapped: the break only runs on a
+  real completion, not on the boot path.
+- Continue on the gate break still fires the network (highest-intent tap of the funnel). Continue on
+  the end-of-funnel break only closes — the lead is already stored, and a second pop there would be
+  a second pop for one visit.
 
 ## Two networks at once
 
@@ -399,4 +458,21 @@ npx serve .          # or: python -m http.server
 
 Open on a 390px-wide viewport. Check `console` for the `[PayoutPool]` setup warnings; they are
 expected until `CONFIG` is filled.
+
+### The probes
+
+Headless Chrome drives the real page; no network leaves the machine. Each one prints `PASS/FAIL` per
+assertion and a `n/n passed` line, and exits non-zero on any failure.
+
+| Probe | What it proves |
+|---|---|
+| `node _head.mjs` | head order: Monetag tags and `meta charset` in the right place |
+| `node _admap.mjs` | all eight boxes: which unit fills which slot, right key, right size, unsold slots invisible |
+| `node _adsnet.mjs` | `AD_NETWORKS` arbitration: rotation per visitor, `AD_BURST`, `fireOn: 'done'` confinement |
+| `node _adinter.mjs` | the full-screen break: `INTERSTITIAL_ON` gate/done/both/off, hold timer, returning visitor, pasted tag + escaping |
+| `node _adtag.mjs` / `node _adtag2.mjs` | the live network tags as shipped |
+| `node _adview.mjs` | screenshots of the funnel, plain and with `?addebug=1` |
+| `node _adlive.mjs` | a real Adsterra render attempt (expected to render nothing off an unapproved domain) |
+| `node _swtest2.mjs` | the push service worker |
+
 
