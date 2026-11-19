@@ -60,7 +60,7 @@ body{background:#08090b;color:#eef1f5;font-family:Inter,system-ui,-apple-system,
 #clock{margin-left:auto;color:#f5b942;font-variant-numeric:tabular-nums;font-weight:700}
 
 .ticker-wrap{height:104px;overflow:hidden;position:relative;background:#0a0b0e}
-#ticker{will-change:transform;animation:sl 26s linear infinite}
+#ticker{will-change:transform;animation:sl 26s linear infinite;animation-play-state:running;display:block}
 .ticker-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(180deg,#08090b,transparent 26%,transparent 74%,#08090b)}
 .tR{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:11px}
@@ -270,6 +270,25 @@ img,video,canvas,svg{max-width:100%}
 @keyframes ppBulbs{50%{transform:rotate(7.5deg)}}
 @media(prefers-reduced-motion:reduce){#ppWheelHome:before,#ppWheelHome .pp-aura,#ppWheelHome .pp-bulbs{animation:none!important}#ppWheelHome .pp-wheel,#ppWheelHome .pp-upright{transition-duration:.01ms!important}}
 </style>
+<style>
+/* Premium wheel treatment: restrained palette, legible cash denominations and precise pointer. */
+#ppWheelHome{background:radial-gradient(ellipse at 50% 30%,#17342d 0%,#0b171a 55%,#080e13 100%);border:1px solid #31564b;box-shadow:0 18px 50px #0009,inset 0 1px #ffffff12}
+#ppWheelHome:before{opacity:.18}
+#ppWheelHome .pp-eyebrow{color:#d9bb77;letter-spacing:.2em;font-weight:700}
+#ppWheelHome h2{font-weight:800;letter-spacing:-.045em}
+#ppWheelHome .pp-wheel{border:7px solid #102a2a;background:conic-gradient(from -22.5deg,#155a4b 0deg 45deg,#163d42 45deg 90deg,#1b6855 90deg 135deg,#174b50 135deg 180deg,#8b6a2d 180deg 225deg,#1d594b 225deg 270deg,#21494b 270deg 315deg,#134d46 315deg 360deg)}
+#ppWheelHome .pp-wheel:after{background:repeating-conic-gradient(from -22.5deg,transparent 0deg 44.6deg,#ffffff35 44.7deg 45deg);inset:0}
+#ppWheelHome .pp-prize{width:26%;text-shadow:0 1px 5px #0008}
+#ppWheelHome .pp-prize .pp-symbol{display:none}
+#ppWheelHome .pp-prize strong{font-size:clamp(18px,5vw,25px);font-weight:850;letter-spacing:-.03em;color:#fff9e9}
+#ppWheelHome .pp-center{width:72px;height:72px;border:2px solid #e0c180;background:radial-gradient(circle at 35% 25%,#284e47,#102a2b);box-shadow:0 0 0 5px #0b2222,0 4px 20px #0008;color:#f1d59c;font-size:12px;letter-spacing:.12em}
+#ppWheelHome .pp-hub{width:12px;height:12px;background:#d9ba7b;border:2px solid #18302d;box-shadow:none}
+#ppWheelHome .pp-pin{top:-13px;border-left:12px solid transparent;border-right:12px solid transparent;border-top:28px solid #f2d18b;filter:drop-shadow(0 2px 4px #0008)}
+#ppWheelHome .pp-pin:after{display:none}
+#ppWheelHome .pp-action{border-radius:12px;background:linear-gradient(120deg,#0f865d,#0d684d);border:1px solid #38b98b;box-shadow:0 8px 20px #0007;letter-spacing:.02em}
+#ppWheelHome .pp-wallet,#ppWheelHome #ppDailyDashboard{background:#0c2221!important;border-color:#31544c!important}
+@media(prefers-reduced-motion:reduce){#ppWheelHome .pp-wheel.spinning{transition:none!important}}
+</style>
 </head>
 <body>
 <a class="sr-only" href="#btn">Skip to the entry steps</a>
@@ -374,11 +393,11 @@ img,video,canvas,svg{max-width:100%}
 <section class="pp-spin-link"><a href="#ppWheelHome">🎡 Spin for cash prizes — two free spins daily ↓</a><small>Cash spins are separate from entry registration; completing the form does not affect spin odds.</small></section>
 <section id="ppWheelHome" aria-labelledby="ppWheelHeading">
  <div class="pp-eyebrow">✦ PAYOUTPOOL REWARDS ✦</div>
- <h2 id="ppWheelHeading">Spin the wheel</h2>
- <p class="pp-desc">The $5,000 cash prize pool offers $5, $20 and $100 awards while inventory lasts. Results come from the server, not the animation.</p>
- <div class="pp-wallet" aria-label="Verified rewards balance"><div><span class="pp-wallet-label">🎁 Your rewards activity</span><strong id="ppVerifiedRewards" class="pp-wallet-value">No results yet</strong><span id="ppSpinCount" class="pp-wallet-label">2 spins available today</span><span class="pp-wallet-label">Wheel results on this device</span></div><div style="text-align:right;min-width:100px;border-left:1px solid #497c68;padding-left:12px"><span class="pp-wallet-label">Cash wheel results</span><strong id="ppCashResultTotal" class="pp-wallet-value">$0</strong><span class="pp-wallet-label">Not yet claimable</span></div></div>
+ <h2 id="ppWheelHeading">The cash wheel</h2>
+ <p class="pp-desc">Explore available cash prize tiers. The server determines results; the wheel animation only displays them.</p>
+ <div class="pp-wallet" aria-label="Verified rewards balance"><div><span class="pp-wallet-label">Your recent results</span><strong id="ppVerifiedRewards" class="pp-wallet-value">No results yet</strong><span id="ppSpinCount" class="pp-wallet-label">2 spins available today</span><span class="pp-wallet-label">Wheel results on this device</span></div><div style="text-align:right;min-width:100px;border-left:1px solid #497c68;padding-left:12px"><span class="pp-wallet-label">Cash wheel results</span><strong id="ppCashResultTotal" class="pp-wallet-value">$0</strong><span class="pp-wallet-label">Not yet claimable</span></div></div>
  <div id="ppDailyDashboard" style="margin:14px 0 8px;text-align:left;border:1px solid #396c5c;border-radius:17px;background:#0d2727;padding:15px">
- <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong style="font-size:15px;color:#eaffed">📅 Daily spin rewards</strong><strong id="ppDailyLeft" style="font-size:13px;color:#b9ffcf">2 / 2 left</strong></div>
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong style="font-size:15px;color:#eaffed">Daily spins</strong><strong id="ppDailyLeft" style="font-size:13px;color:#b9ffcf">2 / 2 left</strong></div>
  <p style="font-size:12px;color:#a8cdbd;margin:8px 0">You can spin twice per UTC day. This is a cash-prize game, not a loyalty-points program.</p>
  
  <div style="margin-top:12px;border-top:1px solid #365b51;padding-top:10px"><strong style="color:white;font-size:13px">📋 Your spin history</strong><div id="ppResultHistory" style="font-size:12px;line-height:1.6;color:#b7d8c7;margin-top:5px">No spins yet.</div><p style="font-size:11px;color:#92b3a8;margin:7px 0 0">Your spin history and cash wheel results are tracked here. Cash awards are recorded as pending claims. Claim review and payout are separate steps.</p></div>
@@ -400,7 +419,7 @@ img,video,canvas,svg{max-width:100%}
 <div id="ppAfterSpins" hidden style="margin:15px 0;padding:18px;border:1px solid #5d9378;border-radius:18px;background:linear-gradient(125deg,#164738,#142639);text-align:left"><strong style="font-size:17px;color:#eaffeb">🧩 Keep playing: Match the gifts</strong><p style="color:#b9ddce;font-size:12px;line-height:1.5">Your two daily spins are complete. Try this free memory challenge while you wait for tomorrow. No cash or prizes are awarded by this game.</p><div id="ppMatchGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0"></div><div id="ppMatchStatus" role="status" style="font-size:12px;color:#ddf7e5;margin:8px 0">Match all four pairs!</div><button id="ppMatchReset" type="button" style="padding:11px 16px;background:#a5f5c1;color:#103826;border:0;border-radius:10px;font-weight:800">Play again</button></div> <aside class="adbox pp-wheel-ad" id="adWheel" data-slot="wheel" aria-label="Advertisement" style="max-width:300px;margin:14px auto"></aside>
  <button id="ppHomeSpinBtn" class="pp-action" type="button">✦ TRY A SPIN</button>
  <p id="ppHomeSpinStatus" class="pp-result" role="status" aria-live="polite">Tap to spin the wheel.</p>
- <p class="pp-note">Wheel graphics are illustrative, not a chart of winning odds. Initial server selection weights are $5: 70%, $20: 25%, $100: 5%, subject to remaining inventory. No registration required. Real prize results are recorded on the server. Cash awards remain pending until verified and approved for payout.</p>
+ <p class="pp-note">Illustrative segments are not proportional to winning odds. Initial server selection weights are $5: 70%, $20: 25%, $100: 5%, subject to remaining inventory. No registration required. Real prize results are recorded on the server. Cash awards remain pending until verified and approved for payout.</p>
  <a class="pp-link" href="/claims.html">View your prize claims and messages →</a> <a class="pp-link" href="/rewards.html">See all rewards →</a>
 </section>
 <script>
@@ -410,15 +429,16 @@ const btn=document.getElementById('ppHomeSpinBtn'),wheel=document.getElementById
 const left=document.getElementById('ppDailyLeft'),count=document.getElementById('ppSpinCount'),results=document.getElementById('ppVerifiedRewards'),history=document.getElementById('ppResultHistory'),cash=document.getElementById('ppCashResultTotal'),after=document.getElementById('ppAfterSpins'),streak=document.getElementById('ppStreak'),points=document.getElementById('ppPoints'),calendar=document.getElementById('ppDailyCalendar');
 const matchGrid=document.getElementById('ppMatchGrid'),matchStatus=document.getElementById('ppMatchStatus'),matchReset=document.getElementById('ppMatchReset');
 const labels=[...wheel.querySelectorAll('.pp-upright')];
-function setWheelPrizes(prizes){const available=prizes.filter(p=>p.inventory>0);labels.forEach(label=>{const symbol=label.querySelector('.pp-symbol'),name=label.querySelector('strong');if(symbol)symbol.textContent='✦';if(name)name.textContent='PRIZE'});wheel.setAttribute('aria-label','Illustrative wheel. Server cash prizes: '+available.map(p=>p.title).join(', '));}
+const visualTiers=['$5','$20','$5','$5','$100','$5','$20','$5'];
+function setWheelPrizes(prizes){const available=prizes.filter(p=>Number(p.inventory)>0);labels.forEach((label,i)=>{const symbol=label.querySelector('.pp-symbol'),name=label.querySelector('strong');if(symbol)symbol.textContent='';if(name)name.textContent=visualTiers[i]});wheel.setAttribute('aria-label','Illustrative eight-sector cash wheel; the backend determines actual results and probabilities. Available tiers: '+available.map(p=>p.title).join(', '));}
 const makeRequestId=()=>{if(typeof crypto.randomUUID==='function')return crypto.randomUUID();const b=new Uint8Array(16);crypto.getRandomValues(b);b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;return [...b].map((v,i)=>([4,6,8,10].includes(i)?'-':'')+v.toString(16).padStart(2,'0')).join('')};
 
 let campaign=null,busy=false,rotation=0,used=0,cap=2;
 const api=async(path,method='GET',data)=>{const r=await fetch('/api/'+path,{method,credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:data?JSON.stringify(data):undefined});const j=await r.json();if(!r.ok)throw Error(j.error||'Server error');return j};
 function resetMatch(){const icons=['🎁','📱','⭐','💎','🎁','📱','⭐','💎'];for(let i=icons.length-1;i>0;i--){const j=crypto.getRandomValues(new Uint32Array(1))[0]%(i+1);[icons[i],icons[j]]=[icons[j],icons[i]]}matchGrid.replaceChildren();let shown=[],matched=0,waiting=false;matchStatus.textContent='Match all four pairs!';icons.forEach((icon,i)=>{const b=document.createElement('button');b.type='button';b.textContent='?';b.style.cssText='min-height:58px;border:1px solid #5f987e;border-radius:12px;background:#214b40;color:white;font-size:24px;font-weight:900';b.addEventListener('click',()=>{if(waiting||b.disabled||shown.includes(i))return;b.textContent=icon;shown.push(i);if(shown.length===2){const [a,d]=shown;if(icons[a]===icons[d]){matchGrid.children[a].disabled=true;matchGrid.children[d].disabled=true;matched++;shown=[];matchStatus.textContent=matched===4?'All pairs matched!':matched+' of 4 pairs matched'}else{waiting=true;setTimeout(()=>{matchGrid.children[a].textContent='?';matchGrid.children[d].textContent='?';shown=[];waiting=false},800)}}});matchGrid.append(b)})}
 matchReset.addEventListener('click',resetMatch);resetMatch();
-async function refresh(){const [campaigns,activity,prizeData]=await Promise.all([api('campaigns'),api('activity'),api('prize-wheel')]);setWheelPrizes(prizeData.prizes);campaign=campaigns.campaigns[0]||null;used=Number(activity.usage[0]?.used||0);cap=Number(activity.daily_cap||2);const remaining=Math.max(0,cap-used);left.textContent=remaining+' / '+cap+' spins left today';count.textContent=remaining+' of '+cap+' daily spins remaining';const spins=activity.spins;results.textContent=spins.length?spins.slice(0,2).map(x=>x.prize_title||'No prize').join(' · '):'No prizes yet';history.textContent=spins.length?spins.slice(0,8).map(x=>x.prize_title||'No prize').join(' · '):'No spins yet';cash.textContent=activity.wallet.length?activity.wallet.map(x=>x.currency+' '+(Number(x.verified_minor)/100).toFixed(2)+' verified · '+(Number(x.pending_minor)/100).toFixed(2)+' pending').join(' · '):'$0.00 verified';after.hidden=remaining!==0;btn.disabled=busy||!campaign||used>=cap;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=2?'DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';if(!campaign)status.textContent='Real prizes require a funded, active campaign. No prizes are being awarded right now.'}
-btn.addEventListener('click',async()=>{if(busy||!campaign||used>=2)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:makeRequestId()});const index=crypto.getRandomValues(new Uint32Array(1))[0]%labels.length;const current=((rotation%360)+360)%360,desired=(360-index*45)%360;rotation+=1800+((desired-current+360)%360);wheel.classList.add('spinning');wheel.style.transform='rotate('+rotation+'deg)';labels.forEach(label=>label.style.transform='rotate('+(-rotation)+'deg)');await new Promise(r=>setTimeout(r,4200));wheel.classList.remove('spinning');used=Math.max(used,Number(result.used||used));status.textContent=result.prize_title?'Server-confirmed result: '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false;btn.disabled=!campaign||used>=2;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=2?'DAILY SPINS COMPLETE':'✦ '+Math.max(0,cap-used)+' SPIN'+(cap-used===1?'':'S')+' LEFT'}});
+async function refresh(){const [campaigns,activity,prizeData]=await Promise.all([api('campaigns'),api('activity'),api('prize-wheel')]);setWheelPrizes(prizeData.prizes);campaign=campaigns.campaigns[0]||null;used=Number(activity.usage[0]?.used||0);cap=Number(activity.daily_cap||2);const remaining=Math.max(0,cap-used);left.textContent=remaining+' / '+cap+' spins left today';count.textContent=remaining+' of '+cap+' daily spins remaining';const spins=activity.spins;results.textContent=spins.length?spins.slice(0,2).map(x=>x.prize_title||'No prize').join(' · '):'No prizes yet';history.textContent=spins.length?spins.slice(0,8).map(x=>x.prize_title||'No prize').join(' · '):'No spins yet';cash.textContent=activity.wallet.length?activity.wallet.map(x=>x.currency+' '+(Number(x.verified_minor)/100).toFixed(2)+' verified · '+(Number(x.pending_minor)/100).toFixed(2)+' pending').join(' · '):'$0.00 verified';after.hidden=remaining!==0;btn.disabled=busy||!campaign||used>=cap;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=cap?'DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';if(!campaign)status.textContent='Real prizes require a funded, active campaign. No prizes are being awarded right now.'}
+btn.addEventListener('click',async()=>{if(busy||!campaign||used>=cap)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:makeRequestId()});const matching=visualTiers.map((tier,i)=>tier===result.prize_title?i:-1).filter(i=>i>=0);const options=matching.length?matching:visualTiers.map((_,i)=>i);const index=options[crypto.getRandomValues(new Uint32Array(1))[0]%options.length];const current=((rotation%360)+360)%360,desired=(360-index*45)%360;rotation+=1800+((desired-current+360)%360);wheel.classList.add('spinning');wheel.style.transform='rotate('+rotation+'deg)';labels.forEach(label=>label.style.transform='rotate('+(-rotation)+'deg)');await new Promise(r=>setTimeout(r,4200));wheel.classList.remove('spinning');used=Math.max(used,Number(result.used||used));status.textContent=result.prize_title?'Server-confirmed result: '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false;btn.disabled=!campaign||used>=cap;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=cap?'DAILY SPINS COMPLETE':'✦ '+Math.max(0,cap-used)+' SPIN'+(cap-used===1?'':'S')+' LEFT'}});
 btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabled=true;btn.textContent='TEMPORARILY UNAVAILABLE';status.textContent='Prize service unavailable: '+e.message});
 })();
 </script>
@@ -802,10 +822,12 @@ function rowHtml(r, i) {
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 function renderTicker(rows) {
-  const once = rows.map(rowHtml).join('');
+  const once = rows.map((row,i)=>rowHtml(row,i)).join('');
   /* Duplicating the list only makes sense because the animation scrolls -50%.
      With reduced motion there is no scroll, so show one static, scrollable copy. */
-  $('ticker').innerHTML = reduceMotion.matches ? once : once + once;
+  const track=$('ticker');track.innerHTML = reduceMotion.matches ? once : once + once;
+  track.style.animation=reduceMotion.matches?'none':'sl 26s linear infinite';
+  track.style.animationPlayState='running';
   document.querySelector('.ticker-wrap').style.height = reduceMotion.matches ? 'auto' : '104px';
 }
 
