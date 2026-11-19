@@ -350,14 +350,24 @@ const CONFIG = {
   // closing tag must be written <\/script> (one backslash). A literal closing
   // tag ends this block and takes the whole page down with it.
   INTERSTITIAL_HTML: "",
-  // Where that full-screen break runs. "gate" (default) = on the third tap,
-  // before the contact form. "done" = on the confirmed screen, as the last
-  // thing they see. "both" = both moments. "off" = never built.
-  // A network's own vignette (Monetag) fires wherever its script decides; this
-  // key only owns our overlay.
-  INTERSTITIAL_ON: "gate",
+  // A full-screen the page ALREADY carries, shown on demand at the break: a
+  // zone loaded in <head> registers show_<zone>() when it can open one. Use
+  // this instead of pasting that zone's <script> here - one zone loaded twice
+  // in a pageview double-counts its impression and reads as invalid traffic, so
+  // a duplicate paste is refused with a console warning (see injectPlacement).
+  // Check the name in the console: typeof window.show_312446.
+  INTERSTITIAL_TRIGGER: "show_312446",
+  // Where the full-screen break runs. "gate" = on the third tap, before the
+  // contact form. "done" (default) = on the confirmed screen, as the last thing
+  // they see. "both" = both moments. "off" = never built.
+  // On "done" the break only runs when it can pay - a pasted placement or a live
+  // trigger - because a house-only pause there just delays a card that already
+  // carries a banner. A network's own vignette fires wherever its script
+  // decides; this key only owns our overlay.
+  INTERSTITIAL_ON: "done",
   // Seconds the break is held before Continue unlocks. 0 = Continue is live at
   // once, which is what most verified programs require of an interstitial.
+  // Our overlay only - a network's own ad closes itself.
   INTERSTITIAL_SKIP: 5,
   // Direct link: opens in a new tab. Best iOS earner (popunders are weak there).
   AD_DIRECT_LINK: "",
@@ -501,13 +511,26 @@ const siteUrl = () => (CONFIG.SITE_URL || location.origin).replace(/\/+$/, '');
 
 /* Whichever of these is still empty, the page says so in the console. */
 (function setupCheck() {
+  /* A zone trigger covers INTERSTITIAL_HTML, so it is not reported missing then. */
   const keys = ['INTERSTITIAL_HTML', 'AD_DIRECT_LINK', 'CAPTURE_ENDPOINT', 'FEED_URL', 'ONESIGNAL_APP_ID', 'PUSH_TAG'];
-  const missing = keys.filter(k => !CONFIG[k]);
+  const missing = keys.filter(k => !CONFIG[k] && !(k === 'INTERSTITIAL_HTML' && CONFIG.INTERSTITIAL_TRIGGER));
   if (!CONFIG.POPUNDER_TAG && !wiredNetworks().length) missing.unshift('POPUNDER_TAG or AD_NETWORKS');
   if (!CONFIG.OFFERS.length) missing.push('OFFERS');
   window.__ppMissing = missing;
   if (missing.length) {
     console.warn('[PayoutPool] Not configured (see README.md): ' + missing.join(', '));
+  }
+  /* A trigger that never registers is a break that can never pay, and the
+     confirmed-screen break stays shut rather than pausing for nothing. The zone
+     script is async, so wait for it instead of judging at load. */
+  if (CONFIG.INTERSTITIAL_TRIGGER && !interstitialHook()) {
+    setTimeout(function () {
+      if (interstitialHook()) return;
+      window.__ppHookMissing = CONFIG.INTERSTITIAL_TRIGGER;
+      console.warn('[PayoutPool] ' + CONFIG.INTERSTITIAL_TRIGGER + '() never registered, so the full-screen break has ' +
+        'nothing to show and stays shut on "' + CONFIG.INTERSTITIAL_ON + '". Check typeof window.' +
+        CONFIG.INTERSTITIAL_TRIGGER + ' in the console.');
+    }, 4000);
   }
 })();
 
@@ -967,7 +990,22 @@ function pickPopunders(stage) {
    every script node has to be rebuilt by hand - otherwise a vignette snippet
    pasted into CONFIG loads nothing and the screen silently earns zero. A bare
    https:// URL means "show this in an iframe". Shared by the popunder tag and
-   the interstitial placement so both paste paths behave the same way. */
+   the interstitial placement so both paste paths behave the same way.
+
+   A tag whose src+zone is already on the page is refused: pasting the same
+   <script> twice loads one zone twice in a pageview, which double-counts its
+   impression and reads as invalid traffic to the network. Returns whether
+   anything was actually injected. */
+function alreadyOnPage(src, zone) {
+  if (!src) return false;
+  const tags = document.querySelectorAll('script[src]');
+  for (let i = 0; i < tags.length; i++) {
+    if (tags[i].getAttribute('src') !== src) continue;
+    if (!zone || tags[i].getAttribute('data-zone') === zone) return true;
+  }
+  return false;
+}
+
 function injectPlacement(box, html) {
   const tag = String(html).trim();
   if (/^https?:\/\/[^\s"'<>]+$/i.test(tag)) {
@@ -978,10 +1016,20 @@ function injectPlacement(box, html) {
     f.setAttribute('scrolling', 'no');
     f.setAttribute('title', 'Advertisement');
     box.appendChild(f);
-    return;
+    return true;
   }
   box.innerHTML = tag;
+  let injected = false;
   Array.prototype.forEach.call(box.querySelectorAll('script'), function (old) {
+    const src = old.getAttribute('src');
+    const zone = old.getAttribute('data-zone');
+    if (alreadyOnPage(src, zone)) {
+      console.warn('[PayoutPool] placement refused: ' + src + (zone ? ' (zone ' + zone + ')' : '') +
+        ' is already loaded on this page. Loading one zone twice double-counts its impression and reads as invalid traffic - ' +
+        'trigger it with CONFIG.INTERSTITIAL_TRIGGER instead.');
+      old.parentNode.removeChild(old);
+      return;
+    }
     const s = document.createElement('script');
     for (let i = 0; i < old.attributes.length; i++) {
       s.setAttribute(old.attributes[i].name, old.attributes[i].value);
@@ -989,7 +1037,9 @@ function injectPlacement(box, html) {
     s.async = true;
     if (old.src) s.src = old.src; else s.textContent = old.textContent;
     old.parentNode.replaceChild(s, old);
+    injected = true;
   });
+  return injected || !!(box.querySelector('iframe,img,ins,div'));
 }
 
 function loadPopunder(net) {
@@ -1082,6 +1132,9 @@ window.__ppAdReport = function () {
       popHook: typeof window.__pop === 'function',
       direct: !!CONFIG.AD_DIRECT_LINK,
       interstitial: !!CONFIG.INTERSTITIAL_HTML,
+      trigger: CONFIG.INTERSTITIAL_TRIGGER || '',
+      hookLive: !!interstitialHook(),
+      breakStage: CONFIG.INTERSTITIAL_ON,
       offers: CONFIG.OFFERS.length,
       burst: CONFIG.AD_BURST,
       repeatPop: !!CONFIG.AD_REPEAT_POP
@@ -1110,10 +1163,41 @@ function interstitialDue(stage) {
   return on !== 'off' && (on === stage || on === 'both' || on === 'all');
 }
 
+/* A zone this page already loads, asked to show its own full-screen. Nothing is
+   downloaded a second time, so one impression stays one impression. */
+function interstitialHook() {
+  const name = CONFIG.INTERSTITIAL_TRIGGER;
+  if (!name) return null;
+  return typeof window[name] === 'function' ? window[name] : null;
+}
+
+/* The gate break is part of the funnel and runs even with nothing sold in it -
+   it holds the position while the form is one tap away. The confirmed-screen
+   break is not: there it has to be able to pay, because a house-only pause in
+   front of the confirmed card only delays the banner that card already holds. */
+function breakDue(stage) {
+  if (!interstitialDue(stage)) return false;
+  return stage !== 'done' || !!(CONFIG.INTERSTITIAL_HTML || interstitialHook());
+}
+
+/* Runs the break for a stage. Returns true when something took the screen over:
+   our overlay, or the network's own full-screen. */
 function openInterstitial(stage) {
-  if (interOpen) return;
+  if (interOpen) return false;
+  const which = stage === 'done' ? 'done' : 'gate';
+
+  /* Network ad first. It covers the page itself, so opening our overlay under
+     it would be two full-screens for one tap. */
+  const hook = interstitialHook();
+  if (hook) {
+    hit(which === 'done' ? 'interstitial_done' : 'ad_inter');
+    try { hook(); }
+    catch (e) { console.warn('[PayoutPool] ' + CONFIG.INTERSTITIAL_TRIGGER + '() threw: ' + e.message); }
+    return true;
+  }
+
   interOpen = true;
-  interStage = stage === 'done' ? 'done' : 'gate';
+  interStage = which;
   lastFocus = document.activeElement;
 
   /* Same overlay, honest copy for the stage it is standing on. */
@@ -1124,14 +1208,16 @@ function openInterstitial(stage) {
   const ad = $('interAd');
   if (CONFIG.INTERSTITIAL_HTML && !ad.getAttribute('data-filled')) {
     ad.setAttribute('data-filled', '1');
-    ad.classList.add('withFill');
     /* The partner tag goes in its own column below the house copy, so the
        "$5,000" panel the screen is built around survives a real tag instead of
-       being wiped by it. */
+       being wiped by it. A placement that was refused (duplicate zone) leaves
+       no column behind - the house panel gets the room back. */
     const fill = document.createElement('div');
     fill.className = 'iFill';
-    injectPlacement(fill, CONFIG.INTERSTITIAL_HTML);
-    ad.insertBefore(fill, $('adGate'));
+    if (injectPlacement(fill, CONFIG.INTERSTITIAL_HTML)) {
+      ad.classList.add('withFill');
+      ad.insertBefore(fill, $('adGate'));
+    }
   }
   /* A real gate tag replaces the house preview instead of stacking under it. */
   const house = ad.querySelector('.iHouse');
@@ -1157,7 +1243,7 @@ function openInterstitial(stage) {
   $('inter').focus();
 
   clearInterval(skipInterval);
-  if (!hold) { btn.classList.add('ready'); btn.focus(); return; }
+  if (!hold) { btn.classList.add('ready'); btn.focus(); return true; }
 
   let n = hold;
   skipInterval = setInterval(function () {
@@ -1169,6 +1255,7 @@ function openInterstitial(stage) {
     btn.textContent = 'Continue \u2192';
     btn.focus();
   }, 1000);
+  return true;
 }
 
 function closeInterstitial() {
@@ -1273,7 +1360,7 @@ function finish(fresh) {
      full-screen monetisations for one visit - the visitor gets whichever
      overlay loads last and one of them is wasted. The break wins; the tab only
      opens on a visit where no break is due. */
-  const breakHere = !!fresh && interstitialDue('done');
+  const breakHere = !!fresh && breakDue('done');
   if (!breakHere) openDirect('ad_direct');
   secondPop();
   /* Networks configured fireOn:'done' fire here, where they cannot collide
@@ -1573,10 +1660,16 @@ $('btn').addEventListener('click', function () {
     $('badge').textContent = 'STEP 4';
     $('tag').textContent = 'Sponsored';
     setProgress(4);
-    /* With the break switched off this tap goes straight to the form instead of
-       dropping the visitor onto a screen with nothing to do. */
-    if (interstitialDue('gate')) { openInterstitial('gate'); hit('interstitial'); }
-    else showCapture();
+    /* With the break switched off - or with nothing to show - this tap goes
+       straight to the form instead of dropping the visitor onto a screen with
+       nothing to do. */
+    if (breakDue('gate')) {
+      openInterstitial('gate');
+      hit('interstitial');
+      /* A network hook covers the page itself and has no Continue button of
+         ours, so the form has to be sitting behind it. */
+      if (!interOpen) showCapture();
+    } else showCapture();
   }
 });
 
