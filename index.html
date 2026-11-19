@@ -341,8 +341,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
   spinCount.textContent=remaining+' of 2 daily spins remaining';
   results.textContent=history.length?history.slice(-2).reverse().join(' · '):'No results yet';
   const cash=history.reduce((sum,item)=>sum+({'$5':5,'$20':20,'$100':100}[item]||0),0);
-  cashTotal.textContent='
-  resultHistory.textContent=history.length?history.slice(-8).reverse().join(' · '):'No spins yet.';
+  cashTotal.textContent='.textContent=history.length?history.slice(-8).reverse().join(' · '):'No spins yet.';
   streakEl.textContent='🔥 '+state.streak+'-day streak';
   pointsEl.textContent='⭐ '+state.points+' loyalty points';
   calendar.replaceChildren();
