@@ -163,30 +163,34 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
 .ok-s{display:block;font-size:9.5px;color:#8b93a1;margin-top:1px}
 .ok-a{margin-left:auto;color:#5f6673;font-size:15px}
 
-/* ---------- interstitial ---------- */
-#inter{position:fixed;inset:0;background:#08090b;z-index:9000;display:none;flex-direction:column;
-  padding:max(14px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+/* trust strip — platform credibility row */
+.pp-trust{display:flex;flex-wrap:wrap;gap:6px 10px;justify-content:center;margin:10px 0 2px;padding:0 4px}
+.pp-trust span{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#8b93a1;background:#0e1218;border:1px solid #1a2029;border-radius:999px;padding:5px 10px;font-weight:600;letter-spacing:.01em}
+.pp-trust i{font-style:normal;color:#00d54b;font-size:11px}
+
+/* ---------- interstitial (full-screen video / partner break) ---------- */
+#inter{position:fixed;inset:0;background:#050607;z-index:9000;display:none;flex-direction:column;
+  padding:max(12px,env(safe-area-inset-top)) 12px max(14px,env(safe-area-inset-bottom))}
 #inter.on{display:flex}
 #inter:focus{outline:none}
-.iTop{display:flex;align-items:center;gap:8px;font-size:9.5px;color:#7b8390;letter-spacing:.09em;text-transform:uppercase;font-weight:700}
-.iTop span:last-child{margin-left:auto;color:#5f6673}
-#interAd{flex:1;display:grid;place-items:center;align-content:center;margin:12px 0;border-radius:14px;overflow:hidden;
-  background:#0e1014;border:1px solid #1b1f26;min-height:300px}
+.iTop{display:flex;align-items:center;gap:8px;font-size:9.5px;color:#8b93a1;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+.iTop span:last-child{margin-left:auto;color:#5f6673;font-variant-numeric:tabular-nums}
+#interAd{flex:1;display:grid;place-items:center;align-content:center;margin:10px 0;border-radius:16px;overflow:hidden;
+  background:#0a0c10;border:1px solid #1c222c;min-height:min(58vh,420px);box-shadow:inset 0 0 0 1px #ffffff08}
 #interAd iframe,#interAd img{max-width:100%;border:0}
-#interAd .iFill{max-width:100%;display:grid;place-items:center}
-/* A pasted partner tag plus the house copy has to fit one phone screen, so the
-   panel shrinks instead of pushing Continue off the bottom. */
-#interAd.withFill .iHouse{padding:14px 16px}
+#interAd video{display:block;width:100%;max-height:min(62vh,520px);height:auto;background:#000;border:0}
+#interAd .iFill{max-width:100%;width:100%;display:grid;place-items:center}
+#interAd.withFill .iHouse{padding:12px 14px}
 #interAd.withFill .iHouse .v{font-size:20px;margin:6px 0 3px}
-.iHouse{text-align:center;padding:26px 20px}
-.iHouse .k{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#5f6673;font-weight:700}
-.iHouse .v{font-size:27px;font-weight:800;color:#00d54b;margin:9px 0 5px;letter-spacing:-.03em}
-.iHouse p{margin:0;font-size:11.5px;color:#9aa1ad;line-height:1.55}
+.iHouse{text-align:center;padding:28px 22px}
+.iHouse .k{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#6b7280;font-weight:700}
+.iHouse .v{font-size:28px;font-weight:800;color:#00d54b;margin:10px 0 6px;letter-spacing:-.03em}
+.iHouse p{margin:0;font-size:12px;color:#9aa1ad;line-height:1.55}
 .iBar{height:3px;background:#15181d;border-radius:3px;overflow:hidden;margin-bottom:10px}
-#skipBar{height:100%;width:0%;background:#00d54b;transition:width 5s linear}
-#skipBtn{width:100%;min-height:48px;background:#14171d;color:#7b8390;border:1px solid #262b34;border-radius:11px;
-  font-family:inherit;font-size:13px;font-weight:700;cursor:not-allowed}
-#skipBtn.ready{background:#00d54b;color:#00290f;border-color:#00d54b;cursor:pointer}
+#skipBar{height:100%;width:0%;background:linear-gradient(90deg,#00b344,#00d54b);transition:width 5s linear}
+#skipBtn{width:100%;min-height:50px;background:#14171d;color:#7b8390;border:1px solid #262b34;border-radius:12px;
+  font-family:inherit;font-size:13.5px;font-weight:700;cursor:not-allowed;letter-spacing:-.01em}
+#skipBtn.ready{background:#00d54b;color:#00290f;border-color:#00d54b;cursor:pointer;box-shadow:0 0 0 1px #00d54b44}
 
 /* ---------- done / toast ---------- */
 #done .ok{width:46px;height:46px;border-radius:50%;background:#04170c;border:1px solid #0d3d20;display:grid;place-items:center;
@@ -304,6 +308,11 @@ img,video,canvas,svg{max-width:100%}
   <span class="bname">PayoutPool</span>
   <span class="live">Free daily prizes</span>
 </header>
+<div class="pp-trust" aria-label="Platform assurances">
+  <span><i>✓</i> No payment to enter</span>
+  <span><i>✓</i> Entry recorded securely</span>
+  <span><i>✓</i> Wheel prizes separate</span>
+</div>
 
 <div class="urgency" style="display:none" aria-hidden="true"><span id="clock">—</span></div>
 
@@ -312,8 +321,8 @@ img,video,canvas,svg{max-width:100%}
 <div class="ticker-wrap" aria-hidden="true"><div id="ticker"></div></div>
 
 <section class="hero">
-  <h1>Explore a <span data-pool>$5,000</span> cash prize pool</h1>
-  <p class="sub">Optional entry form below · Cash prizes awarded by the separate wheel</p>
+  <h1><span data-pool>$5,000</span> cash prize pool</h1>
+  <p class="sub">Register your contact entry below. Cash prizes are awarded only through the free daily wheel.</p>
 </section>
 
 <div class="prog-wrap">
@@ -334,7 +343,7 @@ img,video,canvas,svg{max-width:100%}
     <p id="s">Complete the optional entry steps to submit your details. The cash-prize wheel is a separate activity below.</p>
     <aside class="adbox inset" id="adCard" data-slot="card" aria-label="Advertisement"></aside>
     <button class="btn" id="btn" type="button" aria-describedby="note">Confirm and continue →</button>
-    <p class="note" id="note">No payment details in this step. Ever.</p><p class="pp-spin-cta"><a href="#ppWheelHome">🎡 Or jump to the free cash-prize wheel ↓</a></p>
+    <p class="note" id="note">No payment details requested at any step. Entry is free.</p><p class="pp-spin-cta"><a href="#ppWheelHome">🎡 Or jump to the free cash-prize wheel ↓</a></p>
   </section>
 
   <aside class="adbox" id="adBelow" data-slot="below" aria-label="Advertisement"></aside>
@@ -482,9 +491,9 @@ btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabl
 <div id="inter" role="dialog" aria-modal="true" aria-labelledby="interLabel" aria-describedby="interDesc" tabindex="-1">
   <div class="iTop"><span id="interLabel">Sponsored content</span><span id="interCount"></span></div>
   <div id="interAd"><div class="iHouse">
-    <div class="k">Sponsored break</div>
+    <div class="k">Sponsored presentation</div>
     <div class="v" data-pool>$5,000</div>
-    <p id="interDesc">Advertisements are separate from prize spins and claims.</p>
+    <p id="interDesc">This short sponsored break helps keep the prize pool free to enter. Ads are separate from spins and claims.</p>
   </div><div class="adbox inset" id="adGate" data-slot="gate" aria-label="Advertisement"></div></div>
   <div class="iBar"><div id="skipBar"></div></div>
   <button id="skipBtn" type="button" disabled aria-describedby="interDesc">Continue in 5</button>
@@ -528,7 +537,7 @@ const CONFIG = {
   // trigger - because a house-only pause there just delays a card that already
   // carries a banner. A network's own vignette fires wherever its script
   // decides; this key only owns our overlay.
-  INTERSTITIAL_ON: "off",
+  INTERSTITIAL_ON: "gate",
   // Seconds the break is held before Continue unlocks. 0 = Continue is live at
   // once, which is what most verified programs require of an interstitial.
   // Our overlay only - a network's own ad closes itself.
@@ -580,7 +589,7 @@ const CONFIG = {
   AD_SLOT_BELOW: "",   // below the card, before the next section
   AD_SLOT_CAPTURE: "", // inside the contact card, above the email field
   AD_SLOT_DONE:  "",   // inside the "Entry confirmed" card, under the referral code
-  AD_SLOT_GATE:  "",   // inside the sponsored interstitial
+  AD_SLOT_GATE:  "",   // full-screen break: video:URL|poster=…|click=…  or  vast:URL  or partner HTML
   AD_SLOT_WHEEL: "",  // requires a distinct, approved 300x250 ad zone; never reuse the existing CARD key
   AD_SLOT_STICKY: "",  // fixed 320x50 anchor pinned to the bottom edge
   AD_PLACEHOLDERS: true,
