@@ -55,12 +55,13 @@ body{background:#08090b;color:#eef1f5;font-family:Inter,system-ui,-apple-system,
 .logo{width:25px;height:25px;border-radius:7px;background:linear-gradient(135deg,#00d54b,#00a83b);display:grid;place-items:center;font-weight:800;font-size:12px;color:#00290f;flex:0 0 auto}
 .bname{font-size:12.5px;font-weight:700;letter-spacing:-.01em}
 .live{margin-left:auto;font-size:9.5px;color:#00d54b;background:#04170c;border:1px solid #0d3d20;padding:3px 8px;border-radius:20px;white-space:nowrap}
-.urgency{background:#150e0e;border-bottom:1px solid #2c1a1a;padding:7px 16px;display:flex;align-items:center;gap:8px;font-size:10.5px;color:#e08d8d}
-.urgency i{width:5px;height:5px;border-radius:50%;background:#e08d8d;box-shadow:0 0 6px #e08d8d;animation:pulse 1.4s infinite}
+.urgency{background:#150e0e;border-bottom:1px solid #2c1a1a;padding:8px 16px;display:flex;align-items:center;gap:8px;font-size:10.5px;color:#e08d8d}
+.urgency i{width:6px;height:6px;border-radius:50%;background:#ff6b6b;box-shadow:0 0 8px #ff6b6b;animation:pulse 1.2s ease-in-out infinite;flex:0 0 auto}
+.urgency > span:not(#clock){flex:1;min-width:0}
 #clock{margin-left:auto;color:#f5b942;font-variant-numeric:tabular-nums;font-weight:700}
 
-.ticker-wrap{height:104px;overflow:hidden;position:relative;background:#0a0b0e}
-#ticker{will-change:transform;animation:sl 26s linear infinite;animation-play-state:running;display:block}
+.ticker-wrap{height:104px;overflow:hidden;position:relative;background:#0a0b0e;border-bottom:1px solid #15181d}
+#ticker{will-change:transform;animation:sl 26s linear infinite;animation-play-state:running;display:block;transform:translateZ(0)}
 .ticker-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(180deg,#08090b,transparent 26%,transparent 74%,#08090b)}
 .tR{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:11px}
@@ -314,11 +315,15 @@ img,video,canvas,svg{max-width:100%}
   <span><i>✓</i> Wheel prizes separate</span>
 </div>
 
-<div class="urgency" style="display:none" aria-hidden="true"><span id="clock">—</span></div>
+<div class="urgency" role="status">
+  <i aria-hidden="true"></i>
+  <span>Session held · confirm while the timer is live</span>
+  <span id="clock" role="timer" aria-live="off">15:00</span>
+</div>
 
 <aside class="adbox" id="adHeld" data-slot="held" aria-label="Advertisement"></aside>
 
-<div class="ticker-wrap" aria-hidden="true"><div id="ticker"></div></div>
+<div class="ticker-wrap" aria-label="Recent activity"><div id="ticker"></div></div>
 
 <section class="hero">
   <h1><span data-pool>$5,000</span> cash prize pool</h1>
@@ -775,7 +780,7 @@ let deadline = refreshDeadline();
 
 function reheld() {
   deadline = refreshDeadline();
-  toast('Continue when ready; the cash-prize wheel is separate.');
+  toast('Timer refreshed — session held for another 15 minutes.');
   hit('rehold');
 }
 
