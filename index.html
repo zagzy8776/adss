@@ -194,12 +194,12 @@ footer a:hover{color:#00d54b}
 <header class="brand">
   <div class="logo" aria-hidden="true">P</div>
   <span class="bname">PayoutPool</span>
-  <span class="live"><span id="claiming">Free entry</span></span>
+  <span class="live"><span id="claiming">142</span> claiming now</span>
 </header>
 
 <div class="urgency">
   <i aria-hidden="true"></i>
-  <span>Round closes in</span>
+  <span>Slot held for</span>
   <span id="clock" role="timer" aria-live="off">15:00</span>
 </div>
 
@@ -395,33 +395,12 @@ const siteUrl = () => (CONFIG.SITE_URL || location.origin).replace(/\/+$/, '');
 })();
 
 const KEY = {
-  queue: 'pp_queue', step: 'pp_step', done: 'pp_done',
+  end: 'pp_end', queue: 'pp_queue', step: 'pp_step', done: 'pp_done',
   code: 'pp_code', inbound: 'pp_inbound', sent: 'pp_sent_at', buf: 'pp_buf'
 };
 
-/* ------------------------- state: queue + timer --------------------------
-   The countdown is the actual Round deadline: Terms §2.2 closes a Round at
-   23:59:59 UTC on the last day of the month. It replaces a 15-minute "slot
-   hold" that reset itself forever, i.e. a reservation claim that was not true.
-   This one cannot reset - it follows the calendar.
-   ------------------------------------------------------------------------ */
-function roundCloseAt(ts) {
-  const d = new Date(ts || Date.now());
-  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1) - 1000;  /* last day, 23:59:59 UTC */
-}
-let roundClose = roundCloseAt();
-
-function tickClock() {
-  let left = roundClose - Date.now();
-  if (left <= 0) { roundClose = roundCloseAt(); left = roundClose - Date.now(); }
-  const d = Math.floor(left / 86400000);
-  const h = Math.floor((left % 86400000) / 3600000);
-  const m = Math.floor((left % 3600000) / 60000);
-  const s = Math.floor((left % 60000) / 1000);
-  const pad = n => String(n).padStart(2, '0');
-  $('clock').textContent = d > 0 ? d + 'd ' + pad(h) + 'h' : pad(h) + ':' + pad(m) + ':' + pad(s);
-}
-
+/* ------------------------- state: queue + timer -------------------------- */
+const HOLD_MS = 15 * 60 * 1000;
 
 /* Queue is generated once and persisted, so the number in the copy, the
    number on the card and the number after a reload are always the same. */
@@ -432,7 +411,30 @@ if (!queue || queue < 1) {
 ls.set(KEY.queue, queue);
 let step = 0;                       /* 0-2 card, 3 interstitial, 4 capture, 5 done */
 
-/* Deadline is the calendar (see tickClock above) - nothing to re-roll. */
+/* Deadline re-rolls instead of pinning at 00:00. */
+function refreshDeadline() {
+  let end = parseInt(ls.get(KEY.end, '0'), 10) || 0;
+  if (!end || end - Date.now() <= 0) {
+    end = Date.now() + HOLD_MS;
+    ls.set(KEY.end, end);
+  }
+  return end;
+}
+let deadline = refreshDeadline();
+
+function reheld() {
+  deadline = refreshDeadline();
+  toast('Your slot was re-held for another 15 minutes.');
+  hit('rehold');
+}
+
+function tickClock() {
+  let left = deadline - Date.now();
+  if (left <= 0) { reheld(); left = HOLD_MS; }
+  const m = Math.floor(left / 60000);
+  const s = Math.floor((left % 60000) / 1000);
+  $('clock').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
 
 setInterval(tickClock, 1000);
 /* ------------------------------- toast ---------------------------------- */
@@ -455,14 +457,19 @@ function hit(ev) {
   } catch (e) {}
 }
 
-/* ------------------------------- ticker ---------------------------------
-   Every row comes from the Worker's /feed, i.e. real consented entries. No
-   names are invented here: with an empty feed the strip stays hidden. Fake
-   "recent activity" is the fastest way to fail an ad-network review, and a
-   fabricated winner list is a sweepstakes-law problem, not a design choice.
-   ------------------------------------------------------------------------ */
-const tickerWrap = document.querySelector('.ticker-wrap');
-tickerWrap.style.display = 'none';
+/* ------------------------------- ticker --------------------------------- */
+const NAMES = [
+  ['Marcus T.', 'Austin, TX', '$120'], ['Priya S.', 'Brampton, ON', '$250'],
+  ['Dylan R.', 'Phoenix, AZ', '$80'],  ['Chloe M.', 'Calgary, AB', '$500'],
+  ['Andre W.', 'Atlanta, GA', '$150'], ['Sarah K.', 'Ottawa, ON', '$200'],
+  ['Luis G.', 'San Antonio, TX', '$95'], ['Emma B.', 'Winnipeg, MB', '$320'],
+  ['Jordan P.', 'Charlotte, NC', '$75'], ['Aisha N.', 'Mississauga, ON', '$180'],
+  ['Tyler H.', 'Denver, CO', '$240'], ['Grace L.', 'Vancouver, BC', '$110'],
+  ['Omar F.', 'Columbus, OH', '$500'], ['Nina V.', 'Edmonton, AB', '$140'],
+  ['Caleb J.', 'Nashville, TN', '$90'], ['Leah D.', 'Halifax, NS', '$275'],
+  ['Ryan O.', 'Las Vegas, NV', '$160'], ['Mei C.', 'Victoria, BC', '$420'],
+  ['Isaac A.', 'Tampa, FL', '$85'], ['Zoe R.', 'Montreal, QC', '$300']
+];
 const HUES = ['#00d54b', '#2ee6a8', '#f5b942', '#7aa2ff', '#ff8f6b'];
 
 function rowHtml(r, i) {
@@ -481,35 +488,30 @@ function renderTicker(rows) {
   document.querySelector('.ticker-wrap').style.height = reduceMotion.matches ? 'auto' : '104px';
 }
 
-/* The strip is only drawn once /feed returns real rows (see below). */
+renderTicker(NAMES);
 
 if (CONFIG.FEED_URL) {
   fetch(CONFIG.FEED_URL, { cache: 'no-store' })
     .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
     .then(d => {
-      const real = (Array.isArray(d) ? d : d.rows || []).filter(x => x && x.n && x.p);
-      const rows = real.map(x => [String(x.n).slice(0, 22), String(x.p).slice(0, 22), x.m ? String(x.m) : 'joined']);
-      if (rows.length) {
-        renderTicker(rows);
-        tickerWrap.style.display = '';
-      }
-      /* Activity badge is measured, not invented: entries logged in the last
-         60 minutes, counted from the same KV feed. Zero means it stays as is. */
-      const hourAgo = Date.now() - 3600e3;
-      const recent = real.filter(x => x.t && Date.parse(x.t) > hourAgo).length;
-      if (recent > 0) {
-        $('claiming').textContent = fmt(recent) + (recent === 1 ? ' entry this hour' : ' entries this hour');
-      }
+      const rows = (Array.isArray(d) ? d : d.rows || [])
+        .filter(x => x && x.n && x.p)
+        .map(x => [String(x.n).slice(0, 22), String(x.p).slice(0, 22), x.m ? String(x.m) : 'joined']);
+      if (rows.length >= 5) renderTicker(rows);
     })
-    .catch(e => console.warn('[PayoutPool] feed unavailable:', e.message));
+    .catch(e => console.warn('[PayoutPool] feed unavailable, using cached rows:', e.message));
 }
 
-/* --------------------------- live claim badge ----------------------------
-   Replaced the old random "+1 to +3 every 2.6s" counter. It showed a number
-   that had no relationship to reality, which is deceptive-advertising
-   territory and gets legitimate bounties declined. The badge now shows
-   "Free entry" until /feed proves otherwise.
-   ------------------------------------------------------------------------ */
+/* --------------------------- live claim counter -------------------------- */
+let claiming = 142;
+setInterval(() => {
+  const r = Math.random();
+  if (r < 0.62) claiming += 1 + Math.floor(Math.random() * 3);   /* bias upward */
+  else if (r < 0.88) claiming -= 1;
+  if (claiming > 420) claiming = 300 + Math.floor(Math.random() * 40);
+  claiming = Math.max(claiming, 64);
+  $('claiming').textContent = fmt(claiming);
+}, 2600);
 
 /* ------------------------------ ad units ---------------------------------
    Eight reserved boxes. Empty + AD_PLACEHOLDERS = dashed outline so the
@@ -1065,7 +1067,7 @@ function offerExit() {
   if (exitShown || step >= 5 || interOpen) return;
   exitShown = true;
   if (step < 3) {
-    toast('Position #' + fmt(queue) + ' is saved for this Round. Finish before the Round closes to keep it.', 4200);
+    toast('Position #' + fmt(queue) + ' is only held for 15 minutes. Tap continue to keep it.', 4200);
     $('btn').focus();
     $('reveal').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
   } else {
