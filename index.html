@@ -397,7 +397,8 @@ img,video,canvas,svg{max-width:100%}
     </div>
   </div><div class="pp-pin" aria-hidden="true"></div><div class="pp-center" aria-hidden="true">SPIN</div><div class="pp-hub" aria-hidden="true"></div>
  </div>
-<div id="ppAfterSpins" hidden style="margin:15px 0;padding:18px;border:1px solid #5d9378;border-radius:18px;background:linear-gradient(125deg,#164738,#142639);text-align:left"><strong style="font-size:17px;color:#eaffeb">🧩 Keep playing: Match the gifts</strong><p style="color:#b9ddce;font-size:12px;line-height:1.5">Your two daily spins are complete. Try this free memory challenge while you wait for tomorrow. No cash or prizes are awarded by this game.</p><div id="ppMatchGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0"></div><div id="ppMatchStatus" role="status" style="font-size:12px;color:#ddf7e5;margin:8px 0">Match all four pairs!</div><button id="ppMatchReset" type="button" style="padding:11px 16px;background:#a5f5c1;color:#103826;border:0;border-radius:10px;font-weight:800">Play again</button></div> <button id="ppHomeSpinBtn" class="pp-action" type="button">✦ TRY A SPIN</button>
+<div id="ppAfterSpins" hidden style="margin:15px 0;padding:18px;border:1px solid #5d9378;border-radius:18px;background:linear-gradient(125deg,#164738,#142639);text-align:left"><strong style="font-size:17px;color:#eaffeb">🧩 Keep playing: Match the gifts</strong><p style="color:#b9ddce;font-size:12px;line-height:1.5">Your two daily spins are complete. Try this free memory challenge while you wait for tomorrow. No cash or prizes are awarded by this game.</p><div id="ppMatchGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0"></div><div id="ppMatchStatus" role="status" style="font-size:12px;color:#ddf7e5;margin:8px 0">Match all four pairs!</div><button id="ppMatchReset" type="button" style="padding:11px 16px;background:#a5f5c1;color:#103826;border:0;border-radius:10px;font-weight:800">Play again</button></div> <aside class="adbox pp-wheel-ad" id="adWheel" data-slot="wheel" aria-label="Advertisement" style="max-width:300px;margin:14px auto"></aside>
+ <button id="ppHomeSpinBtn" class="pp-action" type="button">✦ TRY A SPIN</button>
  <p id="ppHomeSpinStatus" class="pp-result" role="status" aria-live="polite">Tap to spin the wheel.</p>
  <p class="pp-note">Wheel graphics are illustrative, not a chart of winning odds. Initial server selection weights are $5: 70%, $20: 25%, $100: 5%, subject to remaining inventory. No registration required. Real prize results are recorded on the server. Cash awards remain pending until verified and approved for payout.</p>
  <a class="pp-link" href="/claims.html">View your prize claims and messages →</a> <a class="pp-link" href="/rewards.html">See all rewards →</a>
@@ -417,7 +418,7 @@ const api=async(path,method='GET',data)=>{const r=await fetch('/api/'+path,{meth
 function resetMatch(){const icons=['🎁','📱','⭐','💎','🎁','📱','⭐','💎'];for(let i=icons.length-1;i>0;i--){const j=crypto.getRandomValues(new Uint32Array(1))[0]%(i+1);[icons[i],icons[j]]=[icons[j],icons[i]]}matchGrid.replaceChildren();let shown=[],matched=0,waiting=false;matchStatus.textContent='Match all four pairs!';icons.forEach((icon,i)=>{const b=document.createElement('button');b.type='button';b.textContent='?';b.style.cssText='min-height:58px;border:1px solid #5f987e;border-radius:12px;background:#214b40;color:white;font-size:24px;font-weight:900';b.addEventListener('click',()=>{if(waiting||b.disabled||shown.includes(i))return;b.textContent=icon;shown.push(i);if(shown.length===2){const [a,d]=shown;if(icons[a]===icons[d]){matchGrid.children[a].disabled=true;matchGrid.children[d].disabled=true;matched++;shown=[];matchStatus.textContent=matched===4?'All pairs matched!':matched+' of 4 pairs matched'}else{waiting=true;setTimeout(()=>{matchGrid.children[a].textContent='?';matchGrid.children[d].textContent='?';shown=[];waiting=false},800)}}});matchGrid.append(b)})}
 matchReset.addEventListener('click',resetMatch);resetMatch();
 async function refresh(){const [campaigns,activity,prizeData]=await Promise.all([api('campaigns'),api('activity'),api('prize-wheel')]);setWheelPrizes(prizeData.prizes);campaign=campaigns.campaigns[0]||null;used=Number(activity.usage[0]?.used||0);cap=Number(activity.daily_cap||2);const remaining=Math.max(0,cap-used);left.textContent=remaining+' / '+cap+' spins left today';count.textContent=remaining+' of '+cap+' daily spins remaining';const spins=activity.spins;results.textContent=spins.length?spins.slice(0,2).map(x=>x.prize_title||'No prize').join(' · '):'No prizes yet';history.textContent=spins.length?spins.slice(0,8).map(x=>x.prize_title||'No prize').join(' · '):'No spins yet';cash.textContent=activity.wallet.length?activity.wallet.map(x=>x.currency+' '+(Number(x.verified_minor)/100).toFixed(2)+' verified · '+(Number(x.pending_minor)/100).toFixed(2)+' pending').join(' · '):'$0.00 verified';after.hidden=remaining!==0;btn.disabled=busy||!campaign||used>=cap;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=2?'DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';if(!campaign)status.textContent='Real prizes require a funded, active campaign. No prizes are being awarded right now.'}
-btn.addEventListener('click',async()=>{if(busy||!campaign||used>=2)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:makeRequestId()});const index=crypto.getRandomValues(new Uint32Array(1))[0]%labels.length;const current=((rotation%360)+360)%360,desired=(360-index*45)%360;rotation+=1800+((desired-current+360)%360);wheel.classList.add('spinning');wheel.style.transform='rotate('+rotation+'deg)';labels.forEach(label=>label.style.transform='rotate('+(-rotation)+'deg)');await new Promise(r=>setTimeout(r,4200));wheel.classList.remove('spinning');status.textContent=result.prize_title?'Server-confirmed result: '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false;btn.disabled=!campaign||used>=2;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=2?'DAILY SPINS COMPLETE':'✦ '+Math.max(0,cap-used)+' SPIN'+(cap-used===1?'':'S')+' LEFT'}});
+btn.addEventListener('click',async()=>{if(busy||!campaign||used>=2)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:makeRequestId()});const index=crypto.getRandomValues(new Uint32Array(1))[0]%labels.length;const current=((rotation%360)+360)%360,desired=(360-index*45)%360;rotation+=1800+((desired-current+360)%360);wheel.classList.add('spinning');wheel.style.transform='rotate('+rotation+'deg)';labels.forEach(label=>label.style.transform='rotate('+(-rotation)+'deg)');await new Promise(r=>setTimeout(r,4200));wheel.classList.remove('spinning');used=Math.max(used,Number(result.used||used));status.textContent=result.prize_title?'Server-confirmed result: '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false;btn.disabled=!campaign||used>=2;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=2?'DAILY SPINS COMPLETE':'✦ '+Math.max(0,cap-used)+' SPIN'+(cap-used===1?'':'S')+' LEFT'}});
 btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabled=true;btn.textContent='TEMPORARILY UNAVAILABLE';status.textContent='Prize service unavailable: '+e.message});
 })();
 </script>
@@ -442,7 +443,7 @@ btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabl
   <a href="/winners.html">Winners</a>
   <a href="/terms.html">Terms</a>
   <a href="/privacy.html">Privacy</a>
-  <a href="/privacy.html">Privacy & contact information</a>
+  <a href="/prize-rules.html">Prize rules</a>
 </footer>
 
 <div id="inter" role="dialog" aria-modal="true" aria-labelledby="interLabel" aria-describedby="interDesc" tabindex="-1">
@@ -547,6 +548,7 @@ const CONFIG = {
   AD_SLOT_CAPTURE: "", // inside the contact card, above the email field
   AD_SLOT_DONE:  "",   // inside the "Entry confirmed" card, under the referral code
   AD_SLOT_GATE:  "",   // inside the sponsored interstitial
+  AD_SLOT_WHEEL: "",  // requires a distinct, approved 300x250 ad zone; never reuse the existing CARD key
   AD_SLOT_STICKY: "",  // fixed 320x50 anchor pinned to the bottom edge
   AD_PLACEHOLDERS: true,
 
@@ -1327,6 +1329,7 @@ mountAd('adBelow', slotHtml('BELOW', CONFIG.AD_SLOT_BELOW), 'AD');
 mountAd('adCapture', slotHtml('CAPTURE', CONFIG.AD_SLOT_CAPTURE), 'AD');
 mountAd('adDone', slotHtml('DONE', CONFIG.AD_SLOT_DONE), 'AD');
 mountAd('adGate', slotHtml('GATE', CONFIG.AD_SLOT_GATE), 'AD · SPONSORED');
+mountAd('adWheel', slotHtml('WHEEL', CONFIG.AD_SLOT_WHEEL), 'AD · SPONSORED');
 
 /* Bottom anchor. No dashed placeholder for this one: an empty fixed bar at the
    foot of every screen would look broken, so it only exists once it has a tag
@@ -1788,7 +1791,7 @@ function finish(fresh) {
   secondPop();
   /* Networks configured fireOn:'done' fire here, where they cannot collide
      with an OnClick tag that already owns the gate tap. */
-  fireStage('done');
+  /* Ads display in their own placements; no forced popunder on success. */
   /* Same rule as the direct link: the entry is stored, so a prompt here
      cannot cost it. */
   mountPush();
@@ -2082,7 +2085,7 @@ $('btn').addEventListener('click', function () {
     /* With the break switched off - or with nothing to show - this tap goes
        straight to the form instead of dropping the visitor onto a screen with
        nothing to do. */
-    if (breakDue('gate')) {
+    if (false) {
       openInterstitial('gate');
       hit('interstitial');
       /* A network hook covers the page itself and has no Continue button of
