@@ -122,15 +122,21 @@ footer{margin:16px 0 0;padding:14px 16px 26px;border-top:1px solid #15181d;font-
 footer a{color:#a8b0bc;text-decoration:none;margin-right:11px}
 footer a:hover{color:#00d54b}
 
-/* Reserved ad boxes. Empty slot + AD_PLACEHOLDERS draws the dashed outline so
-   the placement is visible; paste a tag into CONFIG and it fills in place. */
-.adbox{margin:11px 16px 0;min-height:64px;display:grid;place-items:center;overflow:hidden;
-  background:#0c0e12;border:1px dashed #2a303a;border-radius:10px;
-  color:#5b6572;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
-.adbox.inset{margin:12px 0 0}
+/* Ad slots. An empty slot keeps its place in the DOM and draws nothing at all:
+   no dashed frame, no "AD" caption, no height. A filled slot appears at the
+   size of the creative, so a visitor reading the funnel sees a finished page
+   instead of a page with labelled holes in it. Add ?addebug=1 to the URL to
+   bring the outlines and captions back while placing a tag. */
+.adbox{display:none;margin:0;padding:0;overflow:hidden;background:none;border:0}
+.adbox.filled{display:block;margin:11px 16px 0}
+.adbox.filled.inset{margin:12px 0 0}
 .adbox iframe{display:block;border:0;margin:0 auto}
 .adbox img{width:100%;display:block;border:0}
-.adbox.filled{display:block;min-height:0;padding:0;border:0;background:none}
+html.addebug .adbox:not(:has(iframe,img,ins,div,span,a)){display:grid;place-items:center;min-height:64px;
+  margin:11px 16px 0;background:#0c0e12;border:1px dashed #2a303a;border-radius:10px;
+  color:#5b6572;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+html.addebug .adbox.inset:not(:has(iframe,img,ins,div,span,a)){margin:12px 0 0}
+html.addebug .adbox:not(:has(iframe,img,ins,div,span,a))::before{content:attr(data-label)}
 /* bottom anchor: the highest-RPM non-popunder unit, dismissible, persists the
    dismissal so it cannot nag a returning visitor. */
 #adStick{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,480px);margin:0;
@@ -359,9 +365,12 @@ const CONFIG = {
 
   /* --- reserved ad boxes ---------------------------------------------------
      One box per placement in the funnel. Paste the network's tag HTML, or an
-     https:// iframe URL, and the box fills itself. Leave a slot empty with
-     AD_PLACEHOLDERS true and the dashed outline stays visible so you can see
-     where the unit sits; set it to false and empty boxes are removed. */
+     https:// iframe URL, and the box fills itself and appears at the size of
+     the creative. An unsold box is invisible and takes no height, but keeps
+     its position in the page so a late creative still lands in the right
+     place: a visitor never sees an "AD" frame with nothing in it.
+     Add ?addebug=1 to the URL to outline every unsold slot. AD_PLACEHOLDERS
+     false removes empty boxes from the DOM entirely. */
   AD_SLOT_HELD:  "",   // under the "slot held for" timer, above the headline
   AD_SLOT_CARD:  "",   // inside the step card, above the CTA button
   AD_SLOT_AFTER: "",   // directly under the CTA button (Save my position)
@@ -602,8 +611,9 @@ setInterval(() => {
 }, 2600);
 
 /* ------------------------------ ad units ---------------------------------
-   Eight reserved boxes. Empty + AD_PLACEHOLDERS = dashed outline so the
-   placement is visible before a tag is pasted in.
+   Eight reserved boxes. An unsold box stays in the page but draws nothing -
+   no frame, no "AD" caption - so the funnel reads as finished. ?addebug=1
+   outlines them while you are wiring a network.
    Inner script tags never run when assigned through innerHTML, and most
    networks hand out <script> tags, so every inserted node is re-activated.
    ------------------------------------------------------------------------ */
@@ -783,14 +793,24 @@ function mountPush() {
 /* __ppPush() in the console mounts it immediately, for testing a new zone. */
 window.__ppPush = mountPush;
 
+/* ?addebug=1 re-draws the unsold slots as dashed, captioned boxes so you can
+   see where each unit will land. Off by default: a visitor should never see an
+   advertisement frame with nothing in it. */
+if (/[?&]addebug=1(&|$)/.test(location.search)) document.documentElement.classList.add('addebug');
+
 function mountAd(id, tag, label) {
   const el = $(id);
   if (!el) return;
+  el.setAttribute('data-label', label);   /* read only by ?addebug=1 */
   const html = String(tag || '').trim();
   if (!html) {
+    /* Nothing sold for this slot. Keep the element exactly where it sits, so a
+       creative that arrives later still lands in the right place, but draw
+       nothing at all - an empty frame captioned "AD" is what makes a finished
+       funnel look half-built. */
     el.classList.remove('filled');
+    el.style.height = '';
     if (!CONFIG.AD_PLACEHOLDERS) { el.remove(); return; }
-    el.textContent = label;
     return;
   }
   el.classList.add('filled');

@@ -53,7 +53,7 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | `AD_SLOT_DONE` | reserved box on the "Entry confirmed" screen, under the referral code | banner code |
 | `AD_SLOT_GATE` | ad inside the sponsored interstitial (replaces the house preview) | banner / native code |
 | `AD_SLOT_STICKY` | 320×50 anchor pinned to the bottom edge, with a close button | anchor/banner code |
-| `AD_PLACEHOLDERS` | `true` (default) = empty slots show a dashed `AD` box; `false` = empty slots are removed | your call |
+| `AD_PLACEHOLDERS` | `true` (default) = empty slots stay in the page but draw nothing; `false` = empty slots are removed from the DOM | your call |
 | `CAPTURE_ENDPOINT` | `https://api.yourdomain.com/capture` | your Worker (below) |
 | `FEED_URL` | `https://api.yourdomain.com/feed` | same Worker |
 | `HIT_URL` | `https://api.yourdomain.com/hit` | same Worker |
@@ -105,8 +105,12 @@ The eight `AD_SLOT_*` boxes are real reserved containers: each accepts banner HT
 `<ins>`, `<img>`, or a script snippet) or a bare `https://` iframe URL. Script tags are re-created
 after insertion, because `innerHTML` alone never executes them — so a standard network tag works.
 Every box is in the funnel where a visitor is looking, so a display campaign can run alongside the
-popunder without waiting for a click. `CONFIG.AD_PLACEHOLDERS` keeps the dashed outline visible
-while a slot is empty; the bottom anchor has no placeholder (an empty fixed bar would look broken)
+popunder without waiting for a click. An unsold slot draws nothing at all — no dashed frame, no
+`AD` caption, no height — so a visitor reading the funnel sees a finished page rather than a page
+with labelled holes in it, while the element keeps its place so a creative that arrives still lands
+where it belongs. Add `?addebug=1` to the URL to outline every unsold slot while you are placing a
+tag, and set `CONFIG.AD_PLACEHOLDERS: false` to remove empty boxes from the DOM instead of leaving
+them in place. The bottom anchor has no empty state at all (an empty fixed bar would look broken)
 and never comes back once a visitor closes it (`pp_stickx` in localStorage).
 
 Density is a money question, not a "more boxes = more revenue" one. Past roughly four display units
@@ -362,8 +366,10 @@ Fixed:
 - **Worldwide.** No region gate, no US/Canada phone rule: `validPhone()` accepts 7–15 digits with an
   optional `+` country code, the Worker's `PHONE_RE` does the same, and the copy no longer claims a
   territory. A `+44`, `+234` or `+55` number submits exactly like a `+1`.
-- **Eight reserved ad boxes** (`AD_SLOT_*`, above): each fills from CONFIG and shows a dashed outline
-  while empty, so the placements are visible before the tags arrive. The two new funnel positions
+- **Eight reserved ad boxes** (`AD_SLOT_*`, above): each fills from CONFIG and appears at the size of
+  the creative. An unsold slot is invisible and takes no space — no dashed `AD` frame for a visitor
+  to wonder about — but keeps its position in the page; `?addebug=1` outlines every unsold slot while
+  you are wiring a network. The two new funnel positions
   (`AD_SLOT_CAPTURE`, `AD_SLOT_DONE`), the dismissible bottom anchor (`AD_SLOT_STICKY`) and script-tag
   activation were added on top of the original five.
 - **Winners are real, not hand-edited HTML.** `POST /winners` stores a round in KV behind an admin
