@@ -341,65 +341,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
   spinCount.textContent=remaining+' of 2 daily spins remaining';
   results.textContent=history.length?history.slice(-2).reverse().join(' · '):'No results yet';
   const cash=history.reduce((sum,item)=>sum+({'$5':5,'$20':20,'$100':100}[item]||0),0);
-  cashTotal.textContent='.textContent=history.length?history.slice(-8).reverse().join(' · '):'No spins yet.';
-  streakEl.textContent='🔥 '+state.streak+'-day streak';
-  pointsEl.textContent='⭐ '+state.points+' loyalty points';
-  calendar.replaceChildren();
-  for(let i=0;i<7;i++){
-   const cell=document.createElement('div');const day=i+1;const completed=i<Math.min(state.streak,7);
-   cell.style.cssText='text-align:center;border:1px solid '+(completed?'#8bedaf':'#335d50')+';background:'+(completed?'#1d6644':'#16362e')+';border-radius:10px;padding:8px 1px;color:#e6f8e9;font-size:11px;font-weight:800';
-   cell.textContent=completed?'✓ '+day:'+'+(day*10);
-   cell.title='Day '+day+' streak bonus: '+(day*10)+' loyalty points';
-   calendar.appendChild(cell);
-  }
-  btn.disabled=state.used>=2;
-  btn.textContent=state.used>=2?'✓ DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';
- }
- renderHistory();saveState();
- const modal=document.createElement('div');
- modal.style.cssText='display:none;position:fixed;inset:0;z-index:2147483000;background:#06131de8;align-items:center;justify-content:center;padding:20px';
- modal.innerHTML='<div style="position:relative;overflow:hidden;max-width:400px;width:100%;text-align:center;border:2px solid #f5d982;border-radius:24px;padding:35px 20px;background:radial-gradient(circle at top,#21654b,#102033 78%);box-shadow:0 20px 70px #000c"><div id="ppGiftVisual" style="font-size:95px">🎁</div><h2 id="ppGiftTitle" style="color:#fff;font-size:28px">Surprise!</h2><p id="ppGiftMessage" style="color:#e1f9eb;line-height:1.5"></p><div id="ppGiftConfetti" aria-hidden="true" style="position:absolute;inset:0;pointer-events:none"></div><button id="ppGiftClose" type="button" style="position:relative;background:#a3f9b9;color:#063a1d;border:0;border-radius:12px;padding:14px 25px;font-weight:900">Continue</button></div>';
- document.body.appendChild(modal);
- const css=document.createElement('style');
- css.textContent='@keyframes ppGiftBurst{0%{transform:scale(.1) rotate(-25deg);opacity:0}65%{transform:scale(1.35) rotate(10deg);opacity:1}100%{transform:scale(1)}}@keyframes ppGiftFall{from{transform:translateY(-80px) rotate(0);opacity:1}to{transform:translateY(460px) rotate(700deg);opacity:0}}';
- document.head.appendChild(css);
- const close=modal.querySelector('#ppGiftClose');
- close.addEventListener('click',function(){modal.style.display='none';btn.focus()});
- function reveal(sector){
-  const gift=sector===2;
-  const visual=modal.querySelector('#ppGiftVisual');
-  visual.textContent=gift?'🎁':'✨';
-  visual.style.animation='none';void visual.offsetWidth;visual.style.animation='ppGiftBurst .8s ease-out both';
-  modal.querySelector('#ppGiftTitle').textContent=gift?'Tap the gift box to open!':'Landed on '+prizes[sector];
-  modal.querySelector('#ppGiftMessage').textContent=gift?'Tap the box to burst it open with celebration effects.':'Wheel result: '+prizes[sector]+'. Added to your spin history. Prize claims will be available when account verification is connected.';
-  const confetti=modal.querySelector('#ppGiftConfetti');confetti.replaceChildren();
-  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){for(let i=0;i<35;i++){const p=document.createElement('i');p.style.cssText='position:absolute;top:-20px;left:'+(Math.random()*100)+'%;width:8px;height:12px;background:'+['#ffe079','#6af6b0','#ff90bd','#79c7ff'][i%4]+';animation:ppGiftFall '+(1.5+Math.random()*2)+'s '+(Math.random()*.7)+'s linear forwards';confetti.appendChild(p)}}
-  modal.style.display='flex';
-  if(gift){let opened=false;const openBox=function(){if(opened)return;opened=true;visual.textContent='🎊✨🎉';visual.style.animation='none';void visual.offsetWidth;visual.style.animation='ppGiftBurst 1.2s ease-out both';modal.querySelector('#ppGiftTitle').textContent='Surprise celebration!';modal.querySelector('#ppGiftMessage').textContent='Your surprise has been revealed! Check your rewards for confirmed gifts and claim details.';close.textContent='Continue';for(let i=0;i<90;i++){const p=document.createElement('i');p.style.cssText='position:absolute;top:-20px;left:'+(Math.random()*100)+'%;width:8px;height:12px;background:'+['#ffe079','#6af6b0','#ff90bd','#79c7ff'][i%4]+';animation:ppGiftFall '+(1.5+Math.random()*2)+'s '+(Math.random()*.7)+'s linear forwards';confetti.appendChild(p)}};visual.style.cursor='pointer';visual.onclick=openBox;close.textContent='Open gift';close.onclick=function(e){if(!opened){e.stopPropagation();e.stopImmediatePropagation();openBox()}};}else{visual.onclick=null;close.onclick=null;close.textContent='Continue'}
-  close.focus();
- }
- btn.addEventListener('click',function(){
-  if(busy)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='The wheel is spinning…';
-  const buf=new Uint32Array(1);crypto.getRandomValues(buf);
-  if(state.used>=2){busy=false;btn.disabled=true;return}
-  const sector=state.used===0?2:0;
-  if(state.used===0){
-   state.streak=state.lastDay===today-1?state.streak+1:state.lastDay===today?state.streak:1;
-   state.lastDay=today;
-   state.points+=Math.min(state.streak,7)*10;
-  }
-  state.used++;saveState();
-  const start=((rotation%360)+360)%360,target=(360-sector*60)%360;
-  rotation+=3240+((target-start+360)%360);
-  wheel.style.transform='rotate('+rotation+'deg)';
-  labels.forEach(function(label){label.style.transform='rotate('+(-rotation)+'deg)'});
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  setTimeout(function(){history.push(prizes[sector]);if(history.length>50)history.shift();saveState();renderHistory();status.textContent='Wheel result: '+prizes[sector]+' — added to your spin history.';busy=false;reveal(sector)},reduced?80:9200);
- });
-})();
-</script>
-
-+cash.toLocaleString('en-US');
+  cashTotal.textContent=String.fromCharCode(36)+cash.toLocaleString('en-US');
   afterSpins.hidden=remaining!==0;
   resultHistory.textContent=history.length?history.slice(-8).reverse().join(' · '):'No spins yet.';
   streakEl.textContent='🔥 '+state.streak+'-day streak';
