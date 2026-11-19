@@ -320,133 +320,24 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
  </div>
  <button id="ppHomeSpinBtn" class="pp-action" type="button">✦ TRY A SPIN</button>
  <p id="ppHomeSpinStatus" class="pp-result" role="status" aria-live="polite">Tap to spin the wheel.</p>
- <p class="pp-note">This is a free demonstration wheel. Results are not cash balances, verified prizes, or withdrawal entitlements. No account is required.</p>
+ <p class="pp-note">No registration required. Real prize results are recorded on the server. Cash awards remain pending until verified and approved for payout.</p>
  <a class="pp-link" href="/rewards.html">See all rewards →</a>
 </section>
 <script>
-
- const wheelPrizes=[
-  {name:'$5',symbol:'💵',weight:35,cash:5},
-  {name:'Gift',symbol:'🎁',weight:15,cash:0},
-  {name:'Bonus',symbol:'💎',weight:10,cash:0},
-  {name:'$100',symbol:'💰',weight:2,cash:100},
-  {name:'Spin',symbol:'🎟️',weight:8,cash:0},
-  {name:'Phone',symbol:'📱',weight:3,cash:0},
-  {name:'$20',symbol:'💸',weight:20,cash:20},
-  {name:'Points',symbol:'⭐',weight:7,cash:0}
- ];
- function pickSegment(){
-  let total=0;for(const p of wheelPrizes)total+=p.weight;
-  let r=Math.floor(Math.random()*total);
-  for(let i=0;i<wheelPrizes.length;i++){r-=wheelPrizes[i].weight;if(r<0)return i;}
-  return wheelPrizes.length-1;
- }
- let rotation=0,busy=false;const spinCount=document.getElementById("ppSpinCount"),results=document.getElementById("ppVerifiedRewards");
- const DAY_MS=86400000, today=Math.floor(Date.now()/DAY_MS);
- let state={day:today,used:0,streak:0,lastDay:-1,points:0,history:[]};
- try{const saved=JSON.parse(localStorage.getItem('ppDailyWheelV1')||'null');if(saved&&typeof saved==='object'&&Array.isArray(saved.history))state=Object.assign(state,saved)}catch(e){}
- if(state.day!==today){state.day=today;state.used=0}
- const history=state.history.filter(x=>wheelPrizes.some(p=>p.name===x)).slice(-50);
- state.history=history;
- const cashTotal=document.getElementById('ppCashResultTotal'),afterSpins=document.getElementById('ppAfterSpins');
- const matchGrid=document.getElementById('ppMatchGrid'),matchStatus=document.getElementById('ppMatchStatus'),matchReset=document.getElementById('ppMatchReset');
- let matchCards=[],revealed=[],matched=0,matchBusy=false;
-(function(){
- const btn=document.getElementById('ppHomeSpinBtn'),wheel=document.getElementById('ppHomeWheel'),status=document.getElementById('ppHomeSpinStatus'),labels=[...wheel.querySelectorAll('.pp-upright')];
- function resetMatch(){
-  const icons=['🎁','📱','⭐','💎','🎁','📱','⭐','💎'];const random=new Uint32Array(icons.length);crypto.getRandomValues(random);
-  matchCards=icons.map((icon,i)=>({icon,sort:random[i]})).sort((a,b)=>a.sort-b.sort);revealed=[];matched=0;matchBusy=false;matchGrid.replaceChildren();matchStatus.textContent='Match all four pairs!';
-  matchCards.forEach((card,i)=>{const el=document.createElement('button');el.type='button';el.textContent='?';el.setAttribute('aria-label','Reveal card '+(i+1));el.style.cssText='min-height:58px;border:1px solid #5f987e;border-radius:12px;background:#214b40;color:#fff;font-size:24px;font-weight:900;cursor:pointer';el.addEventListener('click',()=>{
-   if(matchBusy||el.disabled||revealed.includes(i))return;
-   el.textContent=card.icon;revealed.push(i);
-   if(revealed.length===2){const [a,b]=revealed;if(matchCards[a].icon===matchCards[b].icon){matchGrid.children[a].disabled=true;matchGrid.children[b].disabled=true;matched++;revealed=[];matchStatus.textContent=matched===4?'🎉 All pairs matched! Great memory!':matched+' of 4 pairs matched';}else{matchBusy=true;setTimeout(()=>{matchGrid.children[a].textContent='?';matchGrid.children[b].textContent='?';revealed=[];matchBusy=false},850)}}});matchGrid.appendChild(el)});
- }
- matchReset.addEventListener('click',resetMatch);resetMatch();
- const left=document.getElementById('ppDailyLeft'),calendar=document.getElementById('ppDailyCalendar'),streakEl=document.getElementById('ppStreak'),pointsEl=document.getElementById('ppPoints'),resultHistory=document.getElementById('ppResultHistory');
- function saveState(){try{localStorage.setItem('ppDailyWheelV1',JSON.stringify(state))}catch(e){}}
- function renderHistory(){
-  const remaining=Math.max(0,2-state.used);
-  left.textContent=remaining+' / 2 spins left today';
-  spinCount.textContent=remaining+' of 2 daily spins remaining';
-  results.textContent=history.length?history.slice(-2).reverse().join(' · '):'No results yet';
-  const cash=history.reduce((sum,item)=>{const p=wheelPrizes.find(x=>x.name===item);return sum+(p?p.cash:0);},0);
-  cashTotal.textContent='Demo 
-  afterSpins.hidden=remaining!==0;
-  resultHistory.textContent=history.length?history.slice(-8).reverse().join(' · '):'No spins yet.';
-  streakEl.textContent='🔥 '+state.streak+'-day streak';
-  pointsEl.textContent='⭐ '+state.points+' loyalty points';
-  calendar.replaceChildren();
-  for(let i=0;i<7;i++){
-   const cell=document.createElement('div');const day=i+1;const completed=i<Math.min(state.streak,7);
-   cell.style.cssText='text-align:center;border:1px solid '+(completed?'#8bedaf':'#335d50')+';background:'+(completed?'#1d6644':'#16362e')+';border-radius:10px;padding:8px 1px;color:#e6f8e9;font-size:11px;font-weight:800';
-   cell.textContent=completed?'✓ '+day:'+'+(day*10);
-   cell.title='Day '+day+' streak bonus: '+(day*10)+' loyalty points';
-   calendar.appendChild(cell);
-  }
-  btn.disabled=state.used>=2;
-  btn.textContent=state.used>=2?'✓ DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';
- }
- renderHistory();saveState();
- const modal=document.createElement('div');
- modal.style.cssText='display:none;position:fixed;inset:0;z-index:2147483000;background:#06131de8;align-items:center;justify-content:center;padding:20px';
- modal.innerHTML='<div style="position:relative;overflow:hidden;max-width:400px;width:100%;text-align:center;border:2px solid #f5d982;border-radius:24px;padding:35px 20px;background:radial-gradient(circle at top,#21654b,#102033 78%);box-shadow:0 20px 70px #000c"><div id="ppGiftVisual" style="font-size:95px">🎁</div><h2 id="ppGiftTitle" style="color:#fff;font-size:28px">Surprise!</h2><p id="ppGiftMessage" style="color:#e1f9eb;line-height:1.5"></p><div id="ppGiftConfetti" aria-hidden="true" style="position:absolute;inset:0;pointer-events:none"></div><button id="ppGiftClose" type="button" style="position:relative;background:#a3f9b9;color:#063a1d;border:0;border-radius:12px;padding:14px 25px;font-weight:900">Continue</button></div>';
- document.body.appendChild(modal);
- const css=document.createElement('style');
- css.textContent='@keyframes ppGiftBurst{0%{transform:scale(.1) rotate(-25deg);opacity:0}65%{transform:scale(1.35) rotate(10deg);opacity:1}100%{transform:scale(1)}}@keyframes ppGiftFall{from{transform:translateY(-80px) rotate(0);opacity:1}to{transform:translateY(460px) rotate(700deg);opacity:0}}';
- document.head.appendChild(css);
- const close=modal.querySelector('#ppGiftClose');
- close.addEventListener('click',function(){modal.style.display='none';btn.focus();});
- function launchConfetti(){
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  const conf=document.getElementById('ppGiftConfetti');conf.replaceChildren();
-  const colors=['#ffe079','#6af6b0','#ff90bd','#79c7ff','#fde047','#a6ffdc'];
-  for(let i=0;i<60;i++){
-   const p=document.createElement('i');const cx=15+Math.random()*70,cy=20+Math.random()*60;
-   p.style.cssText='position:absolute;top:'+cy+'%;left:'+cx+'%;width:7px;height:11px;background:'+colors[i%colors.length]+';animation:ppConfetti '+(1.2+Math.random()*1.4)+'s '+(Math.random()*0.5)+'s linear forwards';
-   conf.appendChild(p);
-  }
- }
- function reveal(segIdx){
-  const prize=wheelPrizes[segIdx];
-  const isJackpot=prize.name==='$100'||prize.name==='Phone';
-  const visual=modal.querySelector('#ppGiftVisual');
-  visual.textContent=prize.symbol;
-  visual.style.animation='none';void visual.offsetWidth;visual.style.animation=isJackpot?'ppGiftBurst 1.2s ease-out both':'ppGiftBurst .8s ease-out both';
-  modal.querySelector('#ppGiftTitle').textContent=prize.name==='Spin'?'Free spin!':'You landed on '+prize.name;
-  modal.querySelector('#ppGiftMessage').textContent=prize.name==='Spin'?'Your next spin is on the house (daily limit still applies).':prize.name+'. Added to your spin history. This is a demonstration result, not a claimable prize.';
-  launchConfetti();
-  modal.style.display='flex';
-  close.focus();
- }
- btn.addEventListener('click',function(){
-  if(busy)return;
-  if(state.used>=2){btn.disabled=true;return;}
-  busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='The wheel is spinning…';
-  const segIdx=pickSegment();
-  const prize=wheelPrizes[segIdx];
-  if(state.used===0){
-   state.streak=state.lastDay===today-1?state.streak+1:state.lastDay===today?state.streak:1;
-   state.lastDay=today;
-   state.points+=Math.min(state.streak,7)*10;
-  }
-  state.used++;saveState();
-  const current=((rotation%360)+360)%360;
-  const desired=(360-segIdx*45)%360;
-  const target=rotation+1800+((desired-current+360)%360);
-  wheel.classList.add('spinning');
-  wheel.style.transform='rotate('+target+'deg)';
-  labels.forEach(function(label){label.style.transform='rotate('+(-target)+'deg)';});
-  rotation=target;
-  setTimeout(function(){
-   wheel.classList.remove('spinning');
-   history.push(prize.name);if(history.length>50)history.shift();saveState();renderHistory();
-   status.textContent=prize.name+' — demo result added to this device only. No cash awarded.';
-   busy=false;
-   reveal(segIdx);
-  },4200);
- });
+(()=>{
+'use strict';
+const btn=document.getElementById('ppHomeSpinBtn'),wheel=document.getElementById('ppHomeWheel'),status=document.getElementById('ppHomeSpinStatus');
+const left=document.getElementById('ppDailyLeft'),count=document.getElementById('ppSpinCount'),results=document.getElementById('ppVerifiedRewards'),history=document.getElementById('ppResultHistory'),cash=document.getElementById('ppCashResultTotal'),after=document.getElementById('ppAfterSpins'),streak=document.getElementById('ppStreak'),points=document.getElementById('ppPoints'),calendar=document.getElementById('ppDailyCalendar');
+const matchGrid=document.getElementById('ppMatchGrid'),matchStatus=document.getElementById('ppMatchStatus'),matchReset=document.getElementById('ppMatchReset');
+const labels=[...wheel.querySelectorAll('.pp-upright')],names=['$5','Gift','Bonus','$100','Spin','Phone','$20','Points'];
+let campaign=null,busy=false,rotation=0,used=0;
+const api=async(path,method='GET',data)=>{const r=await fetch('/api/'+path,{method,credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:data?JSON.stringify(data):undefined});const j=await r.json();if(!r.ok)throw Error(j.error||'Server error');return j};
+function resetMatch(){const icons=['🎁','📱','⭐','💎','🎁','📱','⭐','💎'];for(let i=icons.length-1;i>0;i--){const j=crypto.getRandomValues(new Uint32Array(1))[0]%(i+1);[icons[i],icons[j]]=[icons[j],icons[i]]}matchGrid.replaceChildren();let shown=[],matched=0,waiting=false;matchStatus.textContent='Match all four pairs!';icons.forEach((icon,i)=>{const b=document.createElement('button');b.type='button';b.textContent='?';b.style.cssText='min-height:58px;border:1px solid #5f987e;border-radius:12px;background:#214b40;color:white;font-size:24px;font-weight:900';b.addEventListener('click',()=>{if(waiting||b.disabled||shown.includes(i))return;b.textContent=icon;shown.push(i);if(shown.length===2){const [a,d]=shown;if(icons[a]===icons[d]){matchGrid.children[a].disabled=true;matchGrid.children[d].disabled=true;matched++;shown=[];matchStatus.textContent=matched===4?'All pairs matched!':matched+' of 4 pairs matched'}else{waiting=true;setTimeout(()=>{matchGrid.children[a].textContent='?';matchGrid.children[d].textContent='?';shown=[];waiting=false},800)}}});matchGrid.append(b)})}
+matchReset.addEventListener('click',resetMatch);resetMatch();
+async function refresh(){const [campaigns,activity]=await Promise.all([api('campaigns'),api('activity')]);campaign=campaigns.campaigns[0]||null;used=campaign?Number(activity.usage.find(x=>x.campaign_id===campaign.id)?.used||0):0;const remaining=Math.max(0,2-used);left.textContent=remaining+' / 2 spins left today';count.textContent=remaining+' of 2 daily spins remaining';const spins=activity.spins;results.textContent=spins.length?spins.slice(0,2).map(x=>x.prize_title||'No prize').join(' · '):'No prizes yet';history.textContent=spins.length?spins.slice(0,8).map(x=>x.prize_title||'No prize').join(' · '):'No spins yet';cash.textContent=activity.wallet.length?activity.wallet.map(x=>x.currency+' '+(Number(x.verified_minor)/100).toFixed(2)+' verified · '+(Number(x.pending_minor)/100).toFixed(2)+' pending').join(' · '):'$0.00 verified';after.hidden=remaining!==0;streak.textContent='Daily activity';points.textContent='Rewards verified by server';calendar.replaceChildren();for(let i=0;i<7;i++){const cell=document.createElement('div');cell.style.cssText='text-align:center;border:1px solid #335d50;border-radius:10px;padding:8px 1px;color:#e6f8e9;font-size:11px;font-weight:800';cell.textContent='Day '+(i+1);calendar.append(cell)}btn.disabled=busy||!campaign||used>=2;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=2?'DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';if(!campaign)status.textContent='Real prizes require a funded, active campaign. No prizes are being awarded right now.'}
+btn.addEventListener('click',async()=>{if(busy||!campaign||used>=2)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:crypto.randomUUID()});const index=names.findIndex(x=>x.toLowerCase()===(result.prize_title||'').toLowerCase());const segment=index>=0?index:0;const current=((rotation%360)+360)%360,desired=(360-segment*45)%360;rotation+=1800+((desired-current+360)%360);wheel.classList.add('spinning');wheel.style.transform='rotate('+rotation+'deg)';labels.forEach(label=>label.style.transform='rotate('+(-rotation)+'deg)');await new Promise(r=>setTimeout(r,4200));wheel.classList.remove('spinning');status.textContent=result.prize_title?'You landed on '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false}});
+btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabled=true;btn.textContent='TEMPORARILY UNAVAILABLE';status.textContent='Prize service unavailable: '+e.message});
 })();
-
 </script>
 
 
