@@ -1,5 +1,6 @@
 # PayoutPool
 
+> **Current live-source architecture (November 2026):** The optional Cloudflare Worker /capture form and the independent Neon-backed cash-prize wheel are separate systems. Completing the form, clicking advertisements, or sharing a link does not alter wheel odds or create a cash entitlement. The configured $5,000 USD pool contains $5/$20/$100 inventory. /api/activity publishes the daily spin cap. The eight-segment wheel is explicitly illustrative, not a probability chart. Monetag automatic overlay tags are disabled; Google AdSense and configured non-intrusive display positions remain. A distinct approved 300×250 creative is needed for AD_SLOT_WHEEL, which is empty by default. Site operator still needs a real support channel, privacy retention policy and a verified payout process. Earlier examples and historical descriptions below may document legacy funnel behavior, not the current user-facing rules.\n\n
 Tier-1 lead-capture funnel monetized with interstitial/popunder advertising
 and optional CPA offers. One static `index.html` plus a small Cloudflare Worker for storage.
 
@@ -64,7 +65,7 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | `SUPPORT_EMAIL` | a monitored inbox | you |
 | `ONESIGNAL_APP_ID` | the UUID from OneSignal | OneSignal → Settings → Keys & IDs |
 | `SUPPORT_EMAIL` | a monitored inbox | you |
-| `POOL_AMOUNT` | the prize string every `data-pool` element is rewritten from (`"$500"` shipped) | your call — keep `terms.html` 5.1, the `<title>` and `og:title` in step |
+| `POOL_AMOUNT` | the prize string every `data-pool` element is rewritten from (`"$5,000"` currently configured) | your call — keep `terms.html` 5.1, the `<title>` and `og:title` in step |
 | `OFFERS` | array of `{t,s,u,k}` CPA links | CPAGrip / OGAds, filtered to your traffic |
 
 `YOURDOMAIN.com` appears in `<head>` four times: canonical, `og:url`, `og:image`, `twitter:image`.
