@@ -1,0 +1,15 @@
+# Files Vercel should not upload or serve.
+# The Cloudflare Worker is deployed separately with `wrangler deploy`; it must
+# never be published as a static file.
+worker/
+netlify.toml
+.git/
+node_modules/
+
+# local scratch / tooling
+_cp*/
+_cprof*/
+_*.mjs
+_*.js
+_*.png
+*.log
