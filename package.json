@@ -1,0 +1,12 @@
+{
+  "name": "payoutpool",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "check": "node --check api/index.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.3"
+  }
+}
