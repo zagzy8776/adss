@@ -6,6 +6,11 @@
      1024 bytes, so encoding detection is unaffected, and the CSP meta below is
      parsed after this node while script-src already allows https:. -->
 <script src="https://quge5.com/88/tag.min.js" data-zone="312446" async data-cfasync="false"></script>
+<!-- Second Monetag zone 12299927 (al5sm.com), pasted verbatim as supplied.
+     It is its own script element, so it does not disturb the inline block
+     below. Two zones on one page means two OnClick passes per tap: if the
+     dashboard flags it or fill drops, delete the 312446 tag above. -->
+<script>(function(s){s.dataset.zone='12299927',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#08090b">
@@ -340,9 +345,16 @@ const CONFIG = {
   // just the sponsored gate tap: 3 fires per visitor instead of 1. Restored.
   AD_EVERY_TAP: true,
   // The original also fired a second time as the gate opened, making 4 fires
-  // per visitor. Off by default because two pops on one tap is what gets
-  // arbitrage accounts suspended; set true to match the original exactly.
+  // per visitor.
   GATE_DOUBLE_FIRE: false,
+  // Networks fired per tap. 1 = the rotation picks one and the other sits the
+  // tap out. 2 = every network with a popunder for that stage fires on the
+  // same tap. Two networks popping at once is the double-billing complaint
+  // that gets an arbitrage account suspended, so 2 is a deliberate choice.
+  AD_BURST: 2,
+  // Allow the same network to pop again on a later tap in the same visit.
+  // false = one pop per network per visitor, whatever they tap.
+  AD_REPEAT_POP: true,
 
   /* --- reserved ad boxes ---------------------------------------------------
      One box per placement in the funnel. Paste the network's tag HTML, or an
@@ -753,29 +765,45 @@ let directFired = false;
 let secondPopDone = false;
 let adFires = 0;
 
-/* Network id -> it already popped this visit. One pop per network per visit
-   stops a buyer being billed twice for the same person, which is the complaint
-   that gets an arbitrage account suspended. */
+/* Network id -> how many times it popped this visit. Only consulted when
+   AD_REPEAT_POP is off. */
 const popFired = {};
 
-/* At most one popunder per tap. The pool is filtered by stage first, so a
-   network configured with fireOn:'done' can never also fire on a gate tap. */
-function pickPopunder(stage) {
+/* The networks that fire on one tap. AD_BURST 2 means both pop at once, which
+   is the brief; 1 keeps whichever lost the rotation out of that tap. The pool
+   is filtered by stage first, so a fireOn:'done' network never lands on a gate
+   tap even with a burst of 2. */
+function pickPopunders(stage) {
   const pool = weighted(networks().filter(function (n) {
     return n.popunder && (n.fireOn || 'gate') === stage;
   }));
-  if (!pool.length) return null;
-  const fresh = pool.filter(function (n) { return !popFired[n.id]; });
-  const from = fresh.length ? fresh : pool;
+  if (!pool.length) return [];
+
+  let from = pool;
+  if (!CONFIG.AD_REPEAT_POP) {
+    const fresh = pool.filter(function (n) { return !popFired[n.id]; });
+    from = fresh.length ? fresh : pool;
+  }
+
+  const distinct = [];
+  pool.forEach(function (n) { if (distinct.indexOf(n) < 0) distinct.push(n); });
+  const burst = Math.max(1, Math.min(distinct.length, parseInt(CONFIG.AD_BURST, 10) || 1));
+
   const cur = parseInt(ls.get('pp_popcur', '0'), 10) || 0;
   ls.set('pp_popcur', cur + 1);
-  return from[cur % from.length];
+
+  const out = [];
+  for (let i = 0; i < from.length && out.length < burst; i++) {
+    const n = from[(cur + i) % from.length];
+    if (out.indexOf(n) < 0) out.push(n);
+  }
+  return out;
 }
 
-/* Returns whether a popunder actually loaded. */
 function loadPopunder(net) {
-  if (!net || popFired[net.id]) return false;
-  popFired[net.id] = true;
+  if (!net) return false;
+  if (!CONFIG.AD_REPEAT_POP && popFired[net.id]) return false;
+  popFired[net.id] = (popFired[net.id] || 0) + 1;
   const tag = String(net.popunder).trim().replace(/^script:/i, '');
   if (tag.charAt(0) === '<') {
     /* innerHTML never executes scripts, so rebuild them by hand. */
@@ -800,9 +828,9 @@ function loadPopunder(net) {
   return true;
 }
 
-/* One stage, one pop. finish() drives the 'done' stage. */
+/* Fires every network on this stage. Returns how many actually loaded. */
 function fireStage(stage) {
-  return loadPopunder(pickPopunder(stage));
+  return pickPopunders(stage).filter(loadPopunder).length;
 }
 
 /* The network's own re-call hook, when it has one. Returns whether it fired. */
@@ -855,14 +883,16 @@ window.__ppAdReport = function () {
         popunder: !!n.popunder,
         fireOn: n.fireOn || 'gate',
         slots: Object.keys(n.slots || {}),
-        popped: !!popFired[n.id]
+        popped: popFired[n.id] || 0
       };
     }),
     configured: {
       popHook: typeof window.__pop === 'function',
       direct: !!CONFIG.AD_DIRECT_LINK,
       interstitial: !!CONFIG.INTERSTITIAL_HTML,
-      offers: CONFIG.OFFERS.length
+      offers: CONFIG.OFFERS.length,
+      burst: CONFIG.AD_BURST,
+      repeatPop: !!CONFIG.AD_REPEAT_POP
     },
     fired: { gateTaps: adFires, directTab: directFired, secondPop: secondPopDone }
   };
@@ -943,6 +973,9 @@ $('inter').addEventListener('keydown', function (e) {
 
 $('skipBtn').addEventListener('click', function () {
   if (this.disabled) return;
+  /* "Continue" out of the sponsored break is the highest-intent tap left:
+     they are one field away from the lead, and it is a real user gesture. */
+  fireAd();
   closeInterstitial();
   showCapture();
 });
@@ -1130,6 +1163,10 @@ $('form').addEventListener('submit', async function (e) {
   setErr('phone', badPhone);
   if (badEmail) { $('email').focus(); return; }
   if (badPhone) { $('phone').focus(); return; }
+
+  /* Valid entry, sent in a moment: the last tap while the gesture is live.
+     fireAd only appends script tags, so it cannot cancel the POST below. */
+  fireAd();
 
   if (!$('sms').checked) {
     $('consentErr').classList.add('on');

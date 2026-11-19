@@ -3,7 +3,8 @@
  *
  *   POST /capture   store one entry          -> JSON payload from index.html
  *   GET  /feed      last 40 entries, masked  -> [{ n, p, t }]
- *   POST /hit       funnel counters          -> { e: "step_1" | "ad" | ... }
+ *   POST /hit       funnel counters          -> { e: "step_1" | "ad" | "ad_<id>" | ... }
+ *   GET  /stats     aggregate counters, 14d   -> needs X-Admin-Token
  *   GET  /winners   published draw results   -> [{ round, drawDate, rows:[...] }]
  *   POST /winners   publish one round        -> needs X-Admin-Token
  *   DELETE /winners?round=...  unpublish one -> needs X-Admin-Token
@@ -32,6 +33,17 @@ const ALLOW_EVENTS = new Set([
   'capture_view', 'done', 'offer_click', 'ref_land', 'rehold',
   'exit_intent', 'hidden'
 ]);
+
+/* Each ad network reports as ad_<id>, so a per-network fire can be counted
+   without the worker knowing the network in advance. Lowercase, at most four
+   segments (ad_adsterra_popunder) — same shape as the fixed names, so nothing
+   new can be written that a dashboard cannot read. */
+const AD_EVENT_RE = /^ad_[a-z0-9]+(?:_[a-z0-9]+){0,3}$/;
+
+function eventAllowed(e) {
+  if (ALLOW_EVENTS.has(e)) return true;
+  return e.length <= 32 && AD_EVENT_RE.test(e);
+}
 
 function cors(env) {
   return {
@@ -147,13 +159,62 @@ async function hitCounter(req, env) {
   let body;
   try { body = await req.json(); } catch (e) { return json({ ok: false }, 400, env); }
   const e = String((body && body.e) || '');
-  if (!ALLOW_EVENTS.has(e)) return json({ ok: false, error: 'unknown-event' }, 422, env);
+  if (!eventAllowed(e)) return json({ ok: false, error: 'unknown-event' }, 422, env);
 
   const day = new Date().toISOString().slice(0, 10);
   const key = 'hits:' + e + ':' + day;
   const n = parseInt((await env.PP.get(key)) || '0', 10);
   await env.PP.put(key, String(n + 1));
   return json({ ok: true }, 200, env);
+}
+
+/* ------------------------------ stats ------------------------------------
+   GET /stats?days=14   X-Admin-Token required
+   Aggregates the hits:<event>:<day> counters into one payload so a dashboard
+   does not have to scrape KV. Raw traffic numbers are not public, and the
+   token compare is the same length-safe one /winners uses.
+   ------------------------------------------------------------------------ */
+async function stats(req, env) {
+  if (!env.ADMIN_TOKEN) return json({ ok: false, error: 'stats-disabled' }, 503, env);
+  if (!authorised(req, env)) return json({ ok: false, error: 'unauthorized' }, 401, env);
+
+  const want = Math.min(Math.max(parseInt(new URL(req.url).searchParams.get('days'), 10) || 14, 1), 90);
+  const since = new Date(Date.now() - (want - 1) * 864e5).toISOString().slice(0, 10);
+
+  /* 1000 keys covers ~70 events x 14 days, or 18 events x 55 days. */
+  const listed = await env.PP.list({ prefix: 'hits:', limit: 1000 });
+  const series = {};
+  const totals = {};
+  const days = [];
+
+  for (const k of listed.keys) {
+    /* hits:<event>:<day> — event names cannot contain ':', so the split is
+       unambiguous. */
+    const rest = k.name.slice('hits:'.length);
+    const cut = rest.lastIndexOf(':');
+    if (cut < 1) continue;
+    const ev = rest.slice(0, cut);
+    const day = rest.slice(cut + 1);
+    if (day < since) continue;
+
+    const n = parseInt((await env.PP.get(k.name)) || '0', 10);
+    if (!n) continue;
+
+    if (!series[ev]) series[ev] = {};
+    series[ev][day] = n;
+    totals[ev] = (totals[ev] || 0) + n;
+    if (days.indexOf(day) < 0) days.push(day);
+  }
+
+  return json({
+    ok: true,
+    generatedAt: new Date().toISOString(),
+    window: { days: want, since: since },
+    days: days.sort(),
+    series: series,
+    totals: totals,
+    scan: listed.list_complete === false ? 'truncated' : 'complete'
+  }, 200, env, { 'Cache-Control': 'no-store' });
 }
 
 /* ---------------------------- published winners --------------------------
@@ -253,6 +314,7 @@ export default {
     if (path === '/feed' && req.method === 'GET') return feed(req, env);
     if (path === '/capture' && req.method === 'POST') return capture(req, env, ctx);
     if (path === '/hit' && req.method === 'POST') return hitCounter(req, env);
+    if (path === '/stats' && req.method === 'GET') return stats(req, env);
     if (path === '/winners') return winners(req, env);
 
     return json({ ok: false, error: 'not-found' }, 404, env);

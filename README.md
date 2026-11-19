@@ -43,6 +43,8 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | `SECOND_POP` | `true`/`false` — re-call `window.__pop()` on the confirmed screen | Adsterra exposes the hook |
 | `AD_EVERY_TAP` | `true` (default) = fire on all 3 taps, like the original build; `false` = gate tap only | your call |
 | `GATE_DOUBLE_FIRE` | `false` (default) = one fire on the gate tap; `true` = two, matching the original 4 fires | your call |
+| `AD_BURST` | networks fired per tap, `1`–`n` — default `2` = every gate network pops on the same tap | your call |
+| `AD_REPEAT_POP` | `true` (default) = a network may pop again on the next tap; `false` = once per network per visit | your call |
 | `AD_SLOT_HELD` | reserved box under the "slot held for" timer | any network's banner code |
 | `AD_SLOT_CARD` | reserved box inside the step card, above the CTA | banner code |
 | `AD_SLOT_AFTER` | reserved box directly under the CTA ("Save my position") | banner code |
@@ -62,6 +64,11 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 `YOURDOMAIN.com` appears in `<head>` four times: canonical, `og:url`, `og:image`, `twitter:image`.
 Those must be absolute URLs — scrapers do not run JavaScript, so they cannot be resolved at runtime.
 
+`<head>` also carries two Monetag tags — zone `312446` (`quge5.com`) and zone `12299927`
+(`al5sm.com`). Each is its own `<script>` element, so adding or removing one is a single line and
+cannot break the inline block below. Two zones on one page means two OnClick passes per tap: if the
+dashboard flags it or fill drops, delete the `312446` line and keep the other.
+
 **Nothing fails silently.** Any key left empty logs a `[PayoutPool]` warning to the console at
 boot, an empty `CAPTURE_ENDPOINT` logs a hard error on submit, and a failed POST is buffered in
 localStorage and retried on the next visit. `window.__ppMissing` lists every unset key.
@@ -78,7 +85,7 @@ localStorage and retried on the next visit. `window.__ppMissing` lists every uns
 | Confirmed screen | `AD_SLOT_DONE` | after the lead is stored | 1 box | — |
 | Inside the gate | `AD_SLOT_GATE` | when the interstitial opens | 1 box | `ad_inter` |
 | Bottom anchor | `AD_SLOT_STICKY` | on load, until closed | 1 box | `ad_stick_x` |
-| Popunder script | `POPUNDER_TAG` / `AD_NETWORKS[].popunder` | every tap if `AD_EVERY_TAP`, one network rotated per tap | 1 script per network per visit | `ad_<id>`, `ad_pop` |
+| Popunder script | `POPUNDER_TAG` / `AD_NETWORKS[].popunder` | on every monetisable tap (see below) | `AD_BURST` per tap, repeat per `AD_REPEAT_POP` | `ad_<id>`, `ad_pop` |
 | Network re-call | `SECOND_POP` | confirmed screen, +1.2s | 1 | `ad_second` |
 | Direct link | `AD_DIRECT_LINK` | `AD_DIRECT_LINK_ON` | 1 tab total | `ad_direct` |
 | Interstitial | `INTERSTITIAL_HTML` | gate tap, 5s skip | 1 per pageload | `ad_inter` |
@@ -129,12 +136,15 @@ inline script early and takes the page down with it. Inside a string, write it a
 
 Three rules the code enforces, and why:
 
-- **One popunder per tap.** `pickPopunder(stage)` resolves to a single network; the rest sit that
-  tap out. Two networks popping on one tap is the double-billing complaint that gets an arbitrage
-  account suspended.
-- **One pop per network per visit** (`popFired`), so no buyer is charged twice for one person.
+- **Every gate network on every gate tap.** `pickPopunders(stage)` returns up to `AD_BURST` networks
+  (default `2`) and `AD_REPEAT_POP: true` (default) lets the same network pop again on the next tap.
+  With two gate networks installed that is two pops per tap, on three funnel taps plus the sponsored
+  break and the submit — the aggressive setting. Set `AD_BURST: 1` and `AD_REPEAT_POP: false` to get
+  back to one pop per tap and one per network per visit. Two networks popping on one tap is the
+  double-billing complaint that gets an arbitrage account suspended, so the switch is deliberate.
 - **`fireOn: 'gate' | 'done'`.** An always-on OnClick tag in `<head>` already pops on the gate tap.
-  Give a second popunder network `'done'` and it fires after the lead is in KV instead. Each fire
+  Give a second popunder network `'done'` and it fires after the lead is in KV instead. The stage
+  filter runs before the burst, so a `'done'` network can never leak onto a funnel tap. Each fire
   is tracked as `ad_<id>`, so `/hit` says which network actually earned.
 
 `weight` is an integer 1–10: `3` is the same as listing that network three times in the rotation.
@@ -144,8 +154,9 @@ Verify what actually fired, in the console:
 ```js
 __ppAdReport()
 // { networks: [ { id: 'adsterra', head: false, popunder: true, fireOn: 'done',
-//                 slots: ['DONE'], popped: true } ],
-//   configured: { popHook: true, direct: true, interstitial: true, offers: 3 },
+//                 slots: ['DONE'], popped: 2 } ],
+//   configured: { popHook: true, direct: true, interstitial: true, offers: 3,
+//                 burst: 2, repeatPop: true },
 //   fired: { gateTaps: 3, directTab: false, secondPop: false } }
 ```
 
@@ -203,6 +214,36 @@ Reading leads back out: `npx wrangler kv key list --namespace-id=<id>` or wire t
 a Google Sheet with a scheduled Worker. KV is eventually consistent (≈60 s), which is fine for
 this funnel and costs nothing at these volumes.
 
+## Analytics bot — clicks and funnel, from the terminal
+
+`bot/pp_analytics.py` is a stdlib-only Python 3.8+ CLI over the Worker's `GET /stats`
+(token = the same `ADMIN_TOKEN` secret). It never touches a visitor's email or phone; `/stats`
+returns counters only.
+
+```bash
+python bot/pp_analytics.py health
+python bot/pp_analytics.py stats                 # funnel + clicks table
+python bot/pp_analytics.py watch --interval 15   # live click deltas + alerts
+python bot/pp_analytics.py report --days 30      # writes reports/*.json|.csv|.md
+python bot/pp_analytics.py selftest              # offline checks
+```
+
+`watch` compares consecutive `/stats` snapshots and reports what moved: which network's `ad_<id>`
+counter fired, how many steps were taken, whether a capture view ever became an entry. Alerts:
+
+| code | meaning |
+|---|---|
+| `CLICKS WITHOUT TRAFFIC` | ad/click events with no new page views — cached page, reopened tab, or injected clicks |
+| `BURST` | one counter grew by `--storm` (default 25) inside a single window |
+| `CAPTURE GAP` | 5+ capture forms shown since the last confirmed entry |
+| `LEAD LEAK` | capture views recorded, zero `done` |
+| `FORM STARVED` | under 5% of views reach the form |
+| `CLICK HEAVY` | more than 8 click events per visit (normal at `AD_BURST: 2`) |
+
+Tests: `python -m unittest discover -s bot -p "test_*.py" -v` starts a throwaway HTTP server that
+mimics the Worker, so the urllib path, the `X-Admin-Token` header, the 401 and the file writing are
+all exercised with no network. `bot/README.md` has the details.
+
 ## What changed from the previous build
 
 Fixed:
@@ -217,10 +258,11 @@ Fixed:
 - **Progress bar and label agree.** Progress is `(step − 1) / 5`, so `STEP 1 OF 5` is 0%,
   `STEP 5 OF 5` is 80%, and submitted is 100%. The step array is indexed before any increment,
   so step 1 actually renders.
-- **One ad fire per tap.** `fireAd()` runs on each tap while `AD_EVERY_TAP` is true (the original
-  build's behaviour, 3 fires); the gate tap adds its own fire, and `GATE_DOUBLE_FIRE` restores the
-  original 4th. `openInterstitial()` never fires a second time on its own. The direct link is capped
-  at one tab per visitor and waits for the lead instead of competing with the interstitial.
+- **Ads fire on every click that matters.** `fireAd()` runs on `Confirm and continue →`, on
+  `Save my position →`, on the sponsored gate tap, on `Continue` out of the sponsored break, and on
+  a valid form submit; `finish()` then fires the `'done'` stage. `GATE_DOUBLE_FIRE` adds the
+  original extra gate fire. `__ppAdReport().fired.gateTaps` counts every fire, so the tap map is
+  auditable instead of assumed. The direct link is still capped at one tab per visitor.
 - **Reduced motion freezes the ticker** (`animation: none`, single non-duplicated list, scrollable)
   instead of snapping to a random offset.
 - **Push is actually requested** — `OneSignal.Notifications.requestPermission()` runs from the
@@ -255,6 +297,8 @@ Still on you (cannot be coded):
    `POPUNDER_TAG`) / `INTERSTITIAL_HTML` / `AD_DIRECT_LINK`, and `OFFERS` — until then the page
    earns nothing.
 4. Deploy the Worker, set `ADMIN_TOKEN`, and paste its URLs into `CONFIG` plus `WINNERS_URL`.
+   The same token is what `bot/pp_analytics.py` passes as `--token` (or `PP_ADMIN_TOKEN`) to read
+   `/stats`.
 5. **Actually run a real draw.** The page promises `$5,000`, so publish the real result with
    `POST /winners` rather than leaving the placeholder row up.
 

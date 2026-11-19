@@ -14,6 +14,13 @@ _*.js
 # Logs
 *.log
 
+# Python bytecode (bot/)
+__pycache__/
+*.pyc
+
+# Analytics bot output (bot/pp_analytics.py report)
+reports/
+
 # Local backups of pages that already live in git. These would otherwise be
 # served as public files (/index.html.backup).
 *.backup

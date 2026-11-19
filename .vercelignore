@@ -2,6 +2,8 @@
 # The Cloudflare Worker is deployed separately with `wrangler deploy`; it must
 # never be published as a static file.
 worker/
+bot/
+reports/
 netlify.toml
 .git/
 node_modules/
