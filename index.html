@@ -20,8 +20,8 @@
      og:image, twitter:image). Everything else is runtime-detected.
      Full checklist + config reference: README.md
      ========================================================================== -->
-<title>PayoutPool — $5,000 Payout Pool</title>
-<meta name="description" content="PayoutPool's $5,000 payout pool. Five steps, forty seconds. Entries reviewed daily.">
+<title>PayoutPool — $500 Payout Pool</title>
+<meta name="description" content="PayoutPool's $500 payout pool. Five steps, forty seconds. Entries reviewed daily.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://YOURDOMAIN.com/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -29,19 +29,19 @@
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PayoutPool">
-<meta property="og:title" content="PayoutPool — $5,000 Payout Pool">
+<meta property="og:title" content="PayoutPool — $500 Payout Pool">
 <meta property="og:description" content="Five steps, forty seconds. Entries reviewed daily. Hold your position before your slot expires.">
 <meta property="og:image" content="https://YOURDOMAIN.com/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://YOURDOMAIN.com/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="PayoutPool — $5,000 Payout Pool">
+<meta name="twitter:title" content="PayoutPool — $500 Payout Pool">
 <meta name="twitter:image" content="https://YOURDOMAIN.com/og.jpg">
 
 <!-- CSP allows inline + any https network you add later. Tighten script-src
      to your ad-network domains once they are known. See README.md -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-src https:; base-uri 'self'; object-src 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; media-src 'self' data: https:; connect-src 'self' https:; frame-src https:; base-uri 'self'; object-src 'none'; form-action 'self'">
 
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -132,11 +132,16 @@ footer a:hover{color:#00d54b}
 .adbox.filled.inset{margin:12px 0 0}
 .adbox iframe{display:block;border:0;margin:0 auto}
 .adbox img{width:100%;display:block;border:0}
-html.addebug .adbox:not(:has(iframe,img,ins,div,span,a)){display:grid;place-items:center;min-height:64px;
+/* video creatives: full column width, own aspect ratio, no letterboxing. The
+   link wrapper exists only when the tag came with a click-through. */
+.adbox video{display:block;width:100%;height:auto;border:0;background:#000}
+.adbox .vidLink{display:block;line-height:0}
+#interAd video{max-width:100%;border:0}
+html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a)){display:grid;place-items:center;min-height:64px;
   margin:11px 16px 0;background:#0c0e12;border:1px dashed #2a303a;border-radius:10px;
   color:#5b6572;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
-html.addebug .adbox.inset:not(:has(iframe,img,ins,div,span,a)){margin:12px 0 0}
-html.addebug .adbox:not(:has(iframe,img,ins,div,span,a))::before{content:attr(data-label)}
+html.addebug .adbox.inset:not(:has(iframe,img,video,ins,div,span,a)){margin:12px 0 0}
+html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:attr(data-label)}
 /* bottom anchor: the highest-RPM non-popunder unit, dismissible, persists the
    dismissal so it cannot nag a returning visitor. */
 #adStick{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,480px);margin:0;
@@ -230,7 +235,7 @@ html.addebug .adbox:not(:has(iframe,img,ins,div,span,a))::before{content:attr(da
 <div class="ticker-wrap" aria-hidden="true"><div id="ticker"></div></div>
 
 <section class="hero">
-  <h1>Your <span>$5,000</span> payout slot is reserved</h1>
+  <h1>Your <span data-pool>$500</span> payout slot is reserved</h1>
   <p class="sub">Open worldwide · Five steps, about 40 seconds</p>
 </section>
 
@@ -249,7 +254,6 @@ html.addebug .adbox:not(:has(iframe,img,ins,div,span,a))::before{content:attr(da
     <aside class="adbox inset" id="adCard" data-slot="card" aria-label="Advertisement"></aside>
     <button class="btn" id="btn" type="button" aria-describedby="note">Confirm and continue →</button>
     <p class="note" id="note">No payment details in this step. Ever.</p>
-    <aside class="adbox inset" id="adAfter" data-slot="after" aria-label="Advertisement"></aside>
   </section>
 
   <aside class="adbox" id="adBelow" data-slot="below" aria-label="Advertisement"></aside>
@@ -292,7 +296,7 @@ html.addebug .adbox:not(:has(iframe,img,ins,div,span,a))::before{content:attr(da
   <section class="card hide" id="done">
     <div class="ok" aria-hidden="true">✓</div>
     <h2>Entry confirmed</h2>
-    <p>You are in the <strong>$5,000</strong> pool. We review entries daily and contact winners at the email or number on file.</p>
+    <p>You are in the <strong data-pool>$500</strong> pool. We review entries daily and contact winners at the email or number on file.</p>
     <div class="ref"><span>Your referral code</span><b id="myCode">—</b></div>
     <aside class="adbox inset" id="adDone" data-slot="done" aria-label="Advertisement"></aside>
     <div id="boost" class="hide" style="margin-top:12px;text-align:left">
@@ -321,7 +325,7 @@ html.addebug .adbox:not(:has(iframe,img,ins,div,span,a))::before{content:attr(da
   <div class="iTop"><span id="interLabel">Step 4 of 5 · Sponsored</span><span id="interCount"></span></div>
   <div id="interAd"><div class="iHouse">
     <div class="k">Sponsored break</div>
-    <div class="v">$5,000</div>
+    <div class="v" data-pool>$500</div>
     <p id="interDesc">Your position is still held. This partner placement is what keeps the pool free to enter.</p>
   </div><div class="adbox inset" id="adGate" data-slot="gate" aria-label="Advertisement"></div></div>
   <div class="iBar"><div id="skipBar"></div></div>
@@ -402,10 +406,19 @@ const CONFIG = {
      its position in the page so a late creative still lands in the right
      place: a visitor never sees an "AD" frame with nothing in it.
      Add ?addebug=1 to the URL to outline every unsold slot. AD_PLACEHOLDERS
-     false removes empty boxes from the DOM entirely. */
+     false removes empty boxes from the DOM entirely.
+
+     There is deliberately no box directly under the CTA button. A 468x60
+     between "Confirm and continue" and the reassurance line competed with the
+     button for the same tap and cost entries - and the entry is the
+     better-paying event. The AFTER slot and its Adsterra zone still exist if
+     you want them back: re-add one <aside> in the step card and one mountAd()
+     line at the bottom of this file.
+
+     Every one of these boxes also takes a VIDEO creative - see the
+     "video:" / "vast:" forms under AD_NETWORKS. */
   AD_SLOT_HELD:  "",   // under the "slot held for" timer, above the headline
   AD_SLOT_CARD:  "",   // inside the step card, above the CTA button
-  AD_SLOT_AFTER: "",   // directly under the CTA button (Save my position)
   AD_SLOT_BELOW: "",   // below the card, before the next section
   AD_SLOT_CAPTURE: "", // inside the contact card, above the email field
   AD_SLOT_DONE:  "",   // inside the "Entry confirmed" card, under the referral code
@@ -429,13 +442,17 @@ const CONFIG = {
        slots     { SLOT_NAME: creative } - which boxes this network fills
        weight    1 = equal share; 3 = three times as many impressions
 
-     Slot names: HELD CARD AFTER BELOW CAPTURE DONE GATE STICKY
+     Slot names: HELD CARD BELOW CAPTURE DONE GATE STICKY
 
-     A creative is one of three things:
+     A creative is one of five things:
        'script:https://cdn.net/banner.js'  a script tag. Most networks hand out
                                            a single-src tag - use this form and
                                            paste only the src.
        'https://cdn.net/banner.html'       an iframe
+       'video:https://cdn/x.mp4'           a video file; add |poster=… and
+                                           |click=… (see "video units")
+       'vast:https://ads.net/vast.xml'     a VAST tag: parsed, wrapper followed,
+                                           pixels fired
        'any other string'                  raw HTML
 
      Never paste a real closing script tag into this file: it ends the inline
@@ -464,7 +481,6 @@ const CONFIG = {
       slots: {
         HELD:    'adsterra:83ffc72d9f10f7597c254f78bab26288/320x50',
         CARD:    'adsterra:81c795472aab64816500ddd9e896d84b/300x250',
-        AFTER:   'adsterra:928e14e8019955668fba93c6b3ac5862/468x60',
         BELOW:   'adsterra:0fbe28a313228dc7d9fb1af1c75c4db7/728x90',
         CAPTURE: 'adsterra:819964b86ff843ee8329700798c41360/160x300',
         DONE:    'adsterra:0ebe39300b5eb1ae8a1f4ead36e44626/160x600',
@@ -494,7 +510,15 @@ const CONFIG = {
 
   // --- legal ----------------------------------------------------------------
   SUPPORT_EMAIL: "support@YOURDOMAIN.com",
-  POOL_AMOUNT: "$5,000",
+  /* The number the whole page is built around, in one place. Every element
+     carrying data-pool is rewritten from this string at boot, so the headline,
+     the confirmed screen and the sponsored break cannot drift apart - and
+     neither can a visitor see two different prizes on one page.
+     Keep title/og:title and terms.html 5.1 in step with it: those are static
+     markup a crawler reads before any script runs. A believable pool is a
+     small one; a five-figure pool on a 40-second funnel reads as bait, $500
+     reads as a promotion. */
+  POOL_AMOUNT: "$500",
 
   // --- CPA offers (leave [] to hide the boost block entirely) --------------
   // Newest-first: surveys / email-submits convert best in a mobile queue.
@@ -512,6 +536,17 @@ const ls = {
 };
 const fmt = n => Number(n).toLocaleString('en-US');
 const siteUrl = () => (CONFIG.SITE_URL || location.origin).replace(/\/+$/, '');
+
+/* The prize string lives in CONFIG.POOL_AMOUNT; the markup carries it too so a
+   crawler and a script-less browser see the same number. One rewrite keeps the
+   three panels in step with the config instead of with each other. */
+(function applyPool() {
+  const text = String(CONFIG.POOL_AMOUNT || '').trim();
+  if (!text) return;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pool]'), function (el) {
+    el.textContent = text;
+  });
+})();
 
 /* Whichever of these is still empty, the page says so in the console. */
 (function setupCheck() {
@@ -591,11 +626,23 @@ function toast(msg, ms) {
   toastTimer = setTimeout(() => t.classList.remove('on'), ms || 2800);
 }
 
-/* ------------------------------ tracking -------------------------------- */
+/* ------------------------------ tracking --------------------------------
+   The edge knows the connection's country and zone. The page adds the device's
+   own zone and language, so the worker can tell a visitor from a proxy that
+   claims to be one (see "geo" in worker/worker.js). Both are read once: neither
+   can change during a pageview. */
+const ZONE = (function () {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; }
+})();
+const LANG = (function () {
+  try { return navigator.language || ''; } catch (e) { return ''; }
+})();
+
 function hit(ev) {
   if (!CONFIG.HIT_URL) return;
   try {
-    const body = JSON.stringify({ e: ev, s: step, q: queue, ref: ls.get(KEY.inbound, '') });
+    const body = JSON.stringify({ e: ev, s: step, q: queue, ref: ls.get(KEY.inbound, ''),
+      tz: ZONE, lang: LANG });
     if (navigator.sendBeacon) navigator.sendBeacon(CONFIG.HIT_URL, body);
     else fetch(CONFIG.HIT_URL, { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'application/json' } }).catch(() => {});
   } catch (e) {}
@@ -603,16 +650,16 @@ function hit(ev) {
 
 /* ------------------------------- ticker --------------------------------- */
 const NAMES = [
-  ['Marcus T.', 'Austin, TX', '$120'], ['Priya S.', 'Brampton, ON', '$250'],
-  ['Dylan R.', 'Phoenix, AZ', '$80'],  ['Chloe M.', 'Calgary, AB', '$500'],
-  ['Andre W.', 'Atlanta, GA', '$150'], ['Sarah K.', 'Ottawa, ON', '$200'],
-  ['Luis G.', 'San Antonio, TX', '$95'], ['Emma B.', 'Winnipeg, MB', '$320'],
-  ['Jordan P.', 'Charlotte, NC', '$75'], ['Aisha N.', 'Mississauga, ON', '$180'],
-  ['Tyler H.', 'Denver, CO', '$240'], ['Grace L.', 'Vancouver, BC', '$110'],
-  ['Omar F.', 'Columbus, OH', '$500'], ['Nina V.', 'Edmonton, AB', '$140'],
-  ['Caleb J.', 'Nashville, TN', '$90'], ['Leah D.', 'Halifax, NS', '$275'],
-  ['Ryan O.', 'Las Vegas, NV', '$160'], ['Mei C.', 'Victoria, BC', '$420'],
-  ['Isaac A.', 'Tampa, FL', '$85'], ['Zoe R.', 'Montreal, QC', '$300']
+  ['Marcus T.', 'Austin, TX', '$55'], ['Priya S.', 'Brampton, ON', '$95'],
+  ['Dylan R.', 'Phoenix, AZ', '$40'], ['Chloe M.', 'Calgary, AB', '$150'],
+  ['Andre W.', 'Atlanta, GA', '$70'], ['Sarah K.', 'Ottawa, ON', '$85'],
+  ['Luis G.', 'San Antonio, TX', '$45'], ['Emma B.', 'Winnipeg, MB', '$110'],
+  ['Jordan P.', 'Charlotte, NC', '$35'], ['Aisha N.', 'Mississauga, ON', '$80'],
+  ['Tyler H.', 'Denver, CO', '$90'], ['Grace L.', 'Vancouver, BC', '$60'],
+  ['Omar F.', 'Columbus, OH', '$150'], ['Nina V.', 'Edmonton, AB', '$65'],
+  ['Caleb J.', 'Nashville, TN', '$40'], ['Leah D.', 'Halifax, NS', '$100'],
+  ['Ryan O.', 'Las Vegas, NV', '$75'], ['Mei C.', 'Victoria, BC', '$120'],
+  ['Isaac A.', 'Tampa, FL', '$45'], ['Zoe R.', 'Montreal, QC', '$95']
 ];
 const HUES = ['#00d54b', '#2ee6a8', '#f5b942', '#7aa2ff', '#ff8f6b'];
 
@@ -769,9 +816,251 @@ function mountUnit(el, spec) {
   });
 }
 
+/* ------------------------------- video units -------------------------------
+   A video creative is written in one of two forms, and both are mounted by
+   fillSlot() - so any AD_SLOT_*, any AD_NETWORKS slot, and the interstitial
+   placement accept them with no extra wiring:
+
+     video:https://cdn/spot.mp4|poster=https://cdn/spot.jpg|click=https://target
+         A plain HTML5 file. Muted, looped, playsinline, and paused whenever it
+         leaves the viewport: an offscreen video keeps decoding and, worse,
+         keeps being counted as shown to somebody who has scrolled past it.
+
+     vast:https://adserver/vast.xml
+         A VAST 2-4 tag. The XML is fetched, one wrapper is followed, the
+         largest mp4 MediaFile wins, and the <Impression>, <Tracking> and
+         <ClickThrough> elements are honoured. Cross-origin tags need the ad
+         server to send Access-Control-Allow-Origin; when it does not, the box
+         says so in the console instead of silently staying empty.
+
+   Where video belongs: the break (AD_SLOT_GATE) and the confirmed screen
+   (AD_SLOT_DONE). Those are the two moments a visitor is already stopped in
+   front of a panel, and a 15-second spot there does not interrupt the funnel.
+   A file in AD_SLOT_CARD is allowed and usually a mistake: it pushes the CTA
+   under the fold on a phone.
+
+   /hit gets ad_video (a file started playing), ad_vast (a tag resolved and its
+   impression pixel fired) and ad_video_click, so /stats separates "pasted"
+   from "played".
+   ------------------------------------------------------------------------ */
+const VAST_HOPS = 1;
+
+function videoEl(src, poster) {
+  const v = document.createElement('video');
+  v.src = src;
+  v.muted = true;
+  v.defaultMuted = true;
+  v.setAttribute('muted', '');
+  v.playsInline = true;
+  v.setAttribute('playsinline', '');
+  v.setAttribute('webkit-playsinline', '');
+  v.autoplay = true;
+  v.loop = true;
+  v.preload = 'metadata';
+  v.setAttribute('aria-label', 'Advertisement');
+  if (poster) v.poster = poster;
+  return v;
+}
+
+/* Muted autoplay is allowed by every current browser; a video that starts off
+   screen is not. Play only while a third of it is visible, and never throw when
+   a policy refuses - the poster is the fallback creative. */
+function gatePlayback(v) {
+  const play = function () {
+    const p = v.play();
+    if (p && p.catch) p.catch(function () {});
+  };
+  if (!('IntersectionObserver' in window)) { play(); return; }
+  new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) { if (en.isIntersecting) play(); else v.pause(); });
+  }, { threshold: 0.35 }).observe(v);
+}
+
+/* The click-through is a real link, so it behaves like one: middle-click, long
+   press and target=_blank all work, and the tap is counted under its own event
+   rather than as a popunder. */
+function videoInto(el, src, poster, click) {
+  const v = videoEl(src, poster);
+  v.addEventListener('error', function () {
+    console.warn('[PayoutPool] video creative did not load: ' + src);
+    el.classList.remove('filled');
+    el.style.height = '';
+  });
+  if (click) {
+    const a = document.createElement('a');
+    a.className = 'vidLink';
+    a.href = click;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer sponsored';
+    a.addEventListener('click', function () { hit('ad_video_click'); });
+    a.appendChild(v);
+    el.appendChild(a);
+  } else {
+    el.appendChild(v);
+  }
+  gatePlayback(v);
+  return v;
+}
+
+function mountVideo(el, spec) {
+  const parts = String(spec).split('|');
+  const src = (parts.shift() || '').trim();
+  if (!/^(https?:\/\/|\/)/i.test(src)) {
+    console.error('[PayoutPool] video: needs a file URL (https:// or /path), got "' + src + '"');
+    return;
+  }
+  let poster = '', click = '';
+  parts.forEach(function (p) {
+    const i = p.indexOf('=');
+    if (i < 0) return;
+    const k = p.slice(0, i).trim().toLowerCase();
+    const val = p.slice(i + 1).trim();
+    if (k === 'poster') poster = val;
+    else if (k === 'click') click = val;
+  });
+
+  const v = videoInto(el, src, poster, click);
+  let fired = false;
+  v.addEventListener('playing', function () {
+    if (fired) return;
+    fired = true;
+    hit('ad_video');
+  });
+}
+
+function xmlDoc(text) {
+  try {
+    const doc = new DOMParser().parseFromString(text, 'text/xml');
+    if (doc.getElementsByTagName('parsererror').length) return null;
+    return doc;
+  } catch (e) { return null; }
+}
+
+function collect(doc, tag) {
+  const out = [];
+  const nodes = doc.getElementsByTagName(tag);
+  for (let i = 0; i < nodes.length; i++) {
+    const t = (nodes[i].textContent || '').trim();
+    if (t) out.push(t);
+  }
+  return out;
+}
+
+function firstText(doc, tag) {
+  const all = collect(doc, tag);
+  return all.length ? all[0] : '';
+}
+
+function trackers(doc, event) {
+  const out = [];
+  const nodes = doc.getElementsByTagName('Tracking');
+  for (let i = 0; i < nodes.length; i++) {
+    if ((nodes[i].getAttribute('event') || '').toLowerCase() !== event) continue;
+    const u = (nodes[i].textContent || '').trim();
+    if (u) out.push(u);
+  }
+  return out;
+}
+
+/* Cache-buster macros are placeholders in the tag, not URLs: the same pixel
+   requested twice is one impression to the ad server, so every macro is
+   replaced with a fresh value per request. */
+function firePixels(urls) {
+  urls.forEach(function (raw) {
+    const u = String(raw).replace(/\[(CACHEBUSTING|TIMESTAMP|RANDOM)\]/gi, function () {
+      return String(Math.floor(Math.random() * 1e9));
+    });
+    if (!/^https?:\/\//i.test(u)) return;
+    const img = new Image();
+    img.width = 1;
+    img.height = 1;
+    img.alt = '';
+    img.src = u;
+  });
+}
+
+function absolute(url, base) {
+  try { return new URL(url, base).href; } catch (e) { return url; }
+}
+
+/* The largest mp4/webm the tag offers. The declared type is checked when there
+   is one and the extension is used when there is not: a MediaFile with no type
+   is common, and skipping those loses the ad entirely. */
+function pickMedia(doc) {
+  const files = doc.getElementsByTagName('MediaFile');
+  let best = null;
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    const src = (f.textContent || '').trim();
+    if (!/^https?:\/\//i.test(src)) continue;
+    const type = (f.getAttribute('type') || '').toLowerCase();
+    if (type && type.indexOf('video/') !== 0) continue;
+    if (!type && !/\.(mp4|m4v|webm)(\?|#|$)/i.test(src)) continue;
+    const h = parseInt(f.getAttribute('height'), 10) || 0;
+    if (!best || h > best.h) best = { src: src, h: h };
+  }
+  return best;
+}
+
+function mountVast(el, url, hops, carried) {
+  hops = hops || 0;
+  /* Pixels found in a wrapper are as real as the inline ad's - they are how the
+     reseller above the tag measures the impression - so they are carried across
+     the hop instead of being dropped with the wrapper document. */
+  carried = carried || { impressions: [], start: [], complete: [] };
+  fetch(url, { cache: 'no-store' })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function (text) {
+      const doc = xmlDoc(text);
+      if (!doc) throw new Error('not VAST XML');
+
+      /* One wrapper hop. A chain of wrappers is a redirect loop waiting to
+         happen, and every hop is another chance to stall the box. */
+      const wrapper = firstText(doc, 'VASTAdTagURI');
+      if (wrapper && hops < VAST_HOPS) {
+        carried.impressions = carried.impressions.concat(collect(doc, 'Impression'));
+        carried.start = carried.start.concat(trackers(doc, 'start'));
+        carried.complete = carried.complete.concat(trackers(doc, 'complete'));
+        mountVast(el, absolute(wrapper, url), hops + 1, carried);
+        return;
+      }
+
+      const media = pickMedia(doc);
+      if (!media) throw new Error('no mp4 MediaFile in the tag');
+
+      firePixels(carried.impressions.concat(collect(doc, 'Impression')));
+      hit('ad_vast');
+
+      const click = firstText(doc, 'ClickThrough');
+      const v = videoInto(el, absolute(media.src, url), '', click ? absolute(click, url) : '');
+      let started = false;
+      v.addEventListener('playing', function () {
+        if (started) return;
+        started = true;
+        firePixels(carried.start.concat(trackers(doc, 'start')));
+      });
+      v.addEventListener('ended', function () {
+        firePixels(carried.complete.concat(trackers(doc, 'complete')));
+      });
+    })
+    .catch(function (e) {
+      console.warn('[PayoutPool] VAST tag failed (' + url + '): ' + e.message +
+        '. A cross-origin tag needs Access-Control-Allow-Origin on the ad server; ' +
+        'without it the browser cannot read the XML.');
+      el.classList.remove('filled');
+      el.style.height = '';
+    });
+}
+
 function fillSlot(el, html, height) {
   /* adsterra:<key>/<w>x<h> - queued unit, see mountUnit() above. */
   if (/^adsterra:/i.test(html)) { mountUnit(el, html.slice(9).trim()); return; }
+  /* Video creative: a file, or a VAST tag. See mountVideo / mountVast. */
+  if (/^video:/i.test(html)) { mountVideo(el, html.slice(6).trim()); return; }
+  if (/^vast:/i.test(html)) { mountVast(el, html.slice(5).trim()); return; }
   /* 'script:' prefix = a script tag. A bare URL is an iframe below, so the
      prefix is how a network's single-src tag is told apart from an iframe
      creative without pasting a closing script tag into this file. */
@@ -917,7 +1206,6 @@ function slotHtml(name, explicit) {
 
 mountAd('adHeld', slotHtml('HELD', CONFIG.AD_SLOT_HELD), 'AD');
 mountAd('adCard', slotHtml('CARD', CONFIG.AD_SLOT_CARD), 'AD');
-mountAd('adAfter', slotHtml('AFTER', CONFIG.AD_SLOT_AFTER), 'AD');
 mountAd('adBelow', slotHtml('BELOW', CONFIG.AD_SLOT_BELOW), 'AD');
 mountAd('adCapture', slotHtml('CAPTURE', CONFIG.AD_SLOT_CAPTURE), 'AD');
 mountAd('adDone', slotHtml('DONE', CONFIG.AD_SLOT_DONE), 'AD');
@@ -1012,6 +1300,12 @@ function alreadyOnPage(src, zone) {
 
 function injectPlacement(box, html) {
   const tag = String(html).trim();
+  /* A video creative is not markup: fillSlot builds the element, and whether
+     anything landed is read back from the box. */
+  if (/^(video|vast):/i.test(tag)) {
+    fillSlot(box, tag);
+    return !!box.childNodes.length;
+  }
   if (/^https?:\/\/[^\s"'<>]+$/i.test(tag)) {
     const f = document.createElement('iframe');
     f.src = tag;
@@ -1227,7 +1521,7 @@ function openInterstitial(stage) {
   if (CONFIG.INTERSTITIAL_HTML && !ad.getAttribute('data-filled')) {
     ad.setAttribute('data-filled', '1');
     /* The partner tag goes in its own column below the house copy, so the
-       "$5,000" panel the screen is built around survives a real tag instead of
+       "$500" panel the screen is built around survives a real tag instead of
        being wiped by it. A placement that was refused (duplicate zone) leaves
        no column behind - the house panel gets the room back. */
     const fill = document.createElement('div');
@@ -1539,7 +1833,8 @@ $('form').addEventListener('submit', async function (e) {
     code: myCode(),
     at: new Date().toISOString(),
     page: location.href,
-    tz: (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (x) { return ''; } })(),
+    tz: ZONE,
+    lang: LANG,
     ua: navigator.userAgent
   };
 

@@ -49,12 +49,11 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | `AD_BURST` | networks fired per tap, `1`–`n` — default `2` = every gate network pops on the same tap | your call |
 | `AD_REPEAT_POP` | `true` (default) = a network may pop again on the next tap; `false` = once per network per visit | your call |
 | `AD_SLOT_HELD` | reserved box under the "slot held for" timer | any network's banner code |
-| `AD_SLOT_CARD` | reserved box inside the step card, above the CTA | banner code |
-| `AD_SLOT_AFTER` | reserved box directly under the CTA ("Save my position") | banner code |
+| `AD_SLOT_CARD` | reserved box inside the step card, above the CTA | banner code, or a `video:` / `vast:` creative |
 | `AD_SLOT_BELOW` | reserved box below the card | banner code |
-| `AD_SLOT_CAPTURE` | reserved box inside the contact card, above the email field | banner code (300×250 / 320×100) |
-| `AD_SLOT_DONE` | reserved box on the "Entry confirmed" screen, under the referral code | banner code |
-| `AD_SLOT_GATE` | ad inside the sponsored interstitial (replaces the house preview) | banner / native code |
+| `AD_SLOT_CAPTURE` | reserved box inside the contact card, above the email field | banner code (300×250 / 320×100), or `video:` / `vast:` |
+| `AD_SLOT_DONE` | reserved box on the "Entry confirmed" screen, under the referral code | banner code, or `video:` / `vast:` |
+| `AD_SLOT_GATE` | ad inside the sponsored interstitial (replaces the house preview) | banner / native code, or `video:` / `vast:` |
 | `AD_SLOT_STICKY` | 320×50 anchor pinned to the bottom edge, with a close button | anchor/banner code |
 | `AD_PLACEHOLDERS` | `true` (default) = empty slots stay in the page but draw nothing; `false` = empty slots are removed from the DOM | your call |
 | `CAPTURE_ENDPOINT` | `https://api.yourdomain.com/capture` | your Worker (below) |
@@ -62,6 +61,7 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | `HIT_URL` | `https://api.yourdomain.com/hit` | same Worker |
 | `ONESIGNAL_APP_ID` | the UUID from OneSignal | OneSignal → Settings → Keys & IDs |
 | `SUPPORT_EMAIL` | a monitored inbox | you |
+| `POOL_AMOUNT` | the prize string every `data-pool` element is rewritten from (`"$500"` shipped) | your call — keep `terms.html` 5.1, the `<title>` and `og:title` in step |
 | `OFFERS` | array of `{t,s,u,k}` CPA links | CPAGrip / OGAds, filtered to your traffic |
 
 `YOURDOMAIN.com` appears in `<head>` four times: canonical, `og:url`, `og:image`, `twitter:image`.
@@ -92,7 +92,6 @@ localStorage and retried on the next visit. `window.__ppMissing` lists every uns
 |---|---|---|---|---|
 | Under the timer | `AD_SLOT_HELD` | on load, always visible | 1 box | — |
 | Above the CTA | `AD_SLOT_CARD` | on load, every step | 1 box | — |
-| Under the CTA | `AD_SLOT_AFTER` | on load, every step | 1 box | — |
 | Below the card | `AD_SLOT_BELOW` | on load | 1 box | — |
 | In the contact card | `AD_SLOT_CAPTURE` | when step 5 appears | 1 box | — |
 | Confirmed screen | `AD_SLOT_DONE` | after the lead is stored | 1 box | — |
@@ -104,7 +103,7 @@ localStorage and retried on the next visit. `window.__ppMissing` lists every uns
 | Interstitial | `INTERSTITIAL_TRIGGER` (zone hook) or `INTERSTITIAL_HTML` | `INTERSTITIAL_ON` = confirmed screen (default) or gate, `INTERSTITIAL_SKIP`s hold | 1 per pageload per stage | `ad_inter`, `interstitial_done` |
 | CPA offers | `OFFERS` | confirmed screen | 5 links shown | `offer_click` |
 
-The eight `AD_SLOT_*` boxes are real reserved containers: each accepts banner HTML (an `<iframe>`,
+The seven `AD_SLOT_*` boxes are real reserved containers: each accepts banner HTML (an `<iframe>`,
 `<ins>`, `<img>`, or a script snippet) or a bare `https://` iframe URL. Script tags are re-created
 after insertion, because `innerHTML` alone never executes them — so a standard network tag works.
 Every box is in the funnel where a visitor is looking, so a display campaign can run alongside the
@@ -116,10 +115,42 @@ tag, and set `CONFIG.AD_PLACEHOLDERS: false` to remove empty boxes from the DOM 
 them in place. The bottom anchor has no empty state at all (an empty fixed bar would look broken)
 and never comes back once a visitor closes it (`pp_stickx` in localStorage).
 
+There is deliberately **no box directly under the CTA** any more. The 468×60 that used to sit
+between "Confirm and continue" and the "no payment details" line competed with the button for the
+same tap, and the entry is the better-paying event. Its Adsterra zone still exists; restoring it is
+one `<aside class="adbox inset" id="adAfter" data-slot="after">` in the step card plus one
+`mountAd('adAfter', slotHtml('AFTER', CONFIG.AD_SLOT_AFTER), 'AD')` line.
+
 Density is a money question, not a "more boxes = more revenue" one. Past roughly four display units
 per viewport, fill rate and CPM both fall and the form completion rate drops with them — the lead is
 the better-paying event. If you add a network, prefer a second **anchor** (`AD_SLOT_STICKY`) or a
 300×250 in `AD_SLOT_CAPTURE`, not another box stacked on the first screen.
+
+### Video creatives
+
+Any slot — and `INTERSTITIAL_HTML` — also accepts two video forms, so a video zone needs no extra
+config key:
+
+```js
+AD_SLOT_GATE: 'video:https://cdn.example.com/spot.mp4|poster=https://cdn.example.com/spot.jpg|click=https://advertiser.example',
+AD_SLOT_DONE: 'vast:https://ads.example.com/vast?zone=123&cb=[CACHEBUSTING]'
+```
+
+- `video:` is a plain file. It is mounted muted, looped, `playsinline` and only **plays while a
+  third of it is on screen** — an offscreen video keeps decoding and keeps being counted as shown
+  to somebody who has scrolled past it. `poster=` and `click=` are optional; a click-through
+  becomes a real `<a target="_blank" rel="noopener">`, not a popunder.
+- `vast:` is a VAST 2–4 tag. The XML is fetched, **one wrapper is followed**, the largest mp4/webm
+  `<MediaFile>` wins, and `<Impression>`, `<Tracking event="start|complete">` and `<ClickThrough>`
+  are honoured. Wrapper and inline pixels both fire, with `[CACHEBUSTING]` / `[TIMESTAMP]` /
+  `[RANDOM]` replaced per request. The ad server has to send `Access-Control-Allow-Origin` (most
+  do); when it does not, the console says so instead of leaving a silent hole.
+
+Put video in the **break** (`AD_SLOT_GATE`) and on the **confirmed screen** (`AD_SLOT_DONE`): those
+are the two moments a visitor is already stopped in front of a panel. A video in `AD_SLOT_CARD` is
+allowed and usually a mistake — on a phone it pushes the CTA under the fold. `/stats` separates
+pasted from played: `ad_video` (the file started), `ad_vast` (a tag resolved and its impression
+fired), `ad_video_click`. `node _advid.mjs` checks all of it against a local mp4 and a wrapper tag.
 
 The direct link deliberately **does not** fire on the gate tap by default. `window.open` on that
 tap moves focus to the new tab, so the visitor never sees the interstitial and never submits the
@@ -131,7 +162,7 @@ the lead is in KV, or on exit-intent if the visitor saw the form and started lea
 
 The overlay (`#inter`) is a real full-screen placement: it covers the page, freezes scrolling, and
 holds its Continue button for `INTERSTITIAL_SKIP` seconds. By default it sits on the **confirmed
-screen** (`INTERSTITIAL_ON: "done"`), right where the `$5,000` lands.
+screen** (`INTERSTITIAL_ON: "done"`), right where the `$500` lands.
 
 The site already loads Monetag's MultiTag for zones `312446` and `12299927` in `<head>`, so that
 zone is paid inventory from the first byte. The break asks it to show its own full-screen instead of
@@ -139,7 +170,7 @@ loading the same tag a second time:
 
 ```js
 INTERSTITIAL_TRIGGER: "show_312446",   // default - the zone already in <head>
-INTERSTITIAL_ON: "done",               // last screen, where the $5,000 lands
+INTERSTITIAL_ON: "done",               // last screen, where the $500 lands
 ```
 
 `show_312446()` is what `tag.min.js` registers once the zone can open a full-screen. Check it in the
@@ -170,7 +201,7 @@ Four rules, and each one is a page-killer or an account risk if ignored:
    reads as invalid traffic. `injectPlacement` refuses it with a console warning and the break falls
    back to the house panel, so the mistake is loud instead of expensive. Use
    `INTERSTITIAL_TRIGGER` for that zone.
-3. **The tag goes in its own column, under the house panel.** The `$5,000` copy stays visible while
+3. **The tag goes in its own column, under the house panel.** The `$500` copy stays visible while
    the partner creative renders below it, instead of the tag wiping the panel out.
 4. **Scripts are re-created after insertion**, because `innerHTML` never executes them. That is what
    makes a pasted `data-zone` snippet actually load rather than quietly render an empty div.
@@ -279,7 +310,7 @@ is not obvious, and pasting the wrong one is why a box renders empty:
 
 `<key>` is the last path segment of the `invoke.js` URL Adsterra shows you
 (`https://bancadeltempoidea.org/22/<key>`), and `<w>x<h>` is the size the zone was created
-with. Six units are wired today — `HELD 320x50`, `CARD 300x250`, `AFTER 468x60`,
+with. Five units are wired today — `HELD 320x50`, `CARD 300x250`,
 `BELOW 728x90`, `CAPTURE 160x300`, `DONE 160x600` — plus the Popunder zone on the same network
 object, so one `/hit` id (`ad_adsterra`) covers the banners and the pops.
 
@@ -290,7 +321,7 @@ is one global, and the loader reads it and then deletes it:
 if (window['atOptions'] && isObject(window[...])) merge(...), delete window['atOptions'];
 ```
 
-Six copies on one page overwrite each other before the earlier loaders have read theirs, so
+Five copies on one page overwrite each other before the earlier loaders have read theirs, so
 every box comes out at the *last* unit's size, or blank. `mountUnit()` instead sets
 `atOptions`, inserts that unit's loader, waits for the loader to consume (delete) it, and only
 then starts the next unit — one queue for the whole page. `node _admap.mjs` asserts the key
@@ -314,7 +345,6 @@ AD_NETWORKS: [
     slots: {
       HELD:    'adsterra:83ffc72d…/320x50',
       CARD:    'adsterra:81c79547…/300x250',
-      AFTER:   'adsterra:928e14e8…/468x60',
       BELOW:   'adsterra:0fbe28a3…/728x90',
       CAPTURE: 'adsterra:819964b8…/160x300',
       DONE:    'adsterra:0ebe3930…/160x600',
@@ -362,6 +392,8 @@ three URLs into `CONFIG`.
 | `/capture` | POST | validates, rate-limits to 5/IP/hour, stores the lead in KV, appends a masked row to the feed |
 | `/feed` | GET | last 40 entries as `{n,p,t}` — first letter + `•••`, city/region, timestamp |
 | `/hit` | POST | increments an allow-listed funnel counter (`step_1`, `ad`, `done`, …) |
+| `/stats` | GET | aggregates those counters for N days (needs `X-Admin-Token`) |
+| `/geo` | GET | visits per country / subdivision for N days, plus the timezone-mismatch signal (needs `X-Admin-Token`) |
 | `/winners` | GET | published draw results, newest round first, cached 5 min |
 | `/winners` | POST | publishes one round (needs `X-Admin-Token`); re-posting a round replaces it |
 | `/winners?round=…` | DELETE | unpublishes one round (needs `X-Admin-Token`) |
@@ -398,13 +430,15 @@ this funnel and costs nothing at these volumes.
 
 ## Analytics bot — clicks and funnel, from the terminal
 
-`bot/pp_analytics.py` is a stdlib-only Python 3.8+ CLI over the Worker's `GET /stats`
+`bot/pp_analytics.py` is a stdlib-only Python 3.8+ CLI over the Worker's `GET /stats` and
+`GET /geo`
 (token = the same `ADMIN_TOKEN` secret). It never touches a visitor's email or phone; `/stats`
 returns counters only.
 
 ```bash
 python bot/pp_analytics.py health
 python bot/pp_analytics.py stats                 # funnel + clicks table
+python bot/pp_analytics.py geo                   # countries, value tiers, proxy signal
 python bot/pp_analytics.py watch --interval 15   # live click deltas + alerts
 python bot/pp_analytics.py report --days 30      # writes reports/*.json|.csv|.md
 python bot/pp_analytics.py selftest              # offline checks
@@ -421,6 +455,16 @@ counter fired, how many steps were taken, whether a capture view ever became an 
 | `LEAD LEAK` | capture views recorded, zero `done` |
 | `FORM STARVED` | under 5% of views reach the form |
 | `CLICK HEAVY` | more than 8 click events per visit (normal at `AD_BURST: 2`) |
+
+`geo` is the other half of the picture: `GET /geo` is written at the edge from `request.cf` on every
+page view, so it costs the page nothing and needs no IP database. It prints visits per country and
+subdivision, splits them into **value tiers** (`TIER1` / `TIER2` sets at the top of the file — edit
+them to match your payout sheet, and the tier line becomes your own numbers), and reports the
+`tz-mismatch` signal: the worker compares the connection's timezone with the one the browser sends,
+so a device in `Europe/Berlin` arriving from a Lagos IP shows up as a count instead of a surprise
+chargeback. Its alerts are `GEO CLUSTER` (one country ≥ 70% of visits), `PROXY HEAVY` (≥ 15%
+mismatched), `LOW VALUE GEO` (≥ 60% tier 3) and `NO COUNTRY` (the edge resolved nothing — local
+`wrangler dev` traffic).
 
 Tests: `python -m unittest discover -s bot -p "test_*.py" -v` starts a throwaway HTTP server that
 mimics the Worker, so the urllib path, the `X-Admin-Token` header, the 401 and the file writing are
@@ -461,7 +505,7 @@ Fixed:
 - **Worldwide.** No region gate, no US/Canada phone rule: `validPhone()` accepts 7–15 digits with an
   optional `+` country code, the Worker's `PHONE_RE` does the same, and the copy no longer claims a
   territory. A `+44`, `+234` or `+55` number submits exactly like a `+1`.
-- **Eight reserved ad boxes** (`AD_SLOT_*`, above): each fills from CONFIG and appears at the size of
+- **Seven reserved ad boxes** (`AD_SLOT_*`, above): each fills from CONFIG and appears at the size of
   the creative. An unsold slot is invisible and takes no space — no dashed `AD` frame for a visitor
   to wonder about — but keeps its position in the page; `?addebug=1` outlines every unsold slot while
   you are wiring a network. The two new funnel positions
@@ -477,7 +521,7 @@ Still on you (cannot be coded):
 1. Replace `YOURDOMAIN.com` (4 places in `<head>`, plus `worker/wrangler.toml` and the mailto links).
 2. Rounds are calendar months by definition (section 2). If you want fixed dates instead, edit section 2
    of `terms.html` and the date line on `winners.html`.
-3. Adsterra's popunder and its six banner units are wired; what is still blank is `AD_DIRECT_LINK`,
+3. Adsterra's popunder and its five banner units are wired; what is still blank is `AD_DIRECT_LINK`,
    `OFFERS`, push (`ONESIGNAL_APP_ID` / `PUSH_TAG`), and the two boxes that need units of their own
    (`GATE` 300x250, `STICKY` 320x50) — until those are pasted the page earns from banners and pops
    only. The full-screen break needs no paste: it uses the zone already in `<head>`
@@ -485,7 +529,7 @@ Still on you (cannot be coded):
 4. Deploy the Worker, set `ADMIN_TOKEN`, and paste its URLs into `CONFIG` plus `WINNERS_URL`.
    The same token is what `bot/pp_analytics.py` passes as `--token` (or `PP_ADMIN_TOKEN`) to read
    `/stats`.
-5. **Actually run a real draw.** The page promises `$5,000`, so publish the real result with
+5. **Actually run a real draw.** The page promises `$500`, so publish the real result with
    `POST /winners` rather than leaving the placeholder row up.
 
 ## Local testing
@@ -505,12 +549,14 @@ assertion and a `n/n passed` line, and exits non-zero on any failure.
 | Probe | What it proves |
 |---|---|
 | `node _head.mjs` | head order: Monetag tags and `meta charset` in the right place |
-| `node _admap.mjs` | all eight boxes: which unit fills which slot, right key, right size, unsold slots invisible |
+| `node _admap.mjs` | all seven boxes: which unit fills which slot, right key, right size, unsold slots invisible |
+| `node _advid.mjs` | video creatives: `video:` attributes + play-only-when-visible, `vast:` wrapper hop, pixels, 720p pick, click-through |
 | `node _adsnet.mjs` | `AD_NETWORKS` arbitration: rotation per visitor, `AD_BURST`, `fireOn: 'done'` confinement |
 | `node _adinter.mjs` | the full-screen break: `INTERSTITIAL_ON` done/gate/both/off, the zone hook path, hold timer, returning visitor, pasted tag + escaping, duplicate-zone refusal |
 | `node _adtag.mjs` / `node _adtag2.mjs` | the live network tags as shipped |
 | `node _adview.mjs` | screenshots of the funnel, plain and with `?addebug=1` |
 | `node _adlive.mjs` | a real Adsterra render attempt (expected to render nothing off an unapproved domain) |
 | `node _swtest2.mjs` | the push service worker |
+| `node _wtest.mjs` | the Worker with a fake KV: `/hit` allow-list, `/stats` and `/geo` token gates, country rollup, tz mismatch, lead record |
 
 

@@ -13,6 +13,7 @@ _*.js
 
 # Logs
 *.log
+*.err
 
 # Python bytecode (bot/)
 __pycache__/

@@ -10,12 +10,16 @@ from index.html) and turns them into three things the operator actually needs:
   * click detector -- per-interval deltas for every ad_* / click event, with
                       alerts for clicks that arrive without traffic, click
                       storms, and capture views that never become entries
+  * geo report     -- which countries the visits come from, how much of that
+                      traffic is tier-1, and how much is arriving through a
+                      proxy (the worker's tz-mismatch signal)
   * report         -- JSON + CSV + Markdown under reports/
 
 Stdlib only (urllib), so it runs on any machine with Python 3.8+ and no pip.
 
     python bot/pp_analytics.py health
     python bot/pp_analytics.py stats
+    python bot/pp_analytics.py geo
     python bot/pp_analytics.py watch --interval 15
     python bot/pp_analytics.py report --days 30
     python bot/pp_analytics.py selftest
@@ -26,8 +30,8 @@ then the defaults below.
     PP_API            https://payoutpool-api.payoutpool.workers.dev
     PP_ADMIN_TOKEN    the same ADMIN_TOKEN secret wrangler holds for /winners
 
-/stats is token gated on purpose: traffic numbers are the operator's, not the
-public's. Nothing in this bot reads or prints a visitor's email or phone.
+/stats and /geo are token gated on purpose: traffic numbers are the operator's,
+not the public's. Nothing in this bot reads or prints a visitor's email or phone.
 """
 
 import argparse
@@ -61,6 +65,45 @@ LABELS = {
     "capture_view": "capture form shown",
     "done": "entry confirmed",
 }
+
+# --------------------------------------------------------------------------
+# geo vocabulary
+#
+# /geo rolls up ISO-3166 alpha-2 codes. Names are kept here so the table reads
+# without a lookup table on disk; anything missing prints as the code itself,
+# which is still actionable.
+# --------------------------------------------------------------------------
+COUNTRY_NAMES = {
+    "AE": "United Arab Emirates", "AR": "Argentina", "AT": "Austria",
+    "AU": "Australia", "BD": "Bangladesh", "BE": "Belgium", "BG": "Bulgaria",
+    "BH": "Bahrain", "BR": "Brazil", "CA": "Canada", "CH": "Switzerland",
+    "CL": "Chile", "CN": "China", "CO": "Colombia", "CZ": "Czechia",
+    "DE": "Germany", "DK": "Denmark", "DZ": "Algeria", "EE": "Estonia",
+    "EG": "Egypt", "ES": "Spain", "FI": "Finland", "FR": "France",
+    "GB": "United Kingdom", "GR": "Greece", "HK": "Hong Kong", "HR": "Croatia",
+    "HU": "Hungary", "ID": "Indonesia", "IE": "Ireland", "IL": "Israel",
+    "IN": "India", "IT": "Italy", "JO": "Jordan", "JP": "Japan",
+    "KE": "Kenya", "KR": "South Korea", "KW": "Kuwait", "LT": "Lithuania",
+    "LU": "Luxembourg", "LV": "Latvia", "MA": "Morocco", "MT": "Malta",
+    "MX": "Mexico", "MY": "Malaysia", "NG": "Nigeria", "NL": "Netherlands",
+    "NO": "Norway", "NZ": "New Zealand", "OM": "Oman", "PE": "Peru",
+    "PH": "Philippines", "PK": "Pakistan", "PL": "Poland", "PT": "Portugal",
+    "QA": "Qatar", "RO": "Romania", "RS": "Serbia", "RU": "Russia",
+    "SA": "Saudi Arabia", "SE": "Sweden", "SG": "Singapore", "SI": "Slovenia",
+    "SK": "Slovakia", "TH": "Thailand", "TN": "Tunisia", "TR": "Turkey",
+    "TW": "Taiwan", "UA": "Ukraine", "US": "United States", "UY": "Uruguay",
+    "VN": "Vietnam", "ZA": "South Africa", "XX": "unknown (no edge country)",
+}
+
+# Ad markets are not equal. A starting point, not a law: edit these two sets to
+# match the payout sheet of whichever network actually pays you, and the tier
+# line in `geo` becomes your own numbers instead of generic ones.
+TIER1 = {"US", "CA", "GB", "AU", "NZ", "IE", "DE", "FR", "NL", "SE", "NO",
+         "DK", "FI", "BE", "AT", "CH", "LU", "SG", "AE", "IL", "HK", "JP",
+         "KR", "QA", "KW", "OM", "BH"}
+TIER2 = {"IT", "ES", "PT", "PL", "CZ", "SK", "HU", "SI", "EE", "LV", "LT",
+         "GR", "CY", "MT", "RO", "BG", "HR", "CL", "BR", "MX", "AR", "UY",
+         "ZA", "MY", "TH", "TW", "SA", "TR", "RU", "RS"}
 
 
 class ApiError(Exception):
@@ -288,17 +331,204 @@ def render_stats(payload, as_json=False):
     return "\n".join(out)
 
 
-def cmd_health(api):
-    base = api.rstrip("/")
-    payload = get_json(base + "/health")
-    print("%s\n  ok=%s kv=%s" % (base, payload.get("ok"), payload.get("kv")))
-    return 0 if payload.get("ok") else 1
+# --------------------------------------------------------------------------
+# geo: where the visits come from
+#
+# The worker writes one country counter per `view`, taken from request.cf at
+# the edge - no IP database here, no cookie, no lookup call. This turns that
+# rollup into the two decisions it can change: which markets the traffic is in,
+# and how much of it is worth much.
+# --------------------------------------------------------------------------
+def fetch_geo(api, token, days):
+    """One /geo call, shape-checked. Same token and window rules as /stats."""
+    if not token:
+        raise ApiError("no admin token: pass --token or set PP_ADMIN_TOKEN "
+                       "(same value as the worker's ADMIN_TOKEN secret)")
+    url = api.rstrip("/") + "/geo?days=" + str(max(1, min(90, int(days))))
+    payload = get_json(url, token)
+    if not isinstance(payload, dict) or not payload.get("ok"):
+        raise ApiError("unexpected /geo payload: %r" % (payload,))
+
+    rows = []
+    for item in payload.get("countries") or []:
+        if not isinstance(item, dict):
+            continue
+        cc = str(item.get("cc") or "").upper()[:2]
+        try:
+            n = int(item.get("visits") or 0)
+        except (TypeError, ValueError):
+            continue
+        if cc and n > 0:
+            rows.append({"cc": cc, "visits": n})
+
+    total = sum(r["visits"] for r in rows)
+    for row in rows:
+        row["share"] = (100.0 * row["visits"] / total) if total else 0.0
+    rows.sort(key=lambda r: (-r["visits"], r["cc"]))
+
+    payload["countries"] = rows
+    payload["visits"] = total
+    if not isinstance(payload.get("regions"), list):
+        payload["regions"] = []
+    if not isinstance(payload.get("signals"), dict):
+        payload["signals"] = {}
+    return payload
+
+
+def country_name(cc):
+    code = str(cc or "").upper()
+    return COUNTRY_NAMES.get(code, code or "??")
+
+
+def tier_of(cc):
+    """1 / 2 / 3 for a known market, "?" when there is no country at all."""
+    code = str(cc or "").upper()
+    if code in TIER1:
+        return "1"
+    if code in TIER2:
+        return "2"
+    if not code or code == "XX":
+        return "?"
+    return "3"
+
+
+def tier_totals(payload):
+    out = {"1": 0, "2": 0, "3": 0, "?": 0}
+    for row in payload.get("countries") or []:
+        out[tier_of(row.get("cc"))] += int(row.get("visits") or 0)
+    return out
+
+
+def geo_rows(payload):
+    """[country, visits, share, bar] - one row per country, biggest first."""
+    rows = payload.get("countries") or []
+    peak = rows[0]["visits"] if rows else 0
+    out = []
+    for row in rows:
+        out.append([
+            "%s  %s" % (row["cc"], country_name(row["cc"])[:26]),
+            "{:,}".format(row["visits"]),
+            "%5.1f%%" % row.get("share", 0.0),
+            bar(row["visits"], peak),
+        ])
+    return out
+
+
+def geo_alerts(payload):
+    """What the geo rollup says without waiting for a second sample."""
+    out = []
+    rows = payload.get("countries") or []
+    visits = int(payload.get("visits") or 0)
+    signals = payload.get("signals") or {}
+
+    if not visits:
+        out.append(("info", "NO GEO",
+                    "no country counters - HIT_URL is empty, or /hit is not receiving views"))
+        return out
+
+    top = rows[0]
+    if visits >= 10 and top.get("share", 0.0) >= 70:
+        out.append(("warn", "GEO CLUSTER",
+                    "%.0f%% of visits from %s - one source, one payout risk"
+                    % (top["share"], top["cc"])))
+
+    unknown = next((r for r in rows if r["cc"] == "XX"), None)
+    if unknown and visits >= 10 and unknown.get("share", 0.0) >= 50:
+        out.append(("warn", "NO COUNTRY",
+                    "the edge resolved no country for %.0f%% of visits - local wrangler "
+                    "traffic, or a proxy that strips the header" % unknown["share"]))
+
+    try:
+        mismatch = int(signals.get("tz-mismatch") or 0)
+    except (TypeError, ValueError):
+        mismatch = 0
+    if visits >= 10 and mismatch * 100.0 / visits >= 15:
+        out.append(("warn", "PROXY HEAVY",
+                    "%d of %d visits (%.0f%%) report a clock zone the connection is not in"
+                    % (mismatch, visits, 100.0 * mismatch / visits)))
+
+    split = tier_totals(payload)
+    if visits >= 20 and split["3"] * 100.0 / visits >= 60:
+        out.append(("info", "LOW VALUE GEO",
+                    "%.0f%% of visits are tier 3 - a first-world CPM plan is not "
+                    "reachable on this traffic" % (100.0 * split["3"] / visits)))
+    return out
+
+
+def render_geo(payload, as_json=False):
+    if as_json:
+        return json.dumps(payload, indent=2, sort_keys=True)
+
+    rows = payload.get("countries") or []
+    visits = int(payload.get("visits") or 0)
+    window = payload.get("window") or {}
+    out = [
+        "PayoutPool /geo   %s" % now_utc(),
+        "window %sd since %s   visits %s   scan: %s"
+        % (window.get("days", "?"), window.get("since", "?"),
+           "{:,}".format(visits), payload.get("scan", "?")),
+        "",
+        "COUNTRIES",
+    ]
+
+    if rows:
+        table_rows = geo_rows(payload)[:15]
+        out.append(table(table_rows, ["country", "visits", "share", ""]))
+        if len(rows) > len(table_rows):
+            out.append("  +%d more" % (len(rows) - len(table_rows)))
+    else:
+        out.append("  none recorded yet")
+
+    regions = payload.get("regions") or []
+    if regions:
+        out += ["", "TOP REGIONS"]
+        out.append(table([[str(r.get("region") or "?"), str(r.get("visits") or 0)]
+                          for r in regions[:10]], ["region", "visits"]))
+
+    if visits:
+        split = tier_totals(payload)
+        out += ["", "VALUE TIERS  (edit TIER1 / TIER2 in this file to match your payout sheet)"]
+        out.append(table([["tier " + k, "{:,}".format(split[k]),
+                           "%5.1f%%" % (100.0 * split[k] / visits)]
+                          for k in ("1", "2", "3", "?")],
+                         ["tier", "visits", "share"]))
+
+    out += ["", "SIGNALS"]
+    signals = payload.get("signals") or {}
+    if signals:
+        for name in sorted(signals):
+            out.append("  %-14s %s" % (name, signals[name]))
+        out.append("  tz-mismatch: the browser's clock zone and the connection's zone")
+        out.append("  disagree - a proxy, a VPN, or a resold address. A few is normal.")
+    else:
+        out.append("  none")
+
+    out += ["", "ALERTS"]
+    alerts = geo_alerts(payload)
+    if not alerts:
+        out.append("  none")
+    for level, code, message in alerts:
+        out.append("  [%s] %s: %s" % (level.upper(), code, message))
+    return "\n".join(out)
+
+
+def cmd_geo(api, token, days, as_json):
+    payload = fetch_geo(api, token, days)
+    print(render_geo(payload, as_json=as_json))
+    return 0
 
 
 def cmd_stats(api, token, days, as_json):
     payload = fetch_stats(api, token, days)
     print(render_stats(payload, as_json=as_json))
     return 0
+
+
+def cmd_health(api):
+    base = api.rstrip("/")
+    payload = get_json(base + "/health")
+    print("%s\n  ok=%s kv=%s" % (base, payload.get("ok"), payload.get("kv")))
+    return 0 if payload.get("ok") else 1
 
 
 def cmd_watch(api, token, days, interval, iterations, storm):
@@ -331,6 +561,14 @@ def cmd_watch(api, token, days, interval, iterations, storm):
 def cmd_report(api, token, days, outdir):
     payload = fetch_stats(api, token, days)
     totals = payload["totals"]
+    # A missing /geo (older deploy, token without access) costs the geo section,
+    # not the report: the funnel is still the reason the report exists.
+    geo = None
+    try:
+        geo = fetch_geo(api, token, days)
+    except ApiError as exc:
+        print("geo unavailable, report written without it: %s" % exc)
+
     os.makedirs(outdir, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     base = os.path.join(outdir, "report-" + stamp)
@@ -347,6 +585,7 @@ def cmd_report(api, token, days, outdir):
             "clicks": {e: totals.get(e, 0) for e in click_events(totals)},
             "alerts": alerts,
             "series": payload.get("series"),
+            "geo": geo,
         }, fh, indent=2, sort_keys=True)
 
     with open(base + ".csv", "w", encoding="utf-8", newline="") as fh:
@@ -357,6 +596,8 @@ def cmd_report(api, token, days, outdir):
                 writer.writerow([day, event, payload["series"][event][day]])
         for event in sorted(totals):
             writer.writerow(["all", event, totals[event]])
+        for row in (geo or {}).get("countries", []):
+            writer.writerow(["geo", row["cc"], row["visits"]])
 
     window = payload.get("window") or {}
     md = [
@@ -381,6 +622,19 @@ def cmd_report(api, token, days, outdir):
                      fmt_pct(totals.get(event, 0), totals.get("view", 0)).strip()))
     md += ["", "## Alerts", ""]
     md += ["- **%s** %s" % (a["code"], a["message"]) for a in alerts] or ["- none"]
+    if geo and geo.get("visits"):
+        visits = geo["visits"]
+        split = tier_totals(geo)
+        md += ["", "## Geo", "",
+               "| country | visits | share |", "| --- | ---: | ---: |"]
+        for row in geo["countries"][:15]:
+            md.append("| %s %s | %d | %.1f%% |"
+                      % (row["cc"], country_name(row["cc"]), row["visits"], row["share"]))
+        md += ["", "tier 1 %.0f%% / tier 2 %.0f%% / tier 3 %.0f%%"
+               % (100.0 * split["1"] / visits, 100.0 * split["2"] / visits,
+                  100.0 * split["3"] / visits)]
+        for level, code, message in geo_alerts(geo):
+            md.append("- **%s** %s" % (code, message))
     with open(base + ".md", "w", encoding="utf-8") as fh:
         fh.write("\n".join(md) + "\n")
 
@@ -444,6 +698,40 @@ def selftest():
     check("render: json mode",
           json.loads(render_stats({"totals": totals}, True))["totals"]["view"] == 40)
 
+    # --- geo -------------------------------------------------------------
+    check("geo: tier 1 is upper-case safe", tier_of("us") == "1")
+    check("geo: tier 2", tier_of("BR") == "2")
+    check("geo: tier 3", tier_of("ng") == "3")
+    check("geo: no country is '?'", tier_of("") == "?" and tier_of("XX") == "?")
+    check("geo: known name", country_name("de") == "Germany")
+    check("geo: unknown name falls back to the code", country_name("zz") == "ZZ")
+
+    sample_geo = {
+        "ok": True, "visits": 100, "scan": "complete",
+        "window": {"days": 7, "since": "2026-01-01"},
+        "countries": [{"cc": "US", "visits": 70, "share": 70.0},
+                      {"cc": "IN", "visits": 20, "share": 20.0},
+                      {"cc": "NG", "visits": 10, "share": 10.0}],
+        "regions": [{"region": "US-CA", "visits": 40}],
+        "signals": {"tz-mismatch": 20},
+    }
+    geo_text = render_geo(sample_geo)
+    check("geo render: header", "COUNTRIES" in geo_text)
+    check("geo render: country name", "United States" in geo_text)
+    check("geo render: regions", "US-CA" in geo_text)
+    check("geo render: tiers", "tier 1" in geo_text)
+    check("geo render: json mode", json.loads(render_geo(sample_geo, True))["visits"] == 100)
+    check("geo tiers: maths", tier_totals(sample_geo) == {"1": 70, "2": 0, "3": 30, "?": 0},
+          str(tier_totals(sample_geo)))
+    codes = [a[1] for a in geo_alerts(sample_geo)]
+    check("geo alert: one country dominates", "GEO CLUSTER" in codes, str(codes))
+    check("geo alert: proxy heavy", "PROXY HEAVY" in codes, str(codes))
+    check("geo alert: quiet case stays quiet",
+          geo_alerts({"visits": 4, "countries": [{"cc": "US", "visits": 4, "share": 100.0}],
+                      "signals": {}}) == [])
+    check("geo alert: empty rollup says so",
+          geo_alerts({"visits": 0, "countries": []})[0][1] == "NO GEO")
+
     print("")
     if failures:
         print("%d check(s) failed: %s" % (len(failures), ", ".join(failures)))
@@ -474,6 +762,9 @@ def main(argv=None):
     sub.add_parser("health", parents=[common], help="worker liveness + KV binding")
     p_stats = sub.add_parser("stats", parents=[common], help="one snapshot: funnel + clicks")
     p_stats.add_argument("--json", action="store_true", help="print the raw /stats payload")
+    p_geo = sub.add_parser("geo", parents=[common],
+                           help="one snapshot: countries, value tiers, proxy signal")
+    p_geo.add_argument("--json", action="store_true", help="print the raw /geo payload")
     p_watch = sub.add_parser("watch", parents=[common],
                              help="poll /stats and print click deltas + alerts")
     p_watch.add_argument("--interval", type=float, default=15.0, help="seconds between polls")
@@ -491,6 +782,8 @@ def main(argv=None):
             return cmd_health(args.api)
         if args.cmd == "stats":
             return cmd_stats(args.api, args.token, args.days, args.json)
+        if args.cmd == "geo":
+            return cmd_geo(args.api, args.token, args.days, args.json)
         if args.cmd == "watch":
             return cmd_watch(args.api, args.token, args.days,
                              args.interval, args.iterations, args.storm)

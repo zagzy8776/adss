@@ -42,6 +42,23 @@ STATS = {
 }
 
 
+GEO = {
+    "ok": True,
+    "generatedAt": "2026-11-19T10:00:00.000Z",
+    "window": {"days": 7, "since": "2026-11-13"},
+    "visits": 100,
+    "countries": [
+        {"cc": "US", "visits": 52, "share": 0.52},
+        {"cc": "DE", "visits": 18, "share": 0.18},
+        {"cc": "IN", "visits": 20, "share": 0.20},
+        {"cc": "NG", "visits": 10, "share": 0.10},
+    ],
+    "regions": [{"region": "US-CA", "visits": 30}, {"region": "DE-BE", "visits": 12}],
+    "signals": {"tz-mismatch": 22},
+    "scan": "complete",
+}
+
+
 class FakeWorker(BaseHTTPRequestHandler):
     def _send(self, code, body):
         raw = json.dumps(body).encode()
@@ -58,6 +75,10 @@ class FakeWorker(BaseHTTPRequestHandler):
             if self.headers.get("X-Admin-Token") != TOKEN:
                 return self._send(401, {"ok": False, "error": "unauthorized"})
             return self._send(200, STATS)
+        if self.path.startswith("/geo"):
+            if self.headers.get("X-Admin-Token") != TOKEN:
+                return self._send(401, {"ok": False, "error": "unauthorized"})
+            return self._send(200, GEO)
         return self._send(404, {"ok": False, "error": "not-found"})
 
     def log_message(self, *args):
@@ -133,6 +154,38 @@ class BotTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("kv=ok", out)
 
+    def test_geo_table(self):
+        code, out, _ = self.run_bot(["--api", self.api, "--token", TOKEN, "geo"])
+        self.assertEqual(code, 0)
+        self.assertIn("COUNTRIES", out)
+        self.assertIn("United States", out)
+        self.assertIn("US-CA", out)          # subdivisions survive the round trip
+        self.assertIn("tier 1", out)
+        self.assertIn("tz-mismatch", out)
+        # 52 + 18 = 70% tier 1; 20% India is tier 3
+        self.assertIn("70.0%", out)
+        self.assertIn("PROXY HEAVY", out)    # 22 mismatches in 100 visits
+
+    def test_geo_json_is_normalised(self):
+        code, out, _ = self.run_bot(["--api", self.api, "--token", TOKEN,
+                                     "geo", "--json"])
+        self.assertEqual(code, 0)
+        payload = json.loads(out)
+        self.assertEqual(payload["visits"], 100)
+        self.assertEqual(payload["countries"][0]["cc"], "US")
+        # share is recomputed from the counts, not trusted from the wire
+        self.assertAlmostEqual(payload["countries"][0]["share"], 52.0, places=3)
+
+    def test_geo_bad_token_is_reported(self):
+        code, _, err = self.run_bot(["--api", self.api, "--token", "nope", "geo"])
+        self.assertEqual(code, 2)
+        self.assertIn("HTTP 401", err)
+
+    def test_geo_missing_token_is_reported_before_the_call(self):
+        code, _, err = self.run_bot(["--api", self.api, "--token", "", "geo"])
+        self.assertEqual(code, 2)
+        self.assertIn("no admin token", err)
+
     def test_report_writes_json_csv_md(self):
         with tempfile.TemporaryDirectory() as tmp:
             code, out, _ = self.run_bot(["--api", self.api, "--token", TOKEN,
@@ -145,18 +198,22 @@ class BotTests(unittest.TestCase):
                       encoding="utf-8") as fh:
                 data = json.load(fh)
             self.assertEqual(data["totals"]["ad_adsterra"], 9)
+            self.assertEqual(data["geo"]["visits"], 100)
 
             with open(os.path.join(tmp, [f for f in files if f.endswith(".csv")][0]),
                       encoding="utf-8", newline="") as fh:
                 rows = list(csv.reader(fh))
             self.assertEqual(rows[0], ["day", "event", "count"])
             self.assertTrue(any(r == ["all", "view", "30"] for r in rows), rows[-6:])
+            self.assertTrue(any(r[:2] == ["geo", "US"] for r in rows), rows[-6:])
 
             with open(os.path.join(tmp, [f for f in files if f.endswith(".md")][0]),
                       encoding="utf-8") as fh:
                 md = fh.read()
             self.assertIn("| step_1 | 23 |", md)
             self.assertIn("## Alerts", md)
+            self.assertIn("## Geo", md)
+            self.assertIn("United States", md)
             self.assertIn(".csv", out)
 
     def test_watch_prints_one_window(self):

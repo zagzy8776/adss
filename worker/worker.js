@@ -5,6 +5,7 @@
  *   GET  /feed      last 40 entries, masked  -> [{ n, p, t }]
  *   POST /hit       funnel counters          -> { e: "step_1" | "ad" | "ad_<id>" | ... }
  *   GET  /stats     aggregate counters, 14d   -> needs X-Admin-Token
+ *   GET  /geo       where visitors come from  -> needs X-Admin-Token
  *   GET  /winners   published draw results   -> [{ round, drawDate, rows:[...] }]
  *   POST /winners   publish one round        -> needs X-Admin-Token
  *   DELETE /winners?round=...  unpublish one -> needs X-Admin-Token
@@ -124,9 +125,19 @@ async function capture(req, env, ctx) {
     code: String(body.code || '').slice(0, 16),
     page: String(body.page || '').slice(0, 300),
     tz: String(body.tz || '').slice(0, 64),
+    lang: String(body.lang || '').slice(0, 24),
     ua: String(body.ua || '').slice(0, 300),
+    /* The edge's own view of where this lead came from, kept next to the
+       browser's claim so a mismatch is visible on the record itself and not
+       only in a daily counter. */
     country: (req.cf && req.cf.country) || '',
     region: region(req.cf),
+    regionCode: (req.cf && req.cf.regionCode) || '',
+    city: (req.cf && req.cf.city) || '',
+    edgeTz: (req.cf && req.cf.timezone) || '',
+    asn: (req.cf && req.cf.asn) || 0,
+    tzMismatch: !!(tzRegion(req.cf && req.cf.timezone) && tzRegion(body.tz) &&
+                   tzRegion(req.cf.timezone) !== tzRegion(body.tz)),
     ip,
     at
   };
@@ -155,6 +166,64 @@ async function feed(req, env) {
   return json(rows, 200, env, { 'Cache-Control': 'public, max-age=60' });
 }
 
+/* One counter, one key, incremented without a read-modify-write race that
+   matters at this volume. KV has no atomic increment, so a lost count under
+   concurrent writes is possible; the rollups are read as proportions, and one
+   missing visit in a thousand does not move a percentage. */
+async function bump(key, env) {
+  const n = parseInt((await env.PP.get(key)) || '0', 10);
+  await env.PP.put(key, String(n + 1));
+  return n + 1;
+}
+
+/* ------------------------------- geo -------------------------------------
+   Where the visits come from, counted at the edge.
+
+   Cloudflare resolves every request to a country, a subdivision, a city and an
+   ASN before the worker runs, so this needs no IP database, no third-party
+   lookup and no cookie. The counters are written once per `view` event - the
+   page sends exactly one per page load - so `geo:` totals are visits, not hits.
+
+   Keys:  geo:c:<CC>:<day>         visits per country
+          geo:r:<CC>-<SUB>:<day>   visits per subdivision (US-CA, GB-ENG, ...)
+          geo:s:<signal>:<day>     anomaly counters (see SIGNALS below)
+
+   The one signal worth having is the timezone mismatch. request.cf.timezone is
+   the zone of the *connection's* location; the page reports the zone of the
+   device's clock. A browser in Europe/Berlin arriving from a Lagos IP is a
+   proxy, a VPN or a resold residential address - the traffic that reads as a
+   real lead, gets paid for, and is clawed back at settlement. Comparing regions
+   (Europe/ vs Africa/) and not cities, because every country spans several
+   zones and a traveller is not fraud.
+   ------------------------------------------------------------------------ */
+const GEO_PREFIX = 'geo:';
+const GEO_DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function tzRegion(tz) {
+  const m = /^([A-Za-z_]+)\//.exec(String(tz || '').trim());
+  return m ? m[1] : '';
+}
+
+async function countGeo(req, env, body) {
+  const cf = req.cf || {};
+  const day = new Date().toISOString().slice(0, 10);
+  /* XX = the edge had no country (local wrangler dev, a health probe). Counted
+     so the rollup can say "unknown" instead of silently dropping the visit and
+     making the shares add up to more than they should. */
+  const cc = String(cf.country || '').toUpperCase().slice(0, 2) || 'XX';
+  const sub = String(cf.regionCode || '').toUpperCase().slice(0, 3);
+
+  await bump(GEO_PREFIX + 'c:' + cc + ':' + day, env);
+  if (cc !== 'XX' && sub) await bump(GEO_PREFIX + 'r:' + cc + '-' + sub + ':' + day, env);
+
+  const edgeRegion = tzRegion(cf.timezone);
+  const pageRegion = tzRegion(body && body.tz);
+  if (edgeRegion && pageRegion && edgeRegion !== pageRegion) {
+    await bump(GEO_PREFIX + 's:tz-mismatch:' + day, env);
+  }
+  return cc;
+}
+
 async function hitCounter(req, env) {
   let body;
   try { body = await req.json(); } catch (e) { return json({ ok: false }, 400, env); }
@@ -162,10 +231,74 @@ async function hitCounter(req, env) {
   if (!eventAllowed(e)) return json({ ok: false, error: 'unknown-event' }, 422, env);
 
   const day = new Date().toISOString().slice(0, 10);
-  const key = 'hits:' + e + ':' + day;
-  const n = parseInt((await env.PP.get(key)) || '0', 10);
-  await env.PP.put(key, String(n + 1));
-  return json({ ok: true }, 200, env);
+  await bump('hits:' + e + ':' + day, env);
+
+  /* Only the page view carries the geo rollup. Counting every ad event would
+     multiply the KV writes by five and describe the same visitor five times. */
+  let cc = '';
+  if (e === 'view') cc = await countGeo(req, env, body);
+
+  return json({ ok: true, cc: cc || undefined }, 200, env);
+}
+
+/* GET /geo?days=14   X-Admin-Token required
+   Same window/shape rules as /stats: the operator's numbers, not the public's. */
+async function geoReport(req, env) {
+  if (!env.ADMIN_TOKEN) return json({ ok: false, error: 'geo-disabled' }, 503, env);
+  if (!authorised(req, env)) return json({ ok: false, error: 'unauthorized' }, 401, env);
+
+  const want = Math.min(Math.max(parseInt(new URL(req.url).searchParams.get('days'), 10) || 14, 1), 90);
+  const since = new Date(Date.now() - (want - 1) * 864e5).toISOString().slice(0, 10);
+
+  const listed = await env.PP.list({ prefix: GEO_PREFIX, limit: 1000 });
+  const countries = {};
+  const regions = {};
+  const signals = {};
+  let visits = 0;
+
+  for (const k of listed.keys) {
+    /* geo:<kind>:<id>:<day> - id may contain a hyphen (US-CA) but never a
+       colon, so the last colon is always the day separator. */
+    const rest = k.name.slice(GEO_PREFIX.length);
+    const cut = rest.lastIndexOf(':');
+    if (cut < 1) continue;
+    const head = rest.slice(0, cut);
+    const day = rest.slice(cut + 1);
+    if (!GEO_DAY_RE.test(day) || day < since) continue;
+
+    const sep = head.indexOf(':');
+    if (sep < 1) continue;
+    const kind = head.slice(0, sep);
+    const id = head.slice(sep + 1);
+    if (!id) continue;
+
+    const n = parseInt((await env.PP.get(k.name)) || '0', 10);
+    if (!n) continue;
+
+    if (kind === 'c') { countries[id] = (countries[id] || 0) + n; visits += n; }
+    else if (kind === 'r') { regions[id] = (regions[id] || 0) + n; }
+    else if (kind === 's') { signals[id] = (signals[id] || 0) + n; }
+  }
+
+  const share = function (n) { return visits ? Math.round(10000 * n / visits) / 10000 : 0; };
+  const countryRows = Object.keys(countries).map(function (cc) {
+    return { cc: cc, visits: countries[cc], share: share(countries[cc]) };
+  }).sort(function (a, b) { return b.visits - a.visits || (a.cc < b.cc ? -1 : 1); });
+
+  const regionRows = Object.keys(regions).map(function (id) {
+    return { region: id, visits: regions[id] };
+  }).sort(function (a, b) { return b.visits - a.visits; }).slice(0, 25);
+
+  return json({
+    ok: true,
+    generatedAt: new Date().toISOString(),
+    window: { days: want, since: since },
+    visits: visits,
+    countries: countryRows,
+    regions: regionRows,
+    signals: signals,
+    scan: listed.list_complete === false ? 'truncated' : 'complete'
+  }, 200, env, { 'Cache-Control': 'no-store' });
 }
 
 /* ------------------------------ stats ------------------------------------
@@ -315,6 +448,7 @@ export default {
     if (path === '/capture' && req.method === 'POST') return capture(req, env, ctx);
     if (path === '/hit' && req.method === 'POST') return hitCounter(req, env);
     if (path === '/stats' && req.method === 'GET') return stats(req, env);
+    if (path === '/geo' && req.method === 'GET') return geoReport(req, env);
     if (path === '/winners') return winners(req, env);
 
     return json({ ok: false, error: 'not-found' }, 404, env);
