@@ -320,7 +320,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
  </div>
  <button id="ppHomeSpinBtn" class="pp-action" type="button">✦ TRY A SPIN</button>
  <p id="ppHomeSpinStatus" class="pp-result" role="status" aria-live="polite">Tap to spin the wheel.</p>
- <p class="pp-note">Your spin activity is saved on this device. Payment claims will be available after account verification is connected.</p>
+ <p class="pp-note">This is a free demonstration wheel. Results are not cash balances, verified prizes, or withdrawal entitlements. No account is required.</p>
  <a class="pp-link" href="/rewards.html">See all rewards →</a>
 </section>
 <script>
@@ -370,7 +370,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
   spinCount.textContent=remaining+' of 2 daily spins remaining';
   results.textContent=history.length?history.slice(-2).reverse().join(' · '):'No results yet';
   const cash=history.reduce((sum,item)=>{const p=wheelPrizes.find(x=>x.name===item);return sum+(p?p.cash:0);},0);
-  cashTotal.textContent=String.fromCharCode(36)+cash.toLocaleString('en-US');
+  cashTotal.textContent='Demo 
   afterSpins.hidden=remaining!==0;
   resultHistory.textContent=history.length?history.slice(-8).reverse().join(' · '):'No spins yet.';
   streakEl.textContent='🔥 '+state.streak+'-day streak';
@@ -413,7 +413,1868 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
   visual.textContent=prize.symbol;
   visual.style.animation='none';void visual.offsetWidth;visual.style.animation=isJackpot?'ppGiftBurst 1.2s ease-out both':'ppGiftBurst .8s ease-out both';
   modal.querySelector('#ppGiftTitle').textContent=prize.name==='Spin'?'Free spin!':'You landed on '+prize.name;
-  modal.querySelector('#ppGiftMessage').textContent=prize.name==='Spin'?'Your next spin is on the house (daily limit still applies).':prize.name+'. Added to your spin history. Prize claims will be available after account verification is connected.';
+  modal.querySelector('#ppGiftMessage').textContent=prize.name==='Spin'?'Your next spin is on the house (daily limit still applies).':prize.name+'. Added to your spin history. This is a demonstration result, not a claimable prize.';
+  launchConfetti();
+  modal.style.display='flex';
+  close.focus();
+ }
+ btn.addEventListener('click',function(){
+  if(busy)return;
+  if(state.used>=2){btn.disabled=true;return;}
+  busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='The wheel is spinning…';
+  const segIdx=pickSegment();
+  const prize=wheelPrizes[segIdx];
+  if(state.used===0){
+   state.streak=state.lastDay===today-1?state.streak+1:state.lastDay===today?state.streak:1;
+   state.lastDay=today;
+   state.points+=Math.min(state.streak,7)*10;
+  }
+  state.used++;saveState();
+  const current=((rotation%360)+360)%360;
+  const desired=(360-segIdx*45)%360;
+  const target=rotation+1800+((desired-current+360)%360);
+  wheel.classList.add('spinning');
+  wheel.style.transform='rotate('+target+'deg)';
+  labels.forEach(function(label){label.style.transform='rotate('+(-target)+'deg)';});
+  rotation=target;
+  setTimeout(function(){
+   wheel.classList.remove('spinning');
+   history.push(prize.name);if(history.length>50)history.shift();saveState();renderHistory();
+   status.textContent=prize.name+' — demo result added to this device only. No cash awarded.';
+   busy=false;
+   reveal(segIdx);
+  },4200);
+ });
+})();
+
+</script>
+
+
+<main id="gate">
+  <section class="card" id="reveal" aria-labelledby="t">
+    <div class="h"><b id="badge">STEP 1</b><span id="tag">Position held</span></div>
+    <h2 id="t">Confirm your entry</h2>
+    <p id="s">Your slot is held for this round. Confirm to keep it — it returns to the pool if you close this page.</p>
+    <aside class="adbox inset" id="adCard" data-slot="card" aria-label="Advertisement"></aside>
+    <button class="btn" id="btn" type="button" aria-describedby="note">Confirm and continue →</button>
+    <p class="note" id="note">No payment details in this step. Ever.</p>
+  </section>
+
+  <aside class="adbox" id="adBelow" data-slot="below" aria-label="Advertisement"></aside>
+
+  <section class="card hide" id="capture" aria-labelledby="capH">
+    <div class="h"><b>STEP 5</b><span id="tagCap">Contact</span></div>
+    <h2 id="capH">Where should we send it?</h2>
+    <p id="s2">We only use this to confirm your entry and reach you about your payout. One entry per person.</p>
+    <aside class="adbox inset" id="adCapture" data-slot="capture" aria-label="Advertisement"></aside>
+    <form id="form" novalidate>
+      <div class="field">
+        <label class="lbl" for="email">Email address</label>
+        <input class="in" id="email" name="email" type="email" inputmode="email" autocomplete="email"
+               placeholder="you@email.com" aria-describedby="emailErr" required>
+        <div class="err" id="emailErr">Enter a valid email address.</div>
+      </div>
+      <div class="field">
+        <label class="lbl" for="phone">Mobile number</label>
+        <input class="in" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
+               maxlength="22" placeholder="+1 555 000 0000" aria-describedby="phoneErr hintPhone" required>
+        <div class="hint" id="hintPhone">Any country. Include your country code if you are outside North America.</div>
+        <div class="err" id="phoneErr">Enter a valid mobile number, including the country code.</div>
+      </div>
+      <div class="field hp" aria-hidden="true">
+        <label class="lbl" for="company">Company</label>
+        <input class="in" id="company" name="company" type="text" tabindex="-1" autocomplete="off">
+      </div>
+      <label class="consent" id="consentWrap" for="sms">
+        <input type="checkbox" id="sms" name="sms">
+        <span>I agree to receive calls and texts from PayoutPool about my entry, including by automated means.
+        Message frequency varies. Message &amp; data rates may apply. Reply STOP to cancel, HELP for help.
+        Consent is not a condition of entry. See <a href="/privacy.html">Privacy Policy</a>.</span>
+      </label>
+      <div class="err" id="consentErr" role="alert">Please tick the box so we can contact you about your entry.</div>
+      <button class="btn" id="submitBtn" type="submit">Claim my position →</button>
+      <p class="note">18+ · Open worldwide · We never ask for payment details or gift card codes.</p>
+    </form>
+  </section>
+
+  <section class="card hide" id="done">
+    <div class="ok" aria-hidden="true">✓</div>
+    <h2>Entry confirmed</h2>
+    <p>You are in the <strong data-pool>$5,000</strong> pool. We review entries daily and contact winners at the email or number on file.</p>
+    <div class="ref"><span>Your referral code</span><b id="myCode">—</b></div>
+    <aside class="adbox inset" id="adDone" data-slot="done" aria-label="Advertisement"></aside>
+    <div id="boost" class="hide" style="margin-top:12px;text-align:left">
+      <div class="h"><b>BOOST</b><span>Move up 40 places</span></div>
+      <p style="margin:0 0 9px;font-size:11.5px;color:#9aa1ad">Complete any one offer below and we move you up 40 places in the queue.</p>
+      <div id="offerList" style="display:grid;gap:6px"></div>
+    </div>
+    <section id="ppKeepExploring" aria-labelledby="ppExploreHeading" style="margin-top:20px;text-align:left">
+      <h3 id="ppExploreHeading" style="font-size:20px;margin:0 0 7px;color:#f1fff3">Keep exploring</h3>
+      <p style="color:#afc9bf;font-size:13px;line-height:1.55;margin:0 0 14px">Your entry is saved. Discover more activities, videos and reward updates while you're here.</p>
+      <a href="/videos.html" style="display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:#092c1b;background:linear-gradient(120deg,#b1ffc5,#38df83);border-radius:15px;padding:17px 16px;font-weight:900;margin-bottom:9px"><span>▶ Watch videos & discover more</span><span aria-hidden="true">→</span></a>
+      <a href="/#ppWheelHome" style="display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:#eafff1;background:#193b32;border:1px solid #4b846c;border-radius:13px;padding:15px 16px;font-weight:800;margin-bottom:9px"><span>🎡 Daily wheel & rewards</span><span aria-hidden="true">→</span></a>
+      <a href="/rewards.html" style="display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:#eafff1;background:#193b32;border:1px solid #4b846c;border-radius:13px;padding:15px 16px;font-weight:800;margin-bottom:9px"><span>🎁 Explore rewards</span><span aria-hidden="true">→</span></a>
+      <div style="border:1px solid #36584d;border-radius:14px;padding:13px 14px;margin-top:14px"><strong style="font-size:13px;color:#fff">Share the experience</strong><p style="font-size:12px;color:#b5d3c5;margin:6px 0 10px">Invite friends to discover PayoutPool. Sharing does not guarantee an extra entry or prize.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><a href="https://twitter.com/intent/tweet?text=Explore%20PayoutPool%20rewards&url=https%3A%2F%2Fadss-roan.vercel.app%2F" target="_blank" rel="noopener noreferrer" style="color:#b5ffce;font-weight:800;font-size:13px">Post on X ↗</a><button type="button" id="ppCopySiteLink" style="border:1px solid #579b75;border-radius:9px;background:#214e39;color:#e9fff0;padding:9px 12px;font-weight:800">Copy site link</button></div><p id="ppCopyFeedback" role="status" style="font-size:11px;color:#a7e9bf;margin:7px 0 0"></p></div>
+    </section>
+    <button class="btn ghost" id="shareBtn" type="button" hidden style="display:none">Share</button>
+    <button class="btn" id="pushBtn" type="button" hidden style="display:none">Notifications unavailable</button>
+    <p class="note" id="pushNote" hidden style="display:none"></p>
+  </section>
+</main>
+
+<script>
+(function(){
+ const b=document.getElementById('ppCopySiteLink'),s=document.getElementById('ppCopyFeedback');
+ if(!b||!s)return;
+ b.addEventListener('click',async function(){
+  const url=location.origin+'/';
+  try{await navigator.clipboard.writeText(url);s.textContent='Link copied!'}
+  catch(e){s.textContent='Copy this link: '+url}
+ });
+})();
+</script>
+
+<div class="adbox" id="adStick" data-slot="sticky" aria-label="Advertisement">
+  <button id="adStickX" type="button" aria-label="Close advertisement" title="Close">✕</button>
+</div>
+
+<footer>
+  <a href="/winners.html">Winners</a>
+  <a href="/terms.html">Terms</a>
+  <a href="/privacy.html">Privacy</a>
+  <a href="mailto:support@YOURDOMAIN.com">Contact</a>
+</footer>
+
+<div id="inter" role="dialog" aria-modal="true" aria-labelledby="interLabel" aria-describedby="interDesc" tabindex="-1">
+  <div class="iTop"><span id="interLabel">Step 4 of 5 · Sponsored</span><span id="interCount"></span></div>
+  <div id="interAd"><div class="iHouse">
+    <div class="k">Sponsored break</div>
+    <div class="v" data-pool>$5,000</div>
+    <p id="interDesc">Your position is still held. This partner placement is what keeps the pool free to enter.</p>
+  </div><div class="adbox inset" id="adGate" data-slot="gate" aria-label="Advertisement"></div></div>
+  <div class="iBar"><div id="skipBar"></div></div>
+  <button id="skipBtn" type="button" disabled aria-describedby="interDesc">Continue in 5</button>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================== CONFIG ====================================
+   Every key here is documented in README.md. Anything left blank degrades
+   loudly (console warning + visible fallback) instead of silently no-op.
+   ========================================================================= */
+const CONFIG = {
+  // Where this site lives. Blank = auto-detect at runtime (window.location.origin).
+  SITE_URL: "",
+
+  // --- ads -----------------------------------------------------------------
+  // Popunder network script URL (Adsterra/Hilltop/etc). Loaded on first tap.
+  // Shorthand for a single-entry AD_NETWORKS. This install puts its popunder on
+  // the adsterra object below instead, so both share one id in /hit.
+  POPUNDER_TAG: "",
+  // Interstitial placement: paste the network's snippet, or an https:// iframe
+  // URL, or leave blank for the house preview. Adsterra has no interstitial
+  // format - its full-page products are popunder and social bar - so this slot
+  // is for a Monetag vignette or a display unit used as the creative.
+  // ESCAPING: a snippet pasted here sits inside this <script> block, so its
+  // closing tag must be written <\/script> (one backslash). A literal closing
+  // tag ends this block and takes the whole page down with it.
+  INTERSTITIAL_HTML: "",
+  // A full-screen the page ALREADY carries, shown on demand at the break: a
+  // zone loaded in <head> registers show_<zone>() when it can open one. Use
+  // this instead of pasting that zone's <script> here - one zone loaded twice
+  // in a pageview double-counts its impression and reads as invalid traffic, so
+  // a duplicate paste is refused with a console warning (see injectPlacement).
+  // Check the name in the console: typeof window.show_312446.
+  INTERSTITIAL_TRIGGER: "show_312446",
+  // Where the full-screen break runs. "gate" = on the third tap, before the
+  // contact form. "done" (default) = on the confirmed screen, as the last thing
+  // they see. "both" = both moments. "off" = never built.
+  // On "done" the break only runs when it can pay - a pasted placement or a live
+  // trigger - because a house-only pause there just delays a card that already
+  // carries a banner. A network's own vignette fires wherever its script
+  // decides; this key only owns our overlay.
+  INTERSTITIAL_ON: "done",
+  // Seconds the break is held before Continue unlocks. 0 = Continue is live at
+  // once, which is what most verified programs require of an interstitial.
+  // Our overlay only - a network's own ad closes itself.
+  INTERSTITIAL_SKIP: 5,
+  // Direct link: opens in a new tab. Best iOS earner (popunders are weak there).
+  AD_DIRECT_LINK: "",
+  // When that tab opens. "done" (default) = only after the entry is captured, so
+  // the tab cannot steal the lead. "gate" = on the sponsored tap, next to the
+  // interstitial (aggressive: the new tab usually hides the interstitial).
+  AD_DIRECT_LINK_ON: "done",
+  // Re-call window.__pop() once on the confirmed screen. No-op unless your
+  // network exposes that hook (Adsterra does; most others do not).
+  SECOND_POP: true,
+  // The original build called fireAd() on every tap of the 3-tap funnel, not
+  // just the sponsored gate tap: 3 fires per visitor instead of 1. Restored.
+  AD_EVERY_TAP: true,
+  // The original also fired a second time as the gate opened, making 4 fires
+  // per visitor.
+  GATE_DOUBLE_FIRE: false,
+  // Networks fired per tap. 1 = the rotation picks one and the other sits the
+  // tap out. 2 = every network with a popunder for that stage fires on the
+  // same tap. Two networks popping at once is the double-billing complaint
+  // that gets an arbitrage account suspended, so 2 is a deliberate choice.
+  AD_BURST: 2,
+  // Allow the same network to pop again on a later tap in the same visit.
+  // false = one pop per network per visitor, whatever they tap.
+  AD_REPEAT_POP: true,
+
+  /* --- reserved ad boxes ---------------------------------------------------
+     One box per placement in the funnel. Paste the network's tag HTML, or an
+     https:// iframe URL, and the box fills itself and appears at the size of
+     the creative. An unsold box is invisible and takes no height, but keeps
+     its position in the page so a late creative still lands in the right
+     place: a visitor never sees an "AD" frame with nothing in it.
+     Add ?addebug=1 to the URL to outline every unsold slot. AD_PLACEHOLDERS
+     false removes empty boxes from the DOM entirely.
+
+     There is deliberately no box directly under the CTA button. A 468x60
+     between "Confirm and continue" and the reassurance line competed with the
+     button for the same tap and cost entries - and the entry is the
+     better-paying event. The AFTER slot and its Adsterra zone still exist if
+     you want them back: re-add one <aside> in the step card and one mountAd()
+     line at the bottom of this file.
+
+     Every one of these boxes also takes a VIDEO creative - see the
+     "video:" / "vast:" forms under AD_NETWORKS. */
+  AD_SLOT_HELD:  "",   // under the "slot held for" timer, above the headline
+  AD_SLOT_CARD:  "",   // inside the step card, above the CTA button
+  AD_SLOT_BELOW: "",   // below the card, before the next section
+  AD_SLOT_CAPTURE: "", // inside the contact card, above the email field
+  AD_SLOT_DONE:  "",   // inside the "Entry confirmed" card, under the referral code
+  AD_SLOT_GATE:  "",   // inside the sponsored interstitial
+  AD_SLOT_STICKY: "",  // fixed 320x50 anchor pinned to the bottom edge
+  AD_PLACEHOLDERS: true,
+
+  /* --- ad networks ---------------------------------------------------------
+     One object per network so two of them can share the funnel without
+     colliding. A creative pasted straight into AD_SLOT_* above always wins;
+     otherwise the box is offered to the networks that list it, and they
+     rotate per visitor so a single network cannot take every impression.
+
+       id        short name; tracked as ad_<id> in /hit, so the counters say
+                 which network actually earned
+       head      true = its tag already sits in <head> and loads itself
+       popunder  the network's popunder script URL
+       fireOn    'gate' (default) or 'done'. Give a second popunder network
+                 'done': an always-on OnClick tag already pops on the gate tap,
+                 and two pops on one tap is what suspends arbitrage accounts.
+       slots     { SLOT_NAME: creative } - which boxes this network fills
+       weight    1 = equal share; 3 = three times as many impressions
+
+     Slot names: HELD CARD BELOW CAPTURE DONE GATE STICKY
+
+     A creative is one of five things:
+       'script:https://cdn.net/banner.js'  a script tag. Most networks hand out
+                                           a single-src tag - use this form and
+                                           paste only the src.
+       'https://cdn.net/banner.html'       an iframe
+       'video:https://cdn/x.mp4'           a video file; add |poster=… and
+                                           |click=… (see "video units")
+       'vast:https://ads.net/vast.xml'     a VAST tag: parsed, wrapper followed,
+                                           pixels fired
+       'any other string'                  raw HTML
+
+     Never paste a real closing script tag into this file: it ends the inline
+     script early and takes the whole page down with it. For a multi-line
+     snippet, write the closing tag as <\/script> - the backslash is legal in
+     a string and stops the HTML parser from matching it.
+     ---------------------------------------------------------------------- */
+  AD_NETWORKS: [
+    /* --- Adsterra: six banner units, one per box --------------------------
+       Unit form is  adsterra:<key>/<w>x<h>  - the key is the last path
+       segment of the invoke.js URL Adsterra gives you, and <w>x<h> is the
+       size the zone was created with. The paste-in two-script snippet is NOT
+       used here: atOptions is one global that the loader reads and deletes,
+       six of them on one page overwrite each other. mountUnit() sets it per
+       unit and waits for the loader to consume it before starting the next.
+
+       popunder is the Popunder zone's own Script URL: the tag arms itself when
+       it loads and pops on the visitor's next click, which is why it is loaded
+       from a tap (fireAd) rather than in <head> - the first pop lands on tap 2
+       instead of firing before the page has engaged anyone. */
+    {
+      id: 'adsterra',            // counted as ad_adsterra in /hit and /stats
+      popunder: 'https://aarems.org/1/7e78107fd3ad38c0d8ea597ae8406466',
+      fireOn: 'gate',            // 'gate' = the 5 funnel taps, 'done' = confirmed screen
+      weight: 1,                 // 3 = three times as likely to win a slot
+      slots: {
+        HELD:    'adsterra:83ffc72d9f10f7597c254f78bab26288/320x50',
+        CARD:    'adsterra:81c795472aab64816500ddd9e896d84b/300x250',
+        BELOW:   'adsterra:0fbe28a313228dc7d9fb1af1c75c4db7/728x90',
+        CAPTURE: 'adsterra:819964b86ff843ee8329700798c41360/160x300',
+        DONE:    'adsterra:0ebe39300b5eb1ae8a1f4ead36e44626/160x600',
+        /* GATE and STICKY stay empty until they have a unit of their own:
+           re-using a key above would load that one zone twice per page, which
+           doubles its impression count and reads as invalid traffic. Ask
+           Adsterra for a second 300x250 (break) and 320x50 (bottom bar). */
+        GATE: '', STICKY: ''
+      }
+    }
+  ],
+
+  // --- capture + feed (Cloudflare Worker in /worker) ------------------------
+  CAPTURE_ENDPOINT: "https://payoutpool-api.payoutpool.workers.dev/capture",
+  FEED_URL: "https://payoutpool-api.payoutpool.workers.dev/feed",
+  HIT_URL: "https://payoutpool-api.payoutpool.workers.dev/hit",
+
+  // --- push ----------------------------------------------------------------
+  ONESIGNAL_APP_ID: "",   // from OneSignal → Settings → Keys & IDs
+  /* Monetag push. /sw.js in this folder is their service worker and must stay
+     at the site root: a service worker controls exactly the folder it is
+     served from, so /sw.js covers every page and subfolder. Paste the zone's
+     install snippet (Monetag → Push → Installation code) into PUSH_TAG. It is
+     injected only after the entry is stored, never on page load. */
+  PUSH_TAG: "",
+  PUSH_SW: "/sw.js",
+
+  // --- Google AdSense client ID (leave empty to hide the boost block entirely) ---
+  GOOGLE_ADSENSE_CLIENT: "ca-pub-9906406019954985",
+
+
+  // --- legal ----------------------------------------------------------------
+  SUPPORT_EMAIL: "support@YOURDOMAIN.com",
+  /* The number the whole page is built around, in one place. Every element
+     carrying data-pool is rewritten from this string at boot, so the headline,
+     the confirmed screen and the sponsored break cannot drift apart - and
+     neither can a visitor see two different prizes on one page.
+     Keep title/og:title and terms.html 5.1 in step with it: those are static
+     markup a crawler reads before any script runs. A believable pool is a
+     small one; a five-figure pool on a 40-second funnel reads as bait, $5,000
+     reads as a promotion. */
+  POOL_AMOUNT: "$5,000",
+
+  // --- CPA offers (leave [] to hide the boost block entirely) --------------
+  // Newest-first: surveys / email-submits convert best in a mobile queue.
+  OFFERS: [
+    // { t: "Quick 2-minute survey", s: "Answer a few questions", u: "https://your-cpa-link", k: "SURVEY" },
+  ]
+};
+
+/* ------------------------------- helpers -------------------------------- */
+const $ = id => document.getElementById(id);
+const ls = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const fmt = n => Number(n).toLocaleString('en-US');
+const siteUrl = () => (CONFIG.SITE_URL || location.origin).replace(/\/+$/, '');
+
+/* The prize string lives in CONFIG.POOL_AMOUNT; the markup carries it too so a
+   crawler and a script-less browser see the same number. One rewrite keeps the
+   three panels in step with the config instead of with each other. */
+(function applyPool() {
+  const text = String(CONFIG.POOL_AMOUNT || '').trim();
+  if (!text) return;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pool]'), function (el) {
+    el.textContent = text;
+  });
+})();
+
+/* Whichever of these is still empty, the page says so in the console. */
+(function setupCheck() {
+  /* A zone trigger covers INTERSTITIAL_HTML, so it is not reported missing then. */
+  const keys = ['INTERSTITIAL_HTML', 'AD_DIRECT_LINK', 'CAPTURE_ENDPOINT', 'FEED_URL', 'ONESIGNAL_APP_ID', 'PUSH_TAG'];
+  const missing = keys.filter(k => !CONFIG[k] && !(k === 'INTERSTITIAL_HTML' && CONFIG.INTERSTITIAL_TRIGGER));
+  if (!CONFIG.POPUNDER_TAG && !wiredNetworks().length) missing.unshift('POPUNDER_TAG or AD_NETWORKS');
+  if (!CONFIG.OFFERS.length) missing.push('OFFERS');
+  window.__ppMissing = missing;
+  if (missing.length) {
+    console.warn('[PayoutPool] Not configured (see README.md): ' + missing.join(', '));
+  }
+  /* A trigger that never registers is a break that can never pay, and the
+     confirmed-screen break stays shut rather than pausing for nothing. The zone
+     script is async, so wait for it instead of judging at load. */
+  if (CONFIG.INTERSTITIAL_TRIGGER && !interstitialHook()) {
+    setTimeout(function () {
+      if (interstitialHook()) return;
+      window.__ppHookMissing = CONFIG.INTERSTITIAL_TRIGGER;
+      console.warn('[PayoutPool] ' + CONFIG.INTERSTITIAL_TRIGGER + '() never registered, so the full-screen break has ' +
+        'nothing to show and stays shut on "' + CONFIG.INTERSTITIAL_ON + '". Check typeof window.' +
+        CONFIG.INTERSTITIAL_TRIGGER + ' in the console.');
+    }, 4000);
+  }
+})();
+
+const KEY = {
+  end: 'pp_end', queue: 'pp_queue', step: 'pp_step', done: 'pp_done',
+  code: 'pp_code', inbound: 'pp_inbound', sent: 'pp_sent_at', buf: 'pp_buf'
+};
+
+/* ------------------------- state: queue + timer -------------------------- */
+const HOLD_MS = 15 * 60 * 1000;
+
+/* Queue is generated once and persisted, so the number in the copy, the
+   number on the card and the number after a reload are always the same. */
+let queue = parseInt(ls.get(KEY.queue, '0'), 10);
+if (!queue || queue < 1) {
+  queue = 1100 + Math.floor(Math.random() * 500);
+}
+ls.set(KEY.queue, queue);
+let step = 0;                       /* 0-2 card, 3 interstitial, 4 capture, 5 done */
+
+/* Deadline re-rolls instead of pinning at 00:00. */
+function refreshDeadline() {
+  let end = parseInt(ls.get(KEY.end, '0'), 10) || 0;
+  if (!end || end - Date.now() <= 0) {
+    end = Date.now() + HOLD_MS;
+    ls.set(KEY.end, end);
+  }
+  return end;
+}
+let deadline = refreshDeadline();
+
+function reheld() {
+  deadline = refreshDeadline();
+  toast('Your slot was re-held for another 15 minutes.');
+  hit('rehold');
+}
+
+function tickClock() {
+  let left = deadline - Date.now();
+  if (left <= 0) { reheld(); left = HOLD_MS; }
+  const m = Math.floor(left / 60000);
+  const s = Math.floor((left % 60000) / 1000);
+  $('clock').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+setInterval(tickClock, 1000);
+/* ------------------------------- toast ---------------------------------- */
+let toastTimer = null;
+function toast(msg, ms) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), ms || 2800);
+}
+
+/* ------------------------------ tracking --------------------------------
+   The edge knows the connection's country and zone. The page adds the device's
+   own zone and language, so the worker can tell a visitor from a proxy that
+   claims to be one (see "geo" in worker/worker.js). Both are read once: neither
+   can change during a pageview. */
+const ZONE = (function () {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; }
+})();
+const LANG = (function () {
+  try { return navigator.language || ''; } catch (e) { return ''; }
+})();
+
+function hit(ev) {
+  if (!CONFIG.HIT_URL) return;
+  try {
+    const body = JSON.stringify({ e: ev, s: step, q: queue, ref: ls.get(KEY.inbound, ''),
+      tz: ZONE, lang: LANG });
+    if (navigator.sendBeacon) navigator.sendBeacon(CONFIG.HIT_URL, body);
+    else fetch(CONFIG.HIT_URL, { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'application/json' } }).catch(() => {});
+  } catch (e) {}
+}
+
+/* ------------------------------- ticker --------------------------------- */
+const NAMES = [
+  ['Marcus T.', 'Austin, TX', '$55'], ['Priya S.', 'Brampton, ON', '$95'],
+  ['Dylan R.', 'Phoenix, AZ', '$40'], ['Chloe M.', 'Calgary, AB', '$150'],
+  ['Andre W.', 'Atlanta, GA', '$70'], ['Sarah K.', 'Ottawa, ON', '$85'],
+  ['Luis G.', 'San Antonio, TX', '$45'], ['Emma B.', 'Winnipeg, MB', '$110'],
+  ['Jordan P.', 'Charlotte, NC', '$35'], ['Aisha N.', 'Mississauga, ON', '$80'],
+  ['Tyler H.', 'Denver, CO', '$90'], ['Grace L.', 'Vancouver, BC', '$60'],
+  ['Omar F.', 'Columbus, OH', '$150'], ['Nina V.', 'Edmonton, AB', '$65'],
+  ['Caleb J.', 'Nashville, TN', '$40'], ['Leah D.', 'Halifax, NS', '$100'],
+  ['Ryan O.', 'Las Vegas, NV', '$75'], ['Mei C.', 'Victoria, BC', '$120'],
+  ['Isaac A.', 'Tampa, FL', '$45'], ['Zoe R.', 'Montreal, QC', '$95']
+];
+const HUES = ['#00d54b', '#2ee6a8', '#f5b942', '#7aa2ff', '#ff8f6b'];
+
+function rowHtml(r, i) {
+  return '<div class="tR"><div class="tA" style="background:' + HUES[i % HUES.length] + '">' +
+    r[0].charAt(0) + '</div><div><div class="tN">' + r[0] + '</div><div class="tC">' + r[1] +
+    '</div></div><div class="tM">' + r[2] + '</div></div>';
+}
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+function renderTicker(rows) {
+  const once = rows.map(rowHtml).join('');
+  /* Duplicating the list only makes sense because the animation scrolls -50%.
+     With reduced motion there is no scroll, so show one static, scrollable copy. */
+  $('ticker').innerHTML = reduceMotion.matches ? once : once + once;
+  document.querySelector('.ticker-wrap').style.height = reduceMotion.matches ? 'auto' : '104px';
+}
+
+renderTicker(NAMES);
+
+if (CONFIG.FEED_URL) {
+  fetch(CONFIG.FEED_URL, { cache: 'no-store' })
+    .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+    .then(d => {
+      const rows = (Array.isArray(d) ? d : d.rows || [])
+        .filter(x => x && x.n && x.p)
+        .map(x => [String(x.n).slice(0, 22), String(x.p).slice(0, 22), x.m ? String(x.m) : 'joined']);
+      if (rows.length >= 5) renderTicker(rows);
+    })
+    .catch(e => console.warn('[PayoutPool] feed unavailable, using cached rows:', e.message));
+}
+
+/* --------------------------- live claim counter -------------------------- */
+let claiming = 142;
+setInterval(() => {
+  const r = Math.random();
+  if (r < 0.62) claiming += 1 + Math.floor(Math.random() * 3);   /* bias upward */
+  else if (r < 0.88) claiming -= 1;
+  if (claiming > 420) claiming = 300 + Math.floor(Math.random() * 40);
+  claiming = Math.max(claiming, 64);
+  $('claiming').textContent = fmt(claiming);
+}, 2600);
+
+/* ------------------------------ ad units ---------------------------------
+   Eight reserved boxes. An unsold box stays in the page but draws nothing -
+   no frame, no "AD" caption - so the funnel reads as finished. ?addebug=1
+   outlines them while you are wiring a network.
+   Inner script tags never run when assigned through innerHTML, and most
+   networks hand out <script> tags, so every inserted node is re-activated.
+   ------------------------------------------------------------------------ */
+function runScripts(root) {
+  Array.prototype.forEach.call(root.querySelectorAll('script'), function (old) {
+    const s = document.createElement('script');
+    for (let i = 0; i < old.attributes.length; i++) {
+      s.setAttribute(old.attributes[i].name, old.attributes[i].value);
+    }
+    if (!old.src) s.textContent = old.textContent;
+    old.parentNode.replaceChild(s, old);
+  });
+}
+
+/* ------------------------------ Adsterra units ----------------------------
+   Adsterra's banner snippet is two parts: an inline `atOptions = {...}` and a
+   loader script. The loader reads window.atOptions the moment it executes,
+   merges it, and then deletes it - so only ONE unit can be in flight at a
+   time. Mount six in parallel and the later assignments land before the
+   earlier loaders have read theirs: every box renders the last unit's size,
+   or nothing at all. Units therefore queue, and the queue waits for that
+   delete before starting the next one.
+
+   A creative is declared  adsterra:<key>/<w>x<h>  where <key> is the last
+   path segment of the invoke.js URL Adsterra handed out, and <w>x<h> is the
+   size the zone was created with.
+   ------------------------------------------------------------------------ */
+const ADSTERRA_HOST = 'https://bancadeltempoidea.org/22/';
+let unitQueue = Promise.resolve();
+
+/* Anything wider than its column is clipped, not shrunk: an iframe keeps its
+   own layout, so on a 390px phone the right-hand half of a 728x90 is simply
+   gone. Scale it and give the box the scaled height instead. */
+function fitUnit(el) {
+  if (!el) return;
+  const box = el.clientWidth || (el.parentNode ? el.parentNode.clientWidth : 0) || 0;
+  Array.prototype.forEach.call(el.querySelectorAll('iframe'), function (f) {
+    const w = parseInt(f.getAttribute('width'), 10) || f.offsetWidth;
+    const h = parseInt(f.getAttribute('height'), 10) || f.offsetHeight;
+    if (!w || !h) return;
+    if (!box || w <= box) { el.style.height = h + 'px'; return; }
+    const k = box / w;
+    f.style.maxWidth = 'none';
+    f.style.transformOrigin = 'top left';
+    f.style.transform = 'scale(' + k.toFixed(4) + ')';
+    f.style.width = w + 'px';
+    f.style.height = h + 'px';
+    el.style.height = Math.ceil(h * k) + 'px';
+  });
+}
+
+function mountUnit(el, spec) {
+  const m = /^([0-9a-f]{16,64})(?:\/(\d{1,4})x(\d{1,4}))?$/i.exec(spec);
+  if (!m) {
+    console.error('[PayoutPool] bad adsterra unit "' + spec + '" - want key/WxH');
+    return;
+  }
+  const key = m[1], w = parseInt(m[2], 10) || 300, h = parseInt(m[3], 10) || 250;
+
+  /* The loader injects its iframe after its own load event, so re-fit on any
+     child change rather than trusting a single measurement. */
+  if (!el.__fit) {
+    el.__fit = true;
+    new MutationObserver(function () { fitUnit(el); }).observe(el, { childList: true, subtree: true });
+  }
+
+  unitQueue = unitQueue.then(function () {
+    return new Promise(function (done) {
+      let settled = false;
+      const finish = function () {
+        if (settled) return;
+        settled = true;
+        fitUnit(el);
+        done();
+      };
+      window.atOptions = { key: key, format: 'iframe', height: h, width: w, params: {} };
+      const s = document.createElement('script');
+      s.src = ADSTERRA_HOST + key;
+      s.async = false;
+      s.onerror = function () {
+        console.error('[PayoutPool] Adsterra unit ' + key + ' did not load');
+        finish();
+      };
+      s.onload = function () {
+        let waited = 0;
+        (function poll() {
+          /* Done when the loader has consumed atOptions - or sooner, once the
+             iframe is visibly in the box. Either way the next unit may not
+             overwrite atOptions until this one is finished with it. */
+          if (!window.atOptions || el.querySelector('iframe') || waited >= 1200) return finish();
+          waited += 50;
+          setTimeout(poll, 50);
+        })();
+      };
+      el.appendChild(s);
+      setTimeout(finish, 8000); /* a hung CDN must not wedge the queue */
+      /* A loader that runs but never puts an iframe in this box means the box
+         collapses to nothing - the one failure that looks like "ads are on"
+         while the page earns zero. Say it out loud instead. */
+      setTimeout(function () {
+        if (!el.querySelector('iframe')) {
+          console.warn('[PayoutPool] Adsterra unit ' + key + ' loaded but rendered nothing in #' + (el.id || '?'));
+        }
+      }, 5000);
+    });
+  });
+}
+
+/* ------------------------------- video units -------------------------------
+   A video creative is written in one of two forms, and both are mounted by
+   fillSlot() - so any AD_SLOT_*, any AD_NETWORKS slot, and the interstitial
+   placement accept them with no extra wiring:
+
+     video:https://cdn/spot.mp4|poster=https://cdn/spot.jpg|click=https://target
+         A plain HTML5 file. Muted, looped, playsinline, and paused whenever it
+         leaves the viewport: an offscreen video keeps decoding and, worse,
+         keeps being counted as shown to somebody who has scrolled past it.
+
+     vast:https://adserver/vast.xml
+         A VAST 2-4 tag. The XML is fetched, one wrapper is followed, the
+         largest mp4 MediaFile wins, and the <Impression>, <Tracking> and
+         <ClickThrough> elements are honoured. Cross-origin tags need the ad
+         server to send Access-Control-Allow-Origin; when it does not, the box
+         says so in the console instead of silently staying empty.
+
+   Where video belongs: the break (AD_SLOT_GATE) and the confirmed screen
+   (AD_SLOT_DONE). Those are the two moments a visitor is already stopped in
+   front of a panel, and a 15-second spot there does not interrupt the funnel.
+   A file in AD_SLOT_CARD is allowed and usually a mistake: it pushes the CTA
+   under the fold on a phone.
+
+   /hit gets ad_video (a file started playing), ad_vast (a tag resolved and its
+   impression pixel fired) and ad_video_click, so /stats separates "pasted"
+   from "played".
+   ------------------------------------------------------------------------ */
+const VAST_HOPS = 1;
+
+function videoEl(src, poster) {
+  const v = document.createElement('video');
+  v.src = src;
+  v.muted = true;
+  v.defaultMuted = true;
+  v.setAttribute('muted', '');
+  v.playsInline = true;
+  v.setAttribute('playsinline', '');
+  v.setAttribute('webkit-playsinline', '');
+  v.autoplay = true;
+  v.loop = true;
+  v.preload = 'metadata';
+  v.setAttribute('aria-label', 'Advertisement');
+  if (poster) v.poster = poster;
+  return v;
+}
+
+/* Muted autoplay is allowed by every current browser; a video that starts off
+   screen is not. Play only while a third of it is visible, and never throw when
+   a policy refuses - the poster is the fallback creative. */
+function gatePlayback(v) {
+  const play = function () {
+    const p = v.play();
+    if (p && p.catch) p.catch(function () {});
+  };
+  if (!('IntersectionObserver' in window)) { play(); return; }
+  new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) { if (en.isIntersecting) play(); else v.pause(); });
+  }, { threshold: 0.35 }).observe(v);
+}
+
+/* The click-through is a real link, so it behaves like one: middle-click, long
+   press and target=_blank all work, and the tap is counted under its own event
+   rather than as a popunder. */
+function videoInto(el, src, poster, click) {
+  const v = videoEl(src, poster);
+  v.addEventListener('error', function () {
+    console.warn('[PayoutPool] video creative did not load: ' + src);
+    el.classList.remove('filled');
+    el.style.height = '';
+  });
+  if (click) {
+    const a = document.createElement('a');
+    a.className = 'vidLink';
+    a.href = click;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer sponsored';
+    a.addEventListener('click', function () { hit('ad_video_click'); });
+    a.appendChild(v);
+    el.appendChild(a);
+  } else {
+    el.appendChild(v);
+  }
+  gatePlayback(v);
+  return v;
+}
+
+function mountVideo(el, spec) {
+  const parts = String(spec).split('|');
+  const src = (parts.shift() || '').trim();
+  if (!/^(https?:\/\/|\/)/i.test(src)) {
+    console.error('[PayoutPool] video: needs a file URL (https:// or /path), got "' + src + '"');
+    return;
+  }
+  let poster = '', click = '';
+  parts.forEach(function (p) {
+    const i = p.indexOf('=');
+    if (i < 0) return;
+    const k = p.slice(0, i).trim().toLowerCase();
+    const val = p.slice(i + 1).trim();
+    if (k === 'poster') poster = val;
+    else if (k === 'click') click = val;
+  });
+
+  const v = videoInto(el, src, poster, click);
+  let fired = false;
+  v.addEventListener('playing', function () {
+    if (fired) return;
+    fired = true;
+    hit('ad_video');
+  });
+}
+
+function xmlDoc(text) {
+  try {
+    const doc = new DOMParser().parseFromString(text, 'text/xml');
+    if (doc.getElementsByTagName('parsererror').length) return null;
+    return doc;
+  } catch (e) { return null; }
+}
+
+function collect(doc, tag) {
+  const out = [];
+  const nodes = doc.getElementsByTagName(tag);
+  for (let i = 0; i < nodes.length; i++) {
+    const t = (nodes[i].textContent || '').trim();
+    if (t) out.push(t);
+  }
+  return out;
+}
+
+function firstText(doc, tag) {
+  const all = collect(doc, tag);
+  return all.length ? all[0] : '';
+}
+
+function trackers(doc, event) {
+  const out = [];
+  const nodes = doc.getElementsByTagName('Tracking');
+  for (let i = 0; i < nodes.length; i++) {
+    if ((nodes[i].getAttribute('event') || '').toLowerCase() !== event) continue;
+    const u = (nodes[i].textContent || '').trim();
+    if (u) out.push(u);
+  }
+  return out;
+}
+
+/* Cache-buster macros are placeholders in the tag, not URLs: the same pixel
+   requested twice is one impression to the ad server, so every macro is
+   replaced with a fresh value per request. */
+function firePixels(urls) {
+  urls.forEach(function (raw) {
+    const u = String(raw).replace(/\[(CACHEBUSTING|TIMESTAMP|RANDOM)\]/gi, function () {
+      return String(Math.floor(Math.random() * 1e9));
+    });
+    if (!/^https?:\/\//i.test(u)) return;
+    const img = new Image();
+    img.width = 1;
+    img.height = 1;
+    img.alt = '';
+    img.src = u;
+  });
+}
+
+function absolute(url, base) {
+  try { return new URL(url, base).href; } catch (e) { return url; }
+}
+
+/* The largest mp4/webm the tag offers. The declared type is checked when there
+   is one and the extension is used when there is not: a MediaFile with no type
+   is common, and skipping those loses the ad entirely. */
+function pickMedia(doc) {
+  const files = doc.getElementsByTagName('MediaFile');
+  let best = null;
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    const src = (f.textContent || '').trim();
+    if (!/^https?:\/\//i.test(src)) continue;
+    const type = (f.getAttribute('type') || '').toLowerCase();
+    if (type && type.indexOf('video/') !== 0) continue;
+    if (!type && !/\.(mp4|m4v|webm)(\?|#|$)/i.test(src)) continue;
+    const h = parseInt(f.getAttribute('height'), 10) || 0;
+    if (!best || h > best.h) best = { src: src, h: h };
+  }
+  return best;
+}
+
+function mountVast(el, url, hops, carried) {
+  hops = hops || 0;
+  /* Pixels found in a wrapper are as real as the inline ad's - they are how the
+     reseller above the tag measures the impression - so they are carried across
+     the hop instead of being dropped with the wrapper document. */
+  carried = carried || { impressions: [], start: [], complete: [] };
+  fetch(url, { cache: 'no-store' })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function (text) {
+      const doc = xmlDoc(text);
+      if (!doc) throw new Error('not VAST XML');
+
+      /* One wrapper hop. A chain of wrappers is a redirect loop waiting to
+         happen, and every hop is another chance to stall the box. */
+      const wrapper = firstText(doc, 'VASTAdTagURI');
+      if (wrapper && hops < VAST_HOPS) {
+        carried.impressions = carried.impressions.concat(collect(doc, 'Impression'));
+        carried.start = carried.start.concat(trackers(doc, 'start'));
+        carried.complete = carried.complete.concat(trackers(doc, 'complete'));
+        mountVast(el, absolute(wrapper, url), hops + 1, carried);
+        return;
+      }
+
+      const media = pickMedia(doc);
+      if (!media) throw new Error('no mp4 MediaFile in the tag');
+
+      firePixels(carried.impressions.concat(collect(doc, 'Impression')));
+      hit('ad_vast');
+
+      const click = firstText(doc, 'ClickThrough');
+      const v = videoInto(el, absolute(media.src, url), '', click ? absolute(click, url) : '');
+      let started = false;
+      v.addEventListener('playing', function () {
+        if (started) return;
+        started = true;
+        firePixels(carried.start.concat(trackers(doc, 'start')));
+      });
+      v.addEventListener('ended', function () {
+        firePixels(carried.complete.concat(trackers(doc, 'complete')));
+      });
+    })
+    .catch(function (e) {
+      console.warn('[PayoutPool] VAST tag failed (' + url + '): ' + e.message +
+        '. A cross-origin tag needs Access-Control-Allow-Origin on the ad server; ' +
+        'without it the browser cannot read the XML.');
+      el.classList.remove('filled');
+      el.style.height = '';
+    });
+}
+
+function fillSlot(el, html, height) {
+  /* adsterra:<key>/<w>x<h> - queued unit, see mountUnit() above. */
+  if (/^adsterra:/i.test(html)) { mountUnit(el, html.slice(9).trim()); return; }
+  /* Video creative: a file, or a VAST tag. See mountVideo / mountVast. */
+  if (/^video:/i.test(html)) { mountVideo(el, html.slice(6).trim()); return; }
+  if (/^vast:/i.test(html)) { mountVast(el, html.slice(5).trim()); return; }
+  /* 'script:' prefix = a script tag. A bare URL is an iframe below, so the
+     prefix is how a network's single-src tag is told apart from an iframe
+     creative without pasting a closing script tag into this file. */
+  if (/^script:/i.test(html)) {
+    const s = document.createElement('script');
+    s.src = html.slice(7).trim();
+    s.async = true;
+    s.onerror = function () { console.error('[PayoutPool] ad script failed to load: ' + s.src); };
+    el.appendChild(s);
+    return;
+  }
+  if (/^https?:\/\//i.test(html)) {
+    const f = document.createElement('iframe');
+    f.src = html;
+    f.loading = 'lazy';
+    f.title = 'Advertisement';
+    f.setAttribute('scrolling', 'no');
+    f.setAttribute('frameborder', '0');
+    f.style.height = (height || 250) + 'px';
+    el.appendChild(f);
+    return;
+  }
+  el.innerHTML = html;
+  runScripts(el);
+}
+
+/* ------------------------------ push (Monetag) ----------------------------
+   sw.js at the site root is Monetag's push service worker. Two rules decide
+   when it loads:
+
+     1. Only after the entry is in KV. A notification prompt in front of the
+        form is the fastest way to lose the lead it is interrupting.
+     2. Never on page load. Chrome and Firefox both flag origins that ask for
+        notification permission on arrival, and a flagged origin loses the
+        prompt entirely - including on the visits that would have accepted.
+
+   PUSH_TAG is the zone snippet, injected through the same path the ad slots
+   use so a <script> handed out by the network actually executes.
+   ------------------------------------------------------------------------ */
+let pushMounted = false;
+function mountPush() {
+  if (pushMounted) return;
+  pushMounted = true;
+
+  if (!('serviceWorker' in navigator)) {
+    console.warn('[PayoutPool] no service worker support - push skipped.');
+    return;
+  }
+  /* Scope is "/" because the file sits at the root. Moving it deeper would
+     need a Service-Worker-Allowed header to keep the same reach. */
+  navigator.serviceWorker.register(CONFIG.PUSH_SW).catch(function (e) {
+    console.warn('[PayoutPool] ' + CONFIG.PUSH_SW + ' did not register:', e.message);
+  });
+
+  const tag = String(CONFIG.PUSH_TAG || '').trim();
+  if (!tag) {
+    console.warn('[PayoutPool] PUSH_TAG is empty - the service worker is ' +
+      'registered, but no push zone snippet is installed.');
+    return;
+  }
+  const holder = document.createElement('div');
+  holder.className = 'pushTag';
+  document.body.appendChild(holder);
+  fillSlot(holder, tag);
+}
+/* __ppPush() in the console mounts it immediately, for testing a new zone. */
+window.__ppPush = mountPush;
+
+/* ?addebug=1 re-draws the unsold slots as dashed, captioned boxes so you can
+   see where each unit will land. Off by default: a visitor should never see an
+   advertisement frame with nothing in it. */
+if (/[?&]addebug=1(&|$)/.test(location.search)) document.documentElement.classList.add('addebug');
+
+function mountAd(id, tag, label) {
+  const el = $(id);
+  if (!el) return;
+  el.setAttribute('data-label', label);   /* read only by ?addebug=1 */
+  const html = String(tag || '').trim();
+  if (!html) {
+    /* Nothing sold for this slot. Keep the element exactly where it sits, so a
+       creative that arrives later still lands in the right place, but draw
+       nothing at all - an empty frame captioned "AD" is what makes a finished
+       funnel look half-built. */
+    el.classList.remove('filled');
+    el.style.height = '';
+    if (!CONFIG.AD_PLACEHOLDERS) { el.remove(); return; }
+    return;
+  }
+  el.classList.add('filled');
+  fillSlot(el, html);
+}
+
+/* ---------------------------- network registry ---------------------------
+   Resolves every display box before mountAd() touches it, so a box can be
+   filled either by a creative pasted into AD_SLOT_* or by whichever network
+   listed that slot name.
+   ------------------------------------------------------------------------ */
+
+/* The legacy single-network keys count as one more network, so an existing
+   POPUNDER_TAG keeps working next to anything added to AD_NETWORKS. */
+function networks() {
+  const list = CONFIG.AD_NETWORKS.slice();
+  if (CONFIG.POPUNDER_TAG) {
+    list.unshift({ id: 'POPUNDER_TAG', popunder: CONFIG.POPUNDER_TAG, weight: 1 });
+  }
+  return list;
+}
+
+/* A network only counts as wired when it can actually pop or show something.
+   A skeleton entry left in AD_NETWORKS with empty URLs must not silence the
+   "not configured" warning - that is exactly the silent failure this page is
+   supposed to avoid. */
+function wiredNetworks() {
+  return networks().filter(function (n) {
+    return !!n.popunder || !!(n.slots && Object.keys(n.slots).length);
+  });
+}
+
+/* weight 3 === the same as listing that network three times. */
+function weighted(pool) {
+  const out = [];
+  pool.forEach(function (n) {
+    const w = Math.max(1, Math.min(10, parseInt(n.weight, 10) || 1));
+    for (let i = 0; i < w; i++) out.push(n);
+  });
+  return out;
+}
+
+/* Cursor is persisted per slot, so the network that lost this visit's box
+   wins the next one instead of the first entry taking every impression. */
+function slotHtml(name, explicit) {
+  const html = String(explicit || '').trim();
+  if (html) return html;
+  const pool = weighted(networks().filter(function (n) {
+    return n.slots && n.slots[name];
+  }));
+  if (!pool.length) return '';
+  const key = 'pp_slot_' + name;
+  const cur = parseInt(ls.get(key, '0'), 10) || 0;
+  ls.set(key, cur + 1);
+  return String(pool[cur % pool.length].slots[name]);
+}
+
+mountAd('adHeld', slotHtml('HELD', CONFIG.AD_SLOT_HELD), 'AD');
+mountAd('adCard', slotHtml('CARD', CONFIG.AD_SLOT_CARD), 'AD');
+mountAd('adBelow', slotHtml('BELOW', CONFIG.AD_SLOT_BELOW), 'AD');
+mountAd('adCapture', slotHtml('CAPTURE', CONFIG.AD_SLOT_CAPTURE), 'AD');
+mountAd('adDone', slotHtml('DONE', CONFIG.AD_SLOT_DONE), 'AD');
+mountAd('adGate', slotHtml('GATE', CONFIG.AD_SLOT_GATE), 'AD · SPONSORED');
+
+/* Bottom anchor. No dashed placeholder for this one: an empty fixed bar at the
+   foot of every screen would look broken, so it only exists once it has a tag
+   and the visitor has not closed it before. */
+(function mountSticky() {
+  const el = $('adStick');
+  if (!el) return;
+  const html = slotHtml('STICKY', CONFIG.AD_SLOT_STICKY);
+  if (!html || ls.get('pp_stickx', '') === '1') { el.remove(); return; }
+  el.classList.add('on', 'filled');
+  fillSlot(el, html, 50);
+  document.body.style.paddingBottom = '66px';
+  $('adStickX').addEventListener('click', function () {
+    ls.set('pp_stickx', '1');
+    document.body.style.paddingBottom = '';
+    el.remove();
+    hit('ad_stick_x');
+  });
+})();
+
+/* -------------------------------- ads -----------------------------------
+   Four independently configurable layers, each tracked under its own /hit
+   event so the counters tell you which network actually pays:
+     1. popunder        one network per tap, rotated across AD_NETWORKS
+     2. window.__pop()  the network's own re-call hook, if it exposes one
+     3. AD_DIRECT_LINK  new tab, opened where AD_DIRECT_LINK_ON says
+     4. INTERSTITIAL_HTML  full-screen overlay, at the gate and/or on the
+                           confirmed screen (INTERSTITIAL_ON), 5s skip
+   ------------------------------------------------------------------------ */
+let directFired = false;
+let secondPopDone = false;
+let adFires = 0;
+
+/* Network id -> how many times it popped this visit. Only consulted when
+   AD_REPEAT_POP is off. */
+const popFired = {};
+
+/* The networks that fire on one tap. AD_BURST 2 means both pop at once, which
+   is the brief; 1 keeps whichever lost the rotation out of that tap. The pool
+   is filtered by stage first, so a fireOn:'done' network never lands on a gate
+   tap even with a burst of 2. */
+function pickPopunders(stage) {
+  const pool = weighted(networks().filter(function (n) {
+    return n.popunder && (n.fireOn || 'gate') === stage;
+  }));
+  if (!pool.length) return [];
+
+  let from = pool;
+  if (!CONFIG.AD_REPEAT_POP) {
+    const fresh = pool.filter(function (n) { return !popFired[n.id]; });
+    from = fresh.length ? fresh : pool;
+  }
+
+  const distinct = [];
+  pool.forEach(function (n) { if (distinct.indexOf(n) < 0) distinct.push(n); });
+  const burst = Math.max(1, Math.min(distinct.length, parseInt(CONFIG.AD_BURST, 10) || 1));
+
+  const cur = parseInt(ls.get('pp_popcur', '0'), 10) || 0;
+  ls.set('pp_popcur', cur + 1);
+
+  const out = [];
+  for (let i = 0; i < from.length && out.length < burst; i++) {
+    const n = from[(cur + i) % from.length];
+    if (out.indexOf(n) < 0) out.push(n);
+  }
+  return out;
+}
+
+/* A pasted placement is real markup, and innerHTML never executes <script>, so
+   every script node has to be rebuilt by hand - otherwise a vignette snippet
+   pasted into CONFIG loads nothing and the screen silently earns zero. A bare
+   https:// URL means "show this in an iframe". Shared by the popunder tag and
+   the interstitial placement so both paste paths behave the same way.
+
+   A tag whose src+zone is already on the page is refused: pasting the same
+   <script> twice loads one zone twice in a pageview, which double-counts its
+   impression and reads as invalid traffic to the network. Returns whether
+   anything was actually injected. */
+function alreadyOnPage(src, zone) {
+  if (!src) return false;
+  const tags = document.querySelectorAll('script[src]');
+  for (let i = 0; i < tags.length; i++) {
+    if (tags[i].getAttribute('src') !== src) continue;
+    if (!zone || tags[i].getAttribute('data-zone') === zone) return true;
+  }
+  return false;
+}
+
+function injectPlacement(box, html) {
+  const tag = String(html).trim();
+  /* A video creative is not markup: fillSlot builds the element, and whether
+     anything landed is read back from the box. */
+  if (/^(video|vast):/i.test(tag)) {
+    fillSlot(box, tag);
+    return !!box.childNodes.length;
+  }
+  if (/^https?:\/\/[^\s"'<>]+$/i.test(tag)) {
+    const f = document.createElement('iframe');
+    f.src = tag;
+    f.width = '300';
+    f.height = '250';
+    f.setAttribute('scrolling', 'no');
+    f.setAttribute('title', 'Advertisement');
+    box.appendChild(f);
+    return true;
+  }
+  box.innerHTML = tag;
+  let injected = false;
+  Array.prototype.forEach.call(box.querySelectorAll('script'), function (old) {
+    const src = old.getAttribute('src');
+    const zone = old.getAttribute('data-zone');
+    if (alreadyOnPage(src, zone)) {
+      console.warn('[PayoutPool] placement refused: ' + src + (zone ? ' (zone ' + zone + ')' : '') +
+        ' is already loaded on this page. Loading one zone twice double-counts its impression and reads as invalid traffic - ' +
+        'trigger it with CONFIG.INTERSTITIAL_TRIGGER instead.');
+      old.parentNode.removeChild(old);
+      return;
+    }
+    const s = document.createElement('script');
+    for (let i = 0; i < old.attributes.length; i++) {
+      s.setAttribute(old.attributes[i].name, old.attributes[i].value);
+    }
+    s.async = true;
+    if (old.src) s.src = old.src; else s.textContent = old.textContent;
+    old.parentNode.replaceChild(s, old);
+    injected = true;
+  });
+  return injected || !!(box.querySelector('iframe,img,ins,div'));
+}
+
+function loadPopunder(net) {
+  if (!net) return false;
+  if (!CONFIG.AD_REPEAT_POP && popFired[net.id]) return false;
+  popFired[net.id] = (popFired[net.id] || 0) + 1;
+  const tag = String(net.popunder).trim().replace(/^script:/i, '');
+
+  /* This tag is injected after load, so a Rocket Loader zone would defer it
+     past the tap that asked for it - and a popunder that arrives late pops on a
+     click that never happens. data-cfasync is how the network's own snippet opts
+     out of that; carry the attribute over, and keep every other attribute a
+     pasted snippet arrived with. */
+  const make = function (src, text, from) {
+    const s = document.createElement('script');
+    if (from) {
+      for (let i = 0; i < from.attributes.length; i++) {
+        if (from.attributes[i].name !== 'src') s.setAttribute(from.attributes[i].name, from.attributes[i].value);
+      }
+    }
+    s.setAttribute('data-cfasync', 'false');
+    s.async = true;
+    if (src) s.src = src; else s.textContent = text || '';
+    return s;
+  };
+
+  if (tag.charAt(0) === '<') {
+    /* innerHTML never executes scripts, so rebuild them by hand. */
+    const box = document.createElement('div');
+    box.style.display = 'none';
+    box.innerHTML = tag;
+    Array.prototype.forEach.call(box.querySelectorAll('script'), function (old) {
+      document.head.appendChild(make(old.src, old.textContent, old));
+    });
+    document.body.appendChild(box);
+  } else {
+    const s = make(tag);
+    s.onerror = function () { console.error('[PayoutPool] popunder failed to load (' + net.id + '): ' + tag); };
+    document.head.appendChild(s);
+  }
+  hit('ad_' + net.id);
+  return true;
+}
+
+/* Fires every network on this stage. Returns how many actually loaded. */
+function fireStage(stage) {
+  return pickPopunders(stage).filter(loadPopunder).length;
+}
+
+/* The network's own re-call hook, when it has one. Returns whether it fired. */
+function popCall(tag) {
+  if (typeof window.__pop !== 'function') return false;
+  try { window.__pop(); hit(tag); return true; }
+  catch (e) { console.error('[PayoutPool] window.__pop() threw: ' + e.message); return false; }
+}
+
+/* At most one direct-link tab per visitor, whatever asks for it. */
+function openDirect(tag) {
+  if (!CONFIG.AD_DIRECT_LINK || directFired) return false;
+  directFired = true;
+  try {
+    window.open(CONFIG.AD_DIRECT_LINK, '_blank', 'noopener');
+    hit(tag);
+    return true;
+  } catch (e) {
+    console.error('[PayoutPool] direct link blocked: ' + e.message);
+    return false;
+  }
+}
+
+function fireAd() {
+  adFires++;
+  window.__ppAdFires = adFires;
+  hit('ad');
+  const popped = fireStage('gate');
+  popCall('ad_pop');
+  if (CONFIG.AD_DIRECT_LINK_ON === 'gate') openDirect('ad_direct');
+  if (!popped && !CONFIG.AD_DIRECT_LINK && !CONFIG.INTERSTITIAL_HTML && !wiredNetworks().length) {
+    console.warn('[PayoutPool] No ad network set - this tap earned nothing. Set AD_NETWORKS / POPUNDER_TAG / AD_DIRECT_LINK.');
+  }
+}
+
+/* Confirmed screen only. Delayed so it cannot compete with the entry submit. */
+function secondPop() {
+  if (secondPopDone || !CONFIG.SECOND_POP) return;
+  secondPopDone = true;
+  setTimeout(function () { popCall('ad_second'); }, 1200);
+}
+
+/* Lets you confirm in the console which slots actually fired this session. */
+window.__ppAdReport = function () {
+  return {
+    networks: networks().map(function (n) {
+      return {
+        id: n.id,
+        head: !!n.head,
+        popunder: !!n.popunder,
+        fireOn: n.fireOn || 'gate',
+        slots: Object.keys(n.slots || {}),
+        popped: popFired[n.id] || 0
+      };
+    }),
+    configured: {
+      popHook: typeof window.__pop === 'function',
+      direct: !!CONFIG.AD_DIRECT_LINK,
+      interstitial: !!CONFIG.INTERSTITIAL_HTML,
+      trigger: CONFIG.INTERSTITIAL_TRIGGER || '',
+      hookLive: !!interstitialHook(),
+      breakStage: CONFIG.INTERSTITIAL_ON,
+      offers: CONFIG.OFFERS.length,
+      burst: CONFIG.AD_BURST,
+      repeatPop: !!CONFIG.AD_REPEAT_POP
+    },
+    fired: { gateTaps: adFires, directTab: directFired, secondPop: secondPopDone }
+  };
+};
+
+/* --------------------------- interstitial gate ---------------------------
+   One overlay, two possible moments. INTERSTITIAL_ON picks between them, so a
+   stage that is switched off never builds the overlay at all. */
+let interOpen = false;
+let interStage = 'gate';
+let lastFocus = null;
+let skipInterval = null;
+
+const INTER_TEXT = {
+  gate: { label: 'Step 4 of 5 \u00b7 Sponsored',
+          desc: 'Your position is still held. This partner placement is what keeps the pool free to enter.' },
+  done: { label: 'Sponsored \u00b7 Final step',
+          desc: 'Your entry is confirmed. This partner placement is what keeps the pool free to enter.' }
+};
+
+function interstitialDue(stage) {
+  const on = String(CONFIG.INTERSTITIAL_ON || 'gate').toLowerCase();
+  return on !== 'off' && (on === stage || on === 'both' || on === 'all');
+}
+
+/* A zone this page already loads, asked to show its own full-screen. Nothing is
+   downloaded a second time, so one impression stays one impression. */
+function interstitialHook() {
+  const name = CONFIG.INTERSTITIAL_TRIGGER;
+  if (!name) return null;
+  return typeof window[name] === 'function' ? window[name] : null;
+}
+
+/* The gate break is part of the funnel and runs even with nothing sold in it -
+   it holds the position while the form is one tap away. The confirmed-screen
+   break is not: there it has to be able to pay, because a house-only pause in
+   front of the confirmed card only delays the banner that card already holds. */
+function breakDue(stage) {
+  if (!interstitialDue(stage)) return false;
+  return stage !== 'done' || !!(CONFIG.INTERSTITIAL_HTML || interstitialHook());
+}
+
+/* Runs the break for a stage. Returns true when something took the screen over:
+   our overlay, or the network's own full-screen. */
+function openInterstitial(stage) {
+  if (interOpen) return false;
+  const which = stage === 'done' ? 'done' : 'gate';
+
+  /* Network ad first. It covers the page itself, so opening our overlay under
+     it would be two full-screens for one tap. */
+  const hook = interstitialHook();
+  if (hook) {
+    hit(which === 'done' ? 'interstitial_done' : 'ad_inter');
+    try { hook(); }
+    catch (e) { console.warn('[PayoutPool] ' + CONFIG.INTERSTITIAL_TRIGGER + '() threw: ' + e.message); }
+    return true;
+  }
+
+  interOpen = true;
+  interStage = which;
+  lastFocus = document.activeElement;
+
+  /* Same overlay, honest copy for the stage it is standing on. */
+  const copy = INTER_TEXT[interStage];
+  $('interLabel').textContent = copy.label;
+  $('interDesc').textContent = copy.desc;
+
+  const ad = $('interAd');
+  if (CONFIG.INTERSTITIAL_HTML && !ad.getAttribute('data-filled')) {
+    ad.setAttribute('data-filled', '1');
+    /* The partner tag goes in its own column below the house copy, so the
+       "$5,000" panel the screen is built around survives a real tag instead of
+       being wiped by it. A placement that was refused (duplicate zone) leaves
+       no column behind - the house panel gets the room back. */
+    const fill = document.createElement('div');
+    fill.className = 'iFill';
+    if (injectPlacement(fill, CONFIG.INTERSTITIAL_HTML)) {
+      ad.classList.add('withFill');
+      ad.insertBefore(fill, $('adGate'));
+    }
+  }
+  /* A real gate tag replaces the house preview instead of stacking under it. */
+  const house = ad.querySelector('.iHouse');
+  if (house && $('adGate').classList.contains('filled')) house.classList.add('hide');
+
+  $('inter').classList.add('on');
+  document.body.style.overflow = 'hidden';
+  hit(interStage === 'done' ? 'interstitial_done' : 'ad_inter');
+
+  const hold = Math.max(0, parseInt(CONFIG.INTERSTITIAL_SKIP, 10) || 0);
+  const btn = $('skipBtn');
+  const bar = $('skipBar');
+  btn.disabled = hold > 0;
+  btn.classList.remove('ready');
+  btn.textContent = hold ? 'Continue in ' + hold : 'Continue \u2192';
+
+  bar.style.transition = 'none';
+  bar.style.width = hold ? '0%' : '100%';
+  void bar.offsetWidth;
+  bar.style.transition = 'width ' + hold + 's linear';
+  bar.style.width = '100%';
+
+  $('inter').focus();
+
+  clearInterval(skipInterval);
+  if (!hold) { btn.classList.add('ready'); btn.focus(); return true; }
+
+  let n = hold;
+  skipInterval = setInterval(function () {
+    n--;
+    if (n > 0) { btn.textContent = 'Continue in ' + n; return; }
+    clearInterval(skipInterval);
+    btn.disabled = false;
+    btn.classList.add('ready');
+    btn.textContent = 'Continue \u2192';
+    btn.focus();
+  }, 1000);
+  return true;
+}
+
+function closeInterstitial() {
+  if (!interOpen) return;
+  interOpen = false;
+  clearInterval(skipInterval);
+  $('inter').classList.remove('on');
+  document.body.style.overflow = '';
+  if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+}
+
+/* Focus trap: while the gate is open nothing behind it is reachable. */
+$('inter').addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') { e.preventDefault(); return; }
+  if (e.key !== 'Tab') return;
+  const f = Array.prototype.filter.call(
+    $('inter').querySelectorAll('button:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])'),
+    function (el) { return el.offsetParent !== null; }
+  );
+  if (!f.length) { e.preventDefault(); $('inter').focus(); return; }
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
+
+$('skipBtn').addEventListener('click', function () {
+  if (this.disabled) return;
+  const stage = interStage;
+  /* "Continue" out of the gate is the highest-intent tap left: they are one
+     field away from the lead, and it is a real user gesture, so it earns.
+     After the entry is submitted there is nobody left to move anywhere, so the
+     same tap only closes the break - firing again there would be a second pop
+     for one visit. */
+  if (stage === 'gate') {
+    fireAd();
+    closeInterstitial();
+    showCapture();
+    return;
+  }
+  closeInterstitial();
+});
+/* --------------------------- steps + progress ---------------------------- */
+const TOTAL_STEPS = 5;
+const STEPS = [
+  { t: 'Confirm your entry',
+    s: 'Your slot is held for this round. Confirm to keep it \u2014 it returns to the pool if you close this page.',
+    b: 'Confirm and continue \u2192', tag: 'Position held' },
+  { t: 'Verify you\u2019re active',
+    s: 'Real entries only. Tap to confirm a person is completing this \u2014 automated entries are removed from the pool daily.',
+    b: 'I\u2019m active, continue \u2192', tag: 'Live check' },
+  { t: 'Save your position',
+    s: 'You are <strong>#__Q__</strong> in line. Save it now or it returns to the pool.',
+    b: 'Save my position \u2192', tag: 'Almost there' }
+];
+
+/* Progress = steps completed out of 5, so the bar and the label can never
+   disagree: STEP 1 OF 5 at 0%, STEP 5 OF 5 at 80%, submitted at 100%. */
+function setProgress(n, forceDone) {
+  const pct = forceDone ? 100 : Math.round(((n - 1) / TOTAL_STEPS) * 100);
+  $('prog').style.width = Math.max(pct, 3) + '%';
+  $('progbar').setAttribute('aria-valuenow', String(pct));
+  $('progbar').setAttribute('aria-valuetext', 'Step ' + n + ' of ' + TOTAL_STEPS);
+  $('pStep').textContent = 'STEP ' + n + ' OF ' + TOTAL_STEPS;
+  $('pPct').textContent = pct + '% complete';
+}
+
+function renderStep(i) {
+  const st = STEPS[i];
+  $('t').textContent = st.t;
+  $('s').innerHTML = st.s.replace('__Q__', fmt(queue));
+  $('btn').textContent = st.b;
+  $('badge').textContent = 'STEP ' + (i + 1);
+  $('tag').textContent = st.tag;
+  step = i;
+  ls.set(KEY.step, i);
+  setProgress(i + 1);
+}
+
+function showCapture() {
+  step = 4;
+  ls.set(KEY.step, 4);
+  $('reveal').classList.add('hide');
+  $('capture').classList.remove('hide');
+  setProgress(5);
+  hit('capture_view');
+  $('capture').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+}
+
+function finish(fresh) {
+  step = 5;
+  ls.set(KEY.step, 5);
+  ls.set(KEY.done, Date.now());
+  $('reveal').classList.add('hide');
+  $('capture').classList.add('hide');
+  $('done').classList.remove('hide');
+  setProgress(5, true);
+  $('myCode').textContent = myCode();
+  renderOffers();
+  hit('done');
+  /* The lead is already in KV at this point, so monetising here cannot cost it.
+     A full-screen break and a new tab at the same instant would be two
+     full-screen monetisations for one visit - the visitor gets whichever
+     overlay loads last and one of them is wasted. The break wins; the tab only
+     opens on a visit where no break is due. */
+  const breakHere = !!fresh && breakDue('done');
+  if (!breakHere) openDirect('ad_direct');
+  secondPop();
+  /* Networks configured fireOn:'done' fire here, where they cannot collide
+     with an OnClick tag that already owns the gate tap. */
+  fireStage('done');
+  /* Same rule as the direct link: the entry is stored, so a prompt here
+     cannot cost it. */
+  mountPush();
+  $('done').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+  if (breakHere) openInterstitial('done');
+}
+
+/* ------------------------------ queue boost ------------------------------ */
+function moveUp(by) {
+  queue = Math.max(1, queue - by);
+  ls.set(KEY.queue, queue);
+  toast('Moved up ' + by + ' places \u2014 you are now #' + fmt(queue));
+  hit('offer_click');
+}
+
+function renderOffers() {
+  if (!CONFIG.OFFERS.length) { $('boost').classList.add('hide'); return; }
+  $('boost').classList.remove('hide');
+  $('offerList').innerHTML = CONFIG.OFFERS.slice(0, 5).map(function (o, i) {
+    return '<a class="off" href="' + o.u + '" target="_blank" rel="noopener nofollow sponsored" data-i="' + i + '">' +
+      '<span class="ok-k">' + (o.k || 'OFFER') + '</span>' +
+      '<span><span class="ok-t">' + o.t + '</span>' +
+      '<span class="ok-s">' + (o.s || '') + '</span></span>' +
+      '<span class="ok-a">\u203a</span></a>';
+  }).join('');
+}
+
+$('offerList').addEventListener('click', function (e) {
+  const a = e.target.closest ? e.target.closest('a[data-i]') : null;
+  if (a) moveUp(40);
+});
+
+/* ----------------------------- capture / leads --------------------------- */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+
+function normPhone(v) {
+  const raw = String(v).trim();
+  const plus = raw.charAt(0) === '+';
+  let d = raw.replace(/\D/g, '');
+  /* 11 digits starting with 1 is the same North American number as 10. */
+  if (!plus && d.length === 11 && d.charAt(0) === '1') d = d.slice(1);
+  return (plus ? '+' : '') + d;
+}
+/* Any country: 7–15 digits (E.164 maximum), optional + and country code.
+   No area-code rules, no US/Canada assumption. */
+function validPhone(p) {
+  const d = String(p).replace(/\D/g, '');
+  if (d.length < 7 || d.length > 15) return false;
+  return /[1-9]/.test(d);
+}
+
+function setErr(field, isBad) {
+  const inp = $(field);
+  const msg = $(field + 'Err');
+  inp.classList.toggle('bad', !!isBad);
+  inp.setAttribute('aria-invalid', isBad ? 'true' : 'false');
+  if (msg) msg.classList.toggle('on', !!isBad);
+}
+
+function readBuf() {
+  try { const v = JSON.parse(ls.get(KEY.buf, '[]')); return Array.isArray(v) ? v : []; }
+  catch (e) { return []; }
+}
+function writeBuf(a) { ls.set(KEY.buf, JSON.stringify(a.slice(-10))); }
+
+async function postLead(p) {
+  if (!CONFIG.CAPTURE_ENDPOINT) {
+    console.error('[PayoutPool] CAPTURE_ENDPOINT is empty - this lead was NOT stored. ' +
+      'Deploy /worker and paste its URL into CONFIG.CAPTURE_ENDPOINT.');
+    return false;
+  }
+  const r = await fetch(CONFIG.CAPTURE_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(p)
+  });
+  if (!r.ok) throw new Error('capture HTTP ' + r.status);
+  return true;
+}
+
+async function submitLead(p) {
+  try {
+    if (await postLead(p)) { flushBuf(); return true; }
+    writeBuf(readBuf().concat([p]));
+    return false;
+  } catch (err) {
+    /* Never swallow: the lead is buffered and retried, and the console says why. */
+    console.error('[PayoutPool] capture failed, queued for retry:', err.message);
+    writeBuf(readBuf().concat([p]));
+    toast('Saved on this device \u2014 we will retry when you reconnect.');
+    return false;
+  }
+}
+
+async function flushBuf() {
+  const q = readBuf();
+  if (!q.length || !CONFIG.CAPTURE_ENDPOINT) return;
+  const keep = [];
+  for (let i = 0; i < q.length; i++) {
+    try { if (!(await postLead(q[i]))) keep.push(q[i]); }
+    catch (e) { keep.push(q[i]); }
+  }
+  writeBuf(keep);
+}
+
+$('form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const btn = $('submitBtn');
+
+  /* Honeypot: hidden from humans, irresistible to bots. Bots get a fake success. */
+  if ($('company').value) { finish(); return; }
+
+  const email = $('email').value.trim();
+  const phone = normPhone($('phone').value);
+  const badEmail = !EMAIL_RE.test(email);
+  const badPhone = !validPhone(phone);
+
+  setErr('email', badEmail);
+  setErr('phone', badPhone);
+  if (badEmail) { $('email').focus(); return; }
+  if (badPhone) { $('phone').focus(); return; }
+
+  /* Valid entry, sent in a moment: the last tap while the gesture is live.
+     fireAd only appends script tags, so it cannot cancel the POST below. */
+  fireAd();
+
+  if (!$('sms').checked) {
+    $('consentErr').classList.add('on');
+    $('consentWrap').classList.add('bad');
+    $('sms').focus();
+    return;
+  }
+  $('consentErr').classList.remove('on');
+  $('consentWrap').classList.remove('bad');
+
+  /* Dedupe: one submission per device per 24h. */
+  const last = parseInt(ls.get(KEY.sent, '0'), 10) || 0;
+  if (last && Date.now() - last < 86400000) {
+    toast('You already entered today \u2014 position #' + fmt(queue) + ' is saved.');
+    finish();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Saving\u2026';
+
+  const payload = {
+    email: email,
+    phone: phone,
+    consent: true,
+    queue: queue,
+    ref: ls.get(KEY.inbound, ''),
+    code: myCode(),
+    at: new Date().toISOString(),
+    page: location.href,
+    tz: ZONE,
+    lang: LANG,
+    ua: navigator.userAgent
+  };
+
+  await submitLead(payload);
+  ls.set(KEY.sent, Date.now());
+  btn.disabled = false;
+  btn.textContent = 'Claim my position \u2192';
+  /* fresh=true: this is a real completion, so the end-of-funnel break (if
+     INTERSTITIAL_ON includes it) may run. Re-visits and the honeypot pass
+     nothing, so a returning visitor is never trapped behind it on load. */
+  finish(true);
+});
+/* --------------------------- referral + share ---------------------------- */
+/* The inbound code (?ref=) and MY OWN code are stored separately. Reusing
+   pp_ref for both made every downstream share point back at the original
+   referrer instead of the person doing the sharing. */
+(function captureInbound() {
+  try {
+    const ref = new URLSearchParams(location.search).get('ref');
+    if (ref && /^[a-z0-9]{4,12}$/i.test(ref)) {
+      ls.set(KEY.inbound, ref.toLowerCase());
+      hit('ref_land');
+    }
+  } catch (e) {}
+})();
+
+function myCode() {
+  let c = ls.get(KEY.code, '');
+  if (!c || !/^x[a-z0-9]{4}$/i.test(c)) {
+    c = 'x' + Math.random().toString(36).slice(2, 6);
+    ls.set(KEY.code, c);
+  }
+  return c;
+}
+
+async function share() {
+  const url = siteUrl() + '/?ref=' + myCode();
+  const text = 'I just entered the ' + CONFIG.POOL_AMOUNT +
+    ' PayoutPool. Use my link and we both move up the queue:';
+  if (navigator.share) {
+    try { await navigator.share({ title: 'PayoutPool', text: text, url: url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    toast('Invite link copied \u2014 your code is ' + myCode());
+  } catch (e) {
+    window.prompt('Copy your invite link:', url);
+  }
+}
+$('shareBtn').addEventListener('click', share);
+
+/* -------------------------------- push ----------------------------------- */
+/* Permission is only requested from this click, never on load: iOS Safari
+   rejects requestPermission() outside a user gesture. */
+async function askPush() {
+  const btn = $('pushBtn');
+  if (!CONFIG.ONESIGNAL_APP_ID) {
+    btn.textContent = 'Alerts not enabled yet';
+    btn.disabled = true;
+    $('pushNote').textContent = 'OneSignal is not connected on this build yet.';
+    console.warn('[PayoutPool] ONESIGNAL_APP_ID is empty - requestPermission() skipped.');
+    return;
+  }
+  const OneSignal = window.__oneSignal;
+  if (!OneSignal) { toast('Still loading alerts \u2014 try again in a moment.'); return; }
+  try {
+    await OneSignal.Notifications.requestPermission();
+    if (OneSignal.Notifications.permission) {
+      btn.textContent = 'Alerts on \u2713';
+      btn.disabled = true;
+      $('pushNote').textContent = 'You will get a notification when your position clears.';
+      OneSignal.User.addTag('entry_queue', String(queue));
+    } else {
+      $('pushNote').textContent = 'Alerts are blocked \u2014 you can re-enable them in your browser settings.';
+    }
+  } catch (err) {
+    console.error('[PayoutPool] push permission failed:', err);
+    toast('Could not enable alerts in this browser.');
+  }
+}
+$('pushBtn').addEventListener('click', askPush);
+
+if (CONFIG.ONESIGNAL_APP_ID) {
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(async function (OneSignal) {
+    try {
+      await OneSignal.init({ appId: CONFIG.ONESIGNAL_APP_ID, allowLocalhostAsSecureOrigin: true });
+      window.__oneSignal = OneSignal;
+    } catch (e) { console.error('[PayoutPool] OneSignal init failed:', e); }
+  });
+  const os = document.createElement('script');
+  os.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+  os.defer = true;
+  document.head.appendChild(os);
+}
+/* ----------------------------- exit intent ------------------------------- */
+/* Fires at every point before the entry is confirmed, including step 1 -
+   which is the highest-intent exit and was previously excluded. */
+let exitShown = false;
+function offerExit() {
+  if (exitShown || step >= 5 || interOpen) return;
+  exitShown = true;
+  if (step < 3) {
+    toast('Position #' + fmt(queue) + ' is only held for 15 minutes. Tap continue to keep it.', 4200);
+    $('btn').focus();
+    $('reveal').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+  } else {
+    toast('Your slot is still open \u2014 finish to lock position #' + fmt(queue) + '.', 4200);
+    $('capture').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+    /* They saw the gate but are leaving before submitting: this is the last
+       chance to earn from them. Still capped at one tab per visitor. */
+    openDirect('ad_direct');
+  }
+  hit('exit_intent');
+}
+document.addEventListener('mouseout', function (e) {
+  if (!e.relatedTarget && e.clientY <= 0) offerExit();
+});
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'hidden' && step < 5) hit('hidden');
+});
+
+/* --------------------------------- boot ---------------------------------- */
+
+$('btn').addEventListener('click', function () {
+  if (step < 2) {
+    if (CONFIG.AD_EVERY_TAP) fireAd();   /* the original build fired on every tap */
+    renderStep(step + 1);
+    hit('step_' + (step + 1));
+    return;
+  }
+  if (step === 2) {
+    fireAd();
+    if (CONFIG.GATE_DOUBLE_FIRE) fireAd();
+    $('badge').textContent = 'STEP 4';
+    $('tag').textContent = 'Sponsored';
+    setProgress(4);
+    /* With the break switched off - or with nothing to show - this tap goes
+       straight to the form instead of dropping the visitor onto a screen with
+       nothing to do. */
+    if (breakDue('gate')) {
+      openInterstitial('gate');
+      hit('interstitial');
+      /* A network hook covers the page itself and has no Continue button of
+         ours, so the form has to be sitting behind it. */
+      if (!interOpen) showCapture();
+    } else showCapture();
+  }
+});
+
+/* Returning visitor lands on the confirmed screen instead of the funnel. */
+const alreadyDone = parseInt(ls.get(KEY.done, '0'), 10) || 0;
+if (alreadyDone) {
+  $('reveal').classList.add('hide');
+  finish();
+} else {
+  const saved = parseInt(ls.get(KEY.step, '0'), 10) || 0;
+  if (saved === 4) { $('reveal').classList.add('hide'); showCapture(); }
+  else renderStep(saved >= 1 && saved <= 2 ? saved : 0);
+}
+
+tickClock();
+flushBuf();
+hit('view');
+</script>
+</body>
+</html>
++cash.toLocaleString('en-US');
+  afterSpins.hidden=remaining!==0;
+  resultHistory.textContent=history.length?history.slice(-8).reverse().join(' · '):'No spins yet.';
+  streakEl.textContent='🔥 '+state.streak+'-day streak';
+  pointsEl.textContent='⭐ '+state.points+' loyalty points';
+  calendar.replaceChildren();
+  for(let i=0;i<7;i++){
+   const cell=document.createElement('div');const day=i+1;const completed=i<Math.min(state.streak,7);
+   cell.style.cssText='text-align:center;border:1px solid '+(completed?'#8bedaf':'#335d50')+';background:'+(completed?'#1d6644':'#16362e')+';border-radius:10px;padding:8px 1px;color:#e6f8e9;font-size:11px;font-weight:800';
+   cell.textContent=completed?'✓ '+day:'+'+(day*10);
+   cell.title='Day '+day+' streak bonus: '+(day*10)+' loyalty points';
+   calendar.appendChild(cell);
+  }
+  btn.disabled=state.used>=2;
+  btn.textContent=state.used>=2?'✓ DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';
+ }
+ renderHistory();saveState();
+ const modal=document.createElement('div');
+ modal.style.cssText='display:none;position:fixed;inset:0;z-index:2147483000;background:#06131de8;align-items:center;justify-content:center;padding:20px';
+ modal.innerHTML='<div style="position:relative;overflow:hidden;max-width:400px;width:100%;text-align:center;border:2px solid #f5d982;border-radius:24px;padding:35px 20px;background:radial-gradient(circle at top,#21654b,#102033 78%);box-shadow:0 20px 70px #000c"><div id="ppGiftVisual" style="font-size:95px">🎁</div><h2 id="ppGiftTitle" style="color:#fff;font-size:28px">Surprise!</h2><p id="ppGiftMessage" style="color:#e1f9eb;line-height:1.5"></p><div id="ppGiftConfetti" aria-hidden="true" style="position:absolute;inset:0;pointer-events:none"></div><button id="ppGiftClose" type="button" style="position:relative;background:#a3f9b9;color:#063a1d;border:0;border-radius:12px;padding:14px 25px;font-weight:900">Continue</button></div>';
+ document.body.appendChild(modal);
+ const css=document.createElement('style');
+ css.textContent='@keyframes ppGiftBurst{0%{transform:scale(.1) rotate(-25deg);opacity:0}65%{transform:scale(1.35) rotate(10deg);opacity:1}100%{transform:scale(1)}}@keyframes ppGiftFall{from{transform:translateY(-80px) rotate(0);opacity:1}to{transform:translateY(460px) rotate(700deg);opacity:0}}';
+ document.head.appendChild(css);
+ const close=modal.querySelector('#ppGiftClose');
+ close.addEventListener('click',function(){modal.style.display='none';btn.focus();});
+ function launchConfetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const conf=document.getElementById('ppGiftConfetti');conf.replaceChildren();
+  const colors=['#ffe079','#6af6b0','#ff90bd','#79c7ff','#fde047','#a6ffdc'];
+  for(let i=0;i<60;i++){
+   const p=document.createElement('i');const cx=15+Math.random()*70,cy=20+Math.random()*60;
+   p.style.cssText='position:absolute;top:'+cy+'%;left:'+cx+'%;width:7px;height:11px;background:'+colors[i%colors.length]+';animation:ppConfetti '+(1.2+Math.random()*1.4)+'s '+(Math.random()*0.5)+'s linear forwards';
+   conf.appendChild(p);
+  }
+ }
+ function reveal(segIdx){
+  const prize=wheelPrizes[segIdx];
+  const isJackpot=prize.name==='$100'||prize.name==='Phone';
+  const visual=modal.querySelector('#ppGiftVisual');
+  visual.textContent=prize.symbol;
+  visual.style.animation='none';void visual.offsetWidth;visual.style.animation=isJackpot?'ppGiftBurst 1.2s ease-out both':'ppGiftBurst .8s ease-out both';
+  modal.querySelector('#ppGiftTitle').textContent=prize.name==='Spin'?'Free spin!':'You landed on '+prize.name;
+  modal.querySelector('#ppGiftMessage').textContent=prize.name==='Spin'?'Your next spin is on the house (daily limit still applies).':prize.name+'. Added to your spin history. This is a demonstration result, not a claimable prize.';
   launchConfetti();
   modal.style.display='flex';
   close.focus();
@@ -448,7 +2309,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
 })();
 
 </script>
-<script defer src="/rewards-client.js"></script>
+
 
 <main id="gate">
   <section class="card" id="reveal" aria-labelledby="t">
