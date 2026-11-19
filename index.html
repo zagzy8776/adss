@@ -285,7 +285,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
  <div class="pp-eyebrow">✦ PAYOUTPOOL REWARDS ✦</div>
  <h2 id="ppWheelHeading">Spin the wheel</h2>
  <p class="pp-desc">Cash prizes, phones and surprises. Discover the rewards lineup and see what's next.</p>
- <div class="pp-wallet" aria-label="Verified rewards balance"><div><span class="pp-wallet-label">🎁 Your verified rewards</span><strong id="ppVerifiedRewards" class="pp-wallet-value">0 verified rewards</strong><span id="ppSpinCount" class="pp-wallet-label">0 demo spins</span><span class="pp-wallet-label">No confirmed prizes yet</span></div><div class="pp-wallet-icon" aria-hidden="true">🎁</div></div>
+ <div class="pp-wallet" aria-label="Verified rewards balance"><div><span class="pp-wallet-label">🎁 Your verified rewards</span><strong id="ppVerifiedRewards" class="pp-wallet-value">0 verified rewards</strong><span id="ppSpinCount" class="pp-wallet-label">0 spins played</span><span class="pp-wallet-label">No confirmed prizes yet</span></div><div class="pp-wallet-icon" aria-hidden="true">🎁</div></div>
  <div class="pp-arena"><div class="pp-aura"></div><div class="pp-bulbs"></div>
   <div class="pp-wheel" id="ppHomeWheel" aria-label="Animated six-segment prize wheel">
    <div class="pp-prize" style="transform:translate(-50%,-50%) translate(0,-112px)"><span class="pp-upright"><span class="pp-symbol">💵</span><strong>$5</strong></span></div>
@@ -298,7 +298,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
  </div>
  <button id="ppHomeSpinBtn" class="pp-action" type="button">✦ TRY A SPIN</button>
  <p id="ppHomeSpinStatus" class="pp-result" role="status" aria-live="polite">Tap to spin the wheel.</p>
- <p class="pp-note">Preview spin only. A result does not create a claimable prize. Verified winnings will appear in your rewards balance when the secure prize system is connected.</p>
+ <p class="pp-note">Every spin brings a new surprise. Your confirmed prizes and claim details will appear here when rewards are activated.</p>
  <a class="pp-link" href="/rewards.html">See all rewards →</a>
 </section>
 <script>
@@ -322,23 +322,23 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
   visual.textContent=gift?'🎁':'✨';
   visual.style.animation='none';void visual.offsetWidth;visual.style.animation='ppGiftBurst .8s ease-out both';
   modal.querySelector('#ppGiftTitle').textContent=gift?'Tap the gift box to open!':'Landed on '+prizes[sector];
-  modal.querySelector('#ppGiftMessage').textContent=gift?'Tap the box to burst it open with celebration effects.':'The wheel landed on '+prizes[sector]+'. Claimable awards require server verification.';
+  modal.querySelector('#ppGiftMessage').textContent=gift?'Tap the box to burst it open with celebration effects.':'The wheel landed on '+prizes[sector]+'. Check your rewards for confirmed prizes.';
   const confetti=modal.querySelector('#ppGiftConfetti');confetti.replaceChildren();
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){for(let i=0;i<35;i++){const p=document.createElement('i');p.style.cssText='position:absolute;top:-20px;left:'+(Math.random()*100)+'%;width:8px;height:12px;background:'+['#ffe079','#6af6b0','#ff90bd','#79c7ff'][i%4]+';animation:ppGiftFall '+(1.5+Math.random()*2)+'s '+(Math.random()*.7)+'s linear forwards';confetti.appendChild(p)}}
   modal.style.display='flex';
-  if(gift){let opened=false;const openBox=function(){if(opened)return;opened=true;visual.textContent='🎊✨🎉';visual.style.animation='none';void visual.offsetWidth;visual.style.animation='ppGiftBurst 1.2s ease-out both';modal.querySelector('#ppGiftTitle').textContent='Surprise celebration!';modal.querySelector('#ppGiftMessage').textContent='A gift reveal animation! The actual gift will be displayed when a prize is verified.';close.textContent='Continue';for(let i=0;i<90;i++){const p=document.createElement('i');p.style.cssText='position:absolute;top:-20px;left:'+(Math.random()*100)+'%;width:8px;height:12px;background:'+['#ffe079','#6af6b0','#ff90bd','#79c7ff'][i%4]+';animation:ppGiftFall '+(1.5+Math.random()*2)+'s '+(Math.random()*.7)+'s linear forwards';confetti.appendChild(p)}};visual.style.cursor='pointer';visual.onclick=openBox;close.textContent='Open gift';close.onclick=function(e){if(!opened){e.stopPropagation();e.stopImmediatePropagation();openBox()}};}else{visual.onclick=null;close.onclick=null;close.textContent='Continue'}
+  if(gift){let opened=false;const openBox=function(){if(opened)return;opened=true;visual.textContent='🎊✨🎉';visual.style.animation='none';void visual.offsetWidth;visual.style.animation='ppGiftBurst 1.2s ease-out both';modal.querySelector('#ppGiftTitle').textContent='Surprise celebration!';modal.querySelector('#ppGiftMessage').textContent='Your surprise has been revealed! Check your rewards for confirmed gifts and claim details.';close.textContent='Continue';for(let i=0;i<90;i++){const p=document.createElement('i');p.style.cssText='position:absolute;top:-20px;left:'+(Math.random()*100)+'%;width:8px;height:12px;background:'+['#ffe079','#6af6b0','#ff90bd','#79c7ff'][i%4]+';animation:ppGiftFall '+(1.5+Math.random()*2)+'s '+(Math.random()*.7)+'s linear forwards';confetti.appendChild(p)}};visual.style.cursor='pointer';visual.onclick=openBox;close.textContent='Open gift';close.onclick=function(e){if(!opened){e.stopPropagation();e.stopImmediatePropagation();openBox()}};}else{visual.onclick=null;close.onclick=null;close.textContent='Continue'}
   close.focus();
  }
  btn.addEventListener('click',function(){
   if(busy)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='The wheel is spinning…';
   const buf=new Uint32Array(1);crypto.getRandomValues(buf);
-  const sector=spins===0?2:spins===1?0:buf[0]%6;spins++;spinCount.textContent=spins+' demo spins';
+  const sector=spins===0?2:spins===1?0:buf[0]%6;spins++;spinCount.textContent=spins+' spins played';
   const start=((rotation%360)+360)%360,target=(360-sector*60)%360;
   rotation+=3240+((target-start+360)%360);
   wheel.style.transform='rotate('+rotation+'deg)';
   labels.forEach(function(label){label.style.transform='rotate('+(-rotation)+'deg)'});
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  setTimeout(function(){status.textContent='Landed on '+prizes[sector]+'. Awaiting a verified prize service before awards can be claimed.';btn.disabled=false;btn.textContent='✦ SPIN AGAIN';busy=false;reveal(sector)},reduced?80:9200);
+  setTimeout(function(){status.textContent='Landed on '+prizes[sector]+'. Your confirmed rewards will appear above.';btn.disabled=false;btn.textContent='✦ SPIN AGAIN';busy=false;reveal(sector)},reduced?80:9200);
  });
 })();
 </script>
