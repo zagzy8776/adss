@@ -2,10 +2,12 @@ name = "payoutpool-api"
 main = "worker.js"
 compatibility_date = "2026-11-01"
 
-# Same-origin only in production. Set to "*" while testing from file:// or
-# localhost, then lock it down.
+# Locked to the live frontend. Only this origin gets CORS headers, so another
+# site cannot post leads into KV through a visitor's browser. Add more origins
+# here as separate deploys if the site ever moves (e.g. a Cloudflare Pages URL).
+# Use "*" only while testing from file:// or localhost.
 [vars]
-ALLOWED_ORIGIN = "*"
+ALLOWED_ORIGIN = "https://adss-roan.vercel.app"
 
 # Create with:  npx wrangler kv namespace create PP
 # Then paste the printed id below.

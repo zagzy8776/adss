@@ -28,8 +28,8 @@
       fraud prevention and to understand which traffic sources work.</li>
   <li><strong>Technical data:</strong> IP address and approximate city/region derived from it by our
       hosting provider, used for rate-limiting and for fraud prevention.</li>
-  <li><strong>Push subscription:</strong> if you enable payout alerts, a browser push token stored by
-      OneSignal. Only created when you click the alerts button.</li>
+  <li><strong>Push subscription:</strong> if you accept a browser notification prompt, a push token and
+      subscription endpoint stored by our push provider. Only created after you accept the prompt.</li>
   <li><strong>Advertising data:</strong> our advertising partners may set cookies or read device
       identifiers to measure and personalise ads. See section 5.</li>
 </ul>
@@ -73,8 +73,9 @@ device only:</p>
       entries. Data may be processed outside your country of residence by our hosting and messaging
       providers.</li>
   <li><strong>Database:</strong> Cloudflare KV, used to store entries and the aggregate payout feed.</li>
-  <li><strong>Push notifications:</strong> OneSignal (Lite Push, Inc.) if you enable alerts. It receives a
-      push token and nothing else about you.</li>
+  <li><strong>Push notifications:</strong> Monetag (5gvci.com) serves the push subscription for payout
+      alerts and receives a push token and nothing else about you. If the alerts button is instead
+      connected to OneSignal (Lite Push, Inc.), that provider receives the token.</li>
   <li><strong>Advertising:</strong> our ad partners (for example Monetag or Adsterra) and, when you click
       an optional offer, the CPA network behind it. Those companies act as independent controllers under
       their own privacy policies and may set identifiers to measure advertising. They do not receive your

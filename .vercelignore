@@ -13,3 +13,6 @@ _*.mjs
 _*.js
 _*.png
 *.log
+
+# Local page backups — never publish these.
+*.backup

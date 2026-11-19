@@ -361,6 +361,13 @@ const CONFIG = {
 
   // --- push ----------------------------------------------------------------
   ONESIGNAL_APP_ID: "",   // from OneSignal → Settings → Keys & IDs
+  /* Monetag push. /sw.js in this folder is their service worker and must stay
+     at the site root: a service worker controls exactly the folder it is
+     served from, so /sw.js covers every page and subfolder. Paste the zone's
+     install snippet (Monetag → Push → Installation code) into PUSH_TAG. It is
+     injected only after the entry is stored, never on page load. */
+  PUSH_TAG: "",
+  PUSH_SW: "/sw.js",
 
   // --- legal ----------------------------------------------------------------
   SUPPORT_EMAIL: "support@YOURDOMAIN.com",
@@ -385,7 +392,7 @@ const siteUrl = () => (CONFIG.SITE_URL || location.origin).replace(/\/+$/, '');
 
 /* Whichever of these is still empty, the page says so in the console. */
 (function setupCheck() {
-  const keys = ['POPUNDER_TAG', 'INTERSTITIAL_HTML', 'AD_DIRECT_LINK', 'CAPTURE_ENDPOINT', 'FEED_URL', 'ONESIGNAL_APP_ID'];
+  const keys = ['POPUNDER_TAG', 'INTERSTITIAL_HTML', 'AD_DIRECT_LINK', 'CAPTURE_ENDPOINT', 'FEED_URL', 'ONESIGNAL_APP_ID', 'PUSH_TAG'];
   const missing = keys.filter(k => !CONFIG[k]);
   if (!CONFIG.OFFERS.length) missing.push('OFFERS');
   window.__ppMissing = missing;
@@ -545,6 +552,48 @@ function fillSlot(el, html, height) {
   el.innerHTML = html;
   runScripts(el);
 }
+
+/* ------------------------------ push (Monetag) ----------------------------
+   sw.js at the site root is Monetag's push service worker. Two rules decide
+   when it loads:
+
+     1. Only after the entry is in KV. A notification prompt in front of the
+        form is the fastest way to lose the lead it is interrupting.
+     2. Never on page load. Chrome and Firefox both flag origins that ask for
+        notification permission on arrival, and a flagged origin loses the
+        prompt entirely - including on the visits that would have accepted.
+
+   PUSH_TAG is the zone snippet, injected through the same path the ad slots
+   use so a <script> handed out by the network actually executes.
+   ------------------------------------------------------------------------ */
+let pushMounted = false;
+function mountPush() {
+  if (pushMounted) return;
+  pushMounted = true;
+
+  if (!('serviceWorker' in navigator)) {
+    console.warn('[PayoutPool] no service worker support - push skipped.');
+    return;
+  }
+  /* Scope is "/" because the file sits at the root. Moving it deeper would
+     need a Service-Worker-Allowed header to keep the same reach. */
+  navigator.serviceWorker.register(CONFIG.PUSH_SW).catch(function (e) {
+    console.warn('[PayoutPool] ' + CONFIG.PUSH_SW + ' did not register:', e.message);
+  });
+
+  const tag = String(CONFIG.PUSH_TAG || '').trim();
+  if (!tag) {
+    console.warn('[PayoutPool] PUSH_TAG is empty - the service worker is ' +
+      'registered, but no push zone snippet is installed.');
+    return;
+  }
+  const holder = document.createElement('div');
+  holder.className = 'pushTag';
+  document.body.appendChild(holder);
+  fillSlot(holder, tag);
+}
+/* __ppPush() in the console mounts it immediately, for testing a new zone. */
+window.__ppPush = mountPush;
 
 function mountAd(id, tag, label) {
   const el = $(id);
@@ -818,6 +867,9 @@ function finish() {
   /* The lead is already in KV at this point, so monetising here cannot cost it. */
   openDirect('ad_direct');
   secondPop();
+  /* Same rule as the direct link: the entry is stored, so a prompt here
+     cannot cost it. */
+  mountPush();
   $('done').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
 }
 
