@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Monetag MultiTag, zones 312446 (quge5.com) + 12299927 (al5sm.com). MultiTag
-     must sit immediately after <head>, which pushes the charset meta down, so
-     this whole block has to stay under 1024 bytes or encoding detection fails.
-     Keep the comments short; the CSP meta further down already allows https:. -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9906406019954985" crossorigin="anonymous"></script>
+
 <meta charset="utf-8">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9906406019954985" crossorigin="anonymous"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#08090b">
 <!-- ClickAdy site ownership. Must be in the served HTML on the URL they verify:
@@ -229,41 +226,8 @@ img,video,canvas,svg{max-width:100%}
  iframe{max-width:100%}
 }
 </style>
-</head>
-<body>
-<a class="sr-only" href="#btn">Skip to the entry steps</a>
-
-<header class="brand">
-  <div class="logo" aria-hidden="true">P</div>
-  <span class="bname">PayoutPool</span>
-  <span class="live"><span id="claiming">142</span> claiming now</span>
-</header>
-
-<div class="urgency">
-  <i aria-hidden="true"></i>
-  <span>Slot held for</span>
-  <span id="clock" role="timer" aria-live="off">15:00</span>
-</div>
-
-<aside class="adbox" id="adHeld" data-slot="held" aria-label="Advertisement"></aside>
-
-<div class="ticker-wrap" aria-hidden="true"><div id="ticker"></div></div>
-
-<section class="hero">
-  <h1>Your <span data-pool>$5,000</span> payout slot is reserved</h1>
-  <p class="sub">Open worldwide · Five steps, about 40 seconds</p>
-</section>
-
-<div class="prog-wrap">
-  <div class="prog" id="progbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20" aria-valuetext="Step 1 of 5">
-    <div id="prog"></div>
-  </div>
-  <div class="meta"><span id="pStep">STEP 1 OF 5</span><span id="pPct">20% complete</span></div>
-</div>
-
-<!-- PayoutPool rewards board: isolated from existing entry funnel and ads -->
 <style>
-#ppWheelHome{position:relative;isolation:isolate;max-width:540px;margin:20px auto;padding:26px 18px 24px;border-radius:30px;overflow:hidden;text-align:center;color:#fff;background:radial-gradient(ellipse at 50% 28%,#246a5e 0%,#101d29 52%,#070a12 100%);border:1px solid #4a9e89;box-shadow:0 24px 60px #000a,inset 0 1px #bdfed744}
+#ppWheelHome{position:relative;isolation:isolate;max-width:480px;margin:20px auto;padding:26px 18px 24px;border-radius:30px;overflow:hidden;text-align:center;color:#fff;background:radial-gradient(ellipse at 50% 28%,#246a5e 0%,#101d29 52%,#070a12 100%);border:1px solid #4a9e89;box-shadow:0 24px 60px #000a,inset 0 1px #bdfed744}
 #ppWheelHome:before{content:"";pointer-events:none;position:absolute;inset:-35%;z-index:-1;background:conic-gradient(from 0deg,transparent 0deg,#7dfeba22 20deg,transparent 70deg,transparent 190deg,#7dfeba22 230deg,transparent 260deg);animation:ppAmbient 12s linear infinite}
 #ppWheelHome *{box-sizing:border-box}
 #ppWheelHome .pp-eyebrow{font-size:11px;font-weight:900;letter-spacing:.22em;color:#a6ffdc}
@@ -306,65 +270,50 @@ img,video,canvas,svg{max-width:100%}
 @keyframes ppBulbs{50%{transform:rotate(7.5deg)}}
 @media(prefers-reduced-motion:reduce){#ppWheelHome:before,#ppWheelHome .pp-aura,#ppWheelHome .pp-bulbs{animation:none!important}#ppWheelHome .pp-wheel,#ppWheelHome .pp-upright{transition-duration:.01ms!important}}
 </style>
-<section id="ppWheelHome" aria-labelledby="ppWheelHeading">
- <div class="pp-eyebrow">✦ PAYOUTPOOL REWARDS ✦</div>
- <h2 id="ppWheelHeading">Spin the wheel</h2>
- <p class="pp-desc">Cash prizes, phones and surprises. Discover the rewards lineup and see what's next.</p>
- <div class="pp-wallet" aria-label="Verified rewards balance"><div><span class="pp-wallet-label">🎁 Your rewards activity</span><strong id="ppVerifiedRewards" class="pp-wallet-value">No results yet</strong><span id="ppSpinCount" class="pp-wallet-label">2 spins available today</span><span class="pp-wallet-label">Wheel results on this device</span></div><div style="text-align:right;min-width:100px;border-left:1px solid #497c68;padding-left:12px"><span class="pp-wallet-label">Cash wheel results</span><strong id="ppCashResultTotal" class="pp-wallet-value">$0</strong><span class="pp-wallet-label">Not yet claimable</span></div></div>
- <div id="ppDailyDashboard" style="margin:14px 0 8px;text-align:left;border:1px solid #396c5c;border-radius:17px;background:#0d2727;padding:15px">
- <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong style="font-size:15px;color:#eaffed">📅 Daily spin rewards</strong><strong id="ppDailyLeft" style="font-size:13px;color:#b9ffcf">2 / 2 left</strong></div>
- <p style="font-size:12px;color:#a8cdbd;margin:8px 0">Come back each day to grow your streak and collect more loyalty points.</p>
- <div id="ppDailyCalendar" aria-label="Seven day loyalty streak" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:13px 0"></div>
- <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:#d9f8e6"><span id="ppStreak">🔥 0-day streak</span><span id="ppPoints">⭐ 0 loyalty points</span></div>
- <div style="margin-top:12px;border-top:1px solid #365b51;padding-top:10px"><strong style="color:white;font-size:13px">📋 Your spin history</strong><div id="ppResultHistory" style="font-size:12px;line-height:1.6;color:#b7d8c7;margin-top:5px">No spins yet.</div><p style="font-size:11px;color:#92b3a8;margin:7px 0 0">Your spin history and cash wheel results are tracked here. Payout eligibility and payment information will appear after account and prize verification.</p></div>
-</div>
-<div id="ppAfterSpins" hidden style="margin:15px 0;padding:18px;border:1px solid #5d9378;border-radius:18px;background:linear-gradient(125deg,#164738,#142639);text-align:left"><strong style="font-size:17px;color:#eaffeb">🧩 Keep playing: Match the gifts</strong><p style="color:#b9ddce;font-size:12px;line-height:1.5">Your two daily spins are complete. Try this free memory challenge while you wait for tomorrow. No cash or prizes are awarded by this game.</p><div id="ppMatchGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0"></div><div id="ppMatchStatus" role="status" style="font-size:12px;color:#ddf7e5;margin:8px 0">Match all four pairs!</div><button id="ppMatchReset" type="button" style="padding:11px 16px;background:#a5f5c1;color:#103826;border:0;border-radius:10px;font-weight:800">Play again</button></div><div class="pp-arena"><div class="pp-aura"></div><div class="pp-bulbs"></div>
-  <div class="pp-wheel-wrap">
-    <div class="pp-wheel" id="ppHomeWheel" aria-label="Animated eight-segment prize wheel">
-     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(0px,-112px)"><span class="pp-upright"><span class="pp-symbol">💵</span><strong>$5</strong></span></div>
-     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(79px,-79px)"><span class="pp-upright"><span class="pp-symbol">🎁</span><strong>Gift</strong></span></div>
-     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(112px,0px)"><span class="pp-upright"><span class="pp-symbol">💎</span><strong>Bonus</strong></span></div>
-     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(79px,79px)"><span class="pp-upright"><span class="pp-symbol">💰</span><strong>$100</strong></span></div>
-     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(0px,112px)"><span class="pp-upright"><span class="pp-symbol">🎟️</span><strong>Spin</strong></span></div>
-     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(-79px,79px)"><span class="pp-upright"><span class="pp-symbol">📱</span><strong>Phone</strong></span></div>
-     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(-112px,0px)"><span class="pp-upright"><span class="pp-symbol">💸</span><strong>$20</strong></span></div>
-     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(-79px,-79px)"><span class="pp-upright"><span class="pp-symbol">⭐</span><strong>Points</strong></span></div>
-    </div>
-  </div><div class="pp-pin" aria-hidden="true"></div><div class="pp-center" aria-hidden="true">SPIN</div><div class="pp-hub" aria-hidden="true"></div>
- </div>
- <button id="ppHomeSpinBtn" class="pp-action" type="button">✦ TRY A SPIN</button>
- <p id="ppHomeSpinStatus" class="pp-result" role="status" aria-live="polite">Tap to spin the wheel.</p>
- <p class="pp-note">No registration required. Real prize results are recorded on the server. Cash awards remain pending until verified and approved for payout.</p>
- <a class="pp-link" href="/claims.html">View your prize claims and messages →</a> <a class="pp-link" href="/rewards.html">See all rewards →</a>
-</section>
-<script>
-(()=>{
-'use strict';
-const btn=document.getElementById('ppHomeSpinBtn'),wheel=document.getElementById('ppHomeWheel'),status=document.getElementById('ppHomeSpinStatus');
-const left=document.getElementById('ppDailyLeft'),count=document.getElementById('ppSpinCount'),results=document.getElementById('ppVerifiedRewards'),history=document.getElementById('ppResultHistory'),cash=document.getElementById('ppCashResultTotal'),after=document.getElementById('ppAfterSpins'),streak=document.getElementById('ppStreak'),points=document.getElementById('ppPoints'),calendar=document.getElementById('ppDailyCalendar');
-const matchGrid=document.getElementById('ppMatchGrid'),matchStatus=document.getElementById('ppMatchStatus'),matchReset=document.getElementById('ppMatchReset');
-const labels=[...wheel.querySelectorAll('.pp-upright')];let names=Array(8).fill('');
-function setWheelPrizes(prizes){const available=prizes.filter(p=>p.inventory>0);names=Array.from({length:8},(_,i)=>available[i%available.length]?.title||'—');labels.forEach((label,i)=>{const symbol=label.querySelector('.pp-symbol'),name=label.querySelector('strong');if(symbol)symbol.textContent=available.length?'💵':'—';if(name)name.textContent=names[i]});wheel.setAttribute('aria-label','Prize wheel with '+[...new Set(names)].join(', '));}
+</head>
+<body>
+<a class="sr-only" href="#btn">Skip to the entry steps</a>
 
-let campaign=null,busy=false,rotation=0,used=0;
-const api=async(path,method='GET',data)=>{const r=await fetch('/api/'+path,{method,credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:data?JSON.stringify(data):undefined});const j=await r.json();if(!r.ok)throw Error(j.error||'Server error');return j};
-function resetMatch(){const icons=['🎁','📱','⭐','💎','🎁','📱','⭐','💎'];for(let i=icons.length-1;i>0;i--){const j=crypto.getRandomValues(new Uint32Array(1))[0]%(i+1);[icons[i],icons[j]]=[icons[j],icons[i]]}matchGrid.replaceChildren();let shown=[],matched=0,waiting=false;matchStatus.textContent='Match all four pairs!';icons.forEach((icon,i)=>{const b=document.createElement('button');b.type='button';b.textContent='?';b.style.cssText='min-height:58px;border:1px solid #5f987e;border-radius:12px;background:#214b40;color:white;font-size:24px;font-weight:900';b.addEventListener('click',()=>{if(waiting||b.disabled||shown.includes(i))return;b.textContent=icon;shown.push(i);if(shown.length===2){const [a,d]=shown;if(icons[a]===icons[d]){matchGrid.children[a].disabled=true;matchGrid.children[d].disabled=true;matched++;shown=[];matchStatus.textContent=matched===4?'All pairs matched!':matched+' of 4 pairs matched'}else{waiting=true;setTimeout(()=>{matchGrid.children[a].textContent='?';matchGrid.children[d].textContent='?';shown=[];waiting=false},800)}}});matchGrid.append(b)})}
-matchReset.addEventListener('click',resetMatch);resetMatch();
-async function refresh(){const [campaigns,activity,prizeData]=await Promise.all([api('campaigns'),api('activity'),api('prize-wheel')]);setWheelPrizes(prizeData.prizes);campaign=campaigns.campaigns[0]||null;used=Number(activity.usage[0]?.used||0);const remaining=Math.max(0,2-used);left.textContent=remaining+' / 2 spins left today';count.textContent=remaining+' of 2 daily spins remaining';const spins=activity.spins;results.textContent=spins.length?spins.slice(0,2).map(x=>x.prize_title||'No prize').join(' · '):'No prizes yet';history.textContent=spins.length?spins.slice(0,8).map(x=>x.prize_title||'No prize').join(' · '):'No spins yet';cash.textContent=activity.wallet.length?activity.wallet.map(x=>x.currency+' '+(Number(x.verified_minor)/100).toFixed(2)+' verified · '+(Number(x.pending_minor)/100).toFixed(2)+' pending').join(' · '):'$0.00 verified';after.hidden=remaining!==0;streak.textContent='Daily activity';points.textContent='Rewards verified by server';calendar.replaceChildren();for(let i=0;i<7;i++){const cell=document.createElement('div');cell.style.cssText='text-align:center;border:1px solid #335d50;border-radius:10px;padding:8px 1px;color:#e6f8e9;font-size:11px;font-weight:800';cell.textContent='Day '+(i+1);calendar.append(cell)}btn.disabled=busy||!campaign||used>=2;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=2?'DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';if(!campaign)status.textContent='Real prizes require a funded, active campaign. No prizes are being awarded right now.'}
-btn.addEventListener('click',async()=>{if(busy||!campaign||used>=2)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:crypto.randomUUID()});const matches=names.map((name,i)=>name===(result.prize_title||'')?i:-1).filter(i=>i>=0);const index=matches.length?matches[Math.floor(Math.random()*matches.length)]:-1;const segment=index>=0?index:null;const current=((rotation%360)+360)%360,desired=segment===null?current:(360-segment*45)%360;rotation+=1800+((desired-current+360)%360);wheel.classList.add('spinning');wheel.style.transform='rotate('+rotation+'deg)';labels.forEach(label=>label.style.transform='rotate('+(-rotation)+'deg)');await new Promise(r=>setTimeout(r,4200));wheel.classList.remove('spinning');status.textContent=result.prize_title?'Server-confirmed result: '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false;btn.disabled=!campaign||used>=2;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=2?'DAILY SPINS COMPLETE':'✦ '+Math.max(0,2-used)+' SPIN'+(2-used===1?'':'S')+' LEFT'}});
-btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabled=true;btn.textContent='TEMPORARILY UNAVAILABLE';status.textContent='Prize service unavailable: '+e.message});
-})();
-</script>
+<header class="brand">
+  <div class="logo" aria-hidden="true">P</div>
+  <span class="bname">PayoutPool</span>
+  <span class="live">Free daily prizes</span>
+</header>
+
+<div class="urgency">
+  <i aria-hidden="true"></i>
+  <span>Explore PayoutPool rewards</span>
+  <span id="clock" role="timer" aria-live="off">15:00</span>
+</div>
+
+<aside class="adbox" id="adHeld" data-slot="held" aria-label="Advertisement"></aside>
+
+<div class="ticker-wrap" aria-hidden="true"><div id="ticker"></div></div>
+
+<section class="hero">
+  <h1>Explore a <span data-pool>$5,000</span> cash prize pool</h1>
+  <p class="sub">Optional entry form below · Cash prizes awarded by the separate wheel</p>
+</section>
+
+<div class="prog-wrap">
+  <div class="prog" id="progbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20" aria-valuetext="Step 1 of 5">
+    <div id="prog"></div>
+  </div>
+  <div class="meta"><span id="pStep">STEP 1 OF 5</span><span id="pPct">20% complete</span></div>
+</div>
+
+<!-- PayoutPool rewards board: isolated from existing entry funnel and ads -->
+
 
 
 <main id="gate">
   <section class="card" id="reveal" aria-labelledby="t">
     <div class="h"><b id="badge">STEP 1</b><span id="tag">Position held</span></div>
     <h2 id="t">Confirm your entry</h2>
-    <p id="s">Your slot is held for this round. Confirm to keep it — it returns to the pool if you close this page.</p>
+    <p id="s">Complete the optional entry steps to submit your details. The cash-prize wheel is a separate activity below.</p>
     <aside class="adbox inset" id="adCard" data-slot="card" aria-label="Advertisement"></aside>
     <button class="btn" id="btn" type="button" aria-describedby="note">Confirm and continue →</button>
-    <p class="note" id="note">No payment details in this step. Ever.</p>
+    <p class="note" id="note">No payment details in this step. Ever.</p><p class="pp-spin-cta"><a href="#ppWheelHome">🎡 Or jump to the free cash-prize wheel ↓</a></p>
   </section>
 
   <aside class="adbox" id="adBelow" data-slot="below" aria-label="Advertisement"></aside>
@@ -372,7 +321,7 @@ btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabl
   <section class="card hide" id="capture" aria-labelledby="capH">
     <div class="h"><b>STEP 5</b><span id="tagCap">Contact</span></div>
     <h2 id="capH">Where should we send it?</h2>
-    <p id="s2">We only use this to confirm your entry and reach you about your payout. One entry per person.</p>
+    <p id="s2">This form stores your entry contact details for the separate entry program. It does not automatically award a cash prize.</p>
     <aside class="adbox inset" id="adCapture" data-slot="capture" aria-label="Advertisement"></aside>
     <form id="form" novalidate>
       <div class="field">
@@ -394,11 +343,9 @@ btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabl
       </div>
       <label class="consent" id="consentWrap" for="sms">
         <input type="checkbox" id="sms" name="sms">
-        <span>I agree to receive calls and texts from PayoutPool about my entry, including by automated means.
-        Message frequency varies. Message &amp; data rates may apply. Reply STOP to cancel, HELP for help.
-        Consent is not a condition of entry. See <a href="/privacy.html">Privacy Policy</a>.</span>
+        <span>I agree to submit my email and phone number for entry administration. No SMS notifications are currently configured. See <a href="/privacy.html">Privacy Policy</a>.</span>
       </label>
-      <div class="err" id="consentErr" role="alert">Please tick the box so we can contact you about your entry.</div>
+      <div class="err" id="consentErr" role="alert">Please confirm consent to storing your entry contact details.</div>
       <button class="btn" id="submitBtn" type="submit">Claim my position →</button>
       <p class="note">18+ · Open worldwide · We never ask for payment details or gift card codes.</p>
     </form>
@@ -407,7 +354,7 @@ btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabl
   <section class="card hide" id="done">
     <div class="ok" aria-hidden="true">✓</div>
     <h2>Entry confirmed</h2>
-    <p>You are in the <strong data-pool>$5,000</strong> pool. We review entries daily and contact winners at the email or number on file.</p>
+    <p>Your contact entry has been recorded. This does not award a cash prize. The separate daily wheel below is the current cash-prize program.</p>
     <div class="ref"><span>Your referral code</span><b id="myCode">—</b></div>
     <aside class="adbox inset" id="adDone" data-slot="done" aria-label="Advertisement"></aside>
     <div id="boost" class="hide" style="margin-top:12px;text-align:left">
@@ -428,6 +375,56 @@ btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabl
     <p class="note" id="pushNote" hidden style="display:none"></p>
   </section>
 </main>
+<section class="pp-spin-link"><a href="#ppWheelHome">🎡 Spin for cash prizes — two free spins daily ↓</a><small>Cash spins are separate from entry registration; completing the form does not affect spin odds.</small></section>
+<section id="ppWheelHome" aria-labelledby="ppWheelHeading">
+ <div class="pp-eyebrow">✦ PAYOUTPOOL REWARDS ✦</div>
+ <h2 id="ppWheelHeading">Spin the wheel</h2>
+ <p class="pp-desc">The $5,000 cash prize pool offers $5, $20 and $100 awards while inventory lasts. Results come from the server, not the animation.</p>
+ <div class="pp-wallet" aria-label="Verified rewards balance"><div><span class="pp-wallet-label">🎁 Your rewards activity</span><strong id="ppVerifiedRewards" class="pp-wallet-value">No results yet</strong><span id="ppSpinCount" class="pp-wallet-label">2 spins available today</span><span class="pp-wallet-label">Wheel results on this device</span></div><div style="text-align:right;min-width:100px;border-left:1px solid #497c68;padding-left:12px"><span class="pp-wallet-label">Cash wheel results</span><strong id="ppCashResultTotal" class="pp-wallet-value">$0</strong><span class="pp-wallet-label">Not yet claimable</span></div></div>
+ <div id="ppDailyDashboard" style="margin:14px 0 8px;text-align:left;border:1px solid #396c5c;border-radius:17px;background:#0d2727;padding:15px">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong style="font-size:15px;color:#eaffed">📅 Daily spin rewards</strong><strong id="ppDailyLeft" style="font-size:13px;color:#b9ffcf">2 / 2 left</strong></div>
+ <p style="font-size:12px;color:#a8cdbd;margin:8px 0">You can spin twice per UTC day. This is a cash-prize game, not a loyalty-points program.</p>
+ 
+ <div style="margin-top:12px;border-top:1px solid #365b51;padding-top:10px"><strong style="color:white;font-size:13px">📋 Your spin history</strong><div id="ppResultHistory" style="font-size:12px;line-height:1.6;color:#b7d8c7;margin-top:5px">No spins yet.</div><p style="font-size:11px;color:#92b3a8;margin:7px 0 0">Your spin history and cash wheel results are tracked here. Cash awards are recorded as pending claims. Claim review and payout are separate steps.</p></div>
+</div>
+<div class="pp-arena"><div class="pp-aura"></div><div class="pp-bulbs"></div>
+  <div class="pp-wheel-wrap">
+    <div class="pp-wheel" id="ppHomeWheel" aria-label="Animated eight-segment prize wheel">
+     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(0px,-112px)"><span class="pp-upright"><span class="pp-symbol">✦</span><strong>PRIZE</strong></span></div>
+     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(79px,-79px)"><span class="pp-upright"><span class="pp-symbol">✦</span><strong>PRIZE</strong></span></div>
+     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(112px,0px)"><span class="pp-upright"><span class="pp-symbol">✦</span><strong>PRIZE</strong></span></div>
+     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(79px,79px)"><span class="pp-upright"><span class="pp-symbol">✦</span><strong>PRIZE</strong></span></div>
+     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(0px,112px)"><span class="pp-upright"><span class="pp-symbol">✦</span><strong>PRIZE</strong></span></div>
+     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(-79px,79px)"><span class="pp-upright"><span class="pp-symbol">✦</span><strong>PRIZE</strong></span></div>
+     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(-112px,0px)"><span class="pp-upright"><span class="pp-symbol">✦</span><strong>PRIZE</strong></span></div>
+     <div class="pp-prize" style="transform:translate(-50%,-50%) translate(-79px,-79px)"><span class="pp-upright"><span class="pp-symbol">✦</span><strong>PRIZE</strong></span></div>
+    </div>
+  </div><div class="pp-pin" aria-hidden="true"></div><div class="pp-center" aria-hidden="true">SPIN</div><div class="pp-hub" aria-hidden="true"></div>
+ </div>
+<div id="ppAfterSpins" hidden style="margin:15px 0;padding:18px;border:1px solid #5d9378;border-radius:18px;background:linear-gradient(125deg,#164738,#142639);text-align:left"><strong style="font-size:17px;color:#eaffeb">🧩 Keep playing: Match the gifts</strong><p style="color:#b9ddce;font-size:12px;line-height:1.5">Your two daily spins are complete. Try this free memory challenge while you wait for tomorrow. No cash or prizes are awarded by this game.</p><div id="ppMatchGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0"></div><div id="ppMatchStatus" role="status" style="font-size:12px;color:#ddf7e5;margin:8px 0">Match all four pairs!</div><button id="ppMatchReset" type="button" style="padding:11px 16px;background:#a5f5c1;color:#103826;border:0;border-radius:10px;font-weight:800">Play again</button></div> <button id="ppHomeSpinBtn" class="pp-action" type="button">✦ TRY A SPIN</button>
+ <p id="ppHomeSpinStatus" class="pp-result" role="status" aria-live="polite">Tap to spin the wheel.</p>
+ <p class="pp-note">Wheel graphics are illustrative, not a chart of winning odds. Initial server selection weights are $5: 70%, $20: 25%, $100: 5%, subject to remaining inventory. No registration required. Real prize results are recorded on the server. Cash awards remain pending until verified and approved for payout.</p>
+ <a class="pp-link" href="/claims.html">View your prize claims and messages →</a> <a class="pp-link" href="/rewards.html">See all rewards →</a>
+</section>
+<script>
+(()=>{
+'use strict';
+const btn=document.getElementById('ppHomeSpinBtn'),wheel=document.getElementById('ppHomeWheel'),status=document.getElementById('ppHomeSpinStatus');
+const left=document.getElementById('ppDailyLeft'),count=document.getElementById('ppSpinCount'),results=document.getElementById('ppVerifiedRewards'),history=document.getElementById('ppResultHistory'),cash=document.getElementById('ppCashResultTotal'),after=document.getElementById('ppAfterSpins'),streak=document.getElementById('ppStreak'),points=document.getElementById('ppPoints'),calendar=document.getElementById('ppDailyCalendar');
+const matchGrid=document.getElementById('ppMatchGrid'),matchStatus=document.getElementById('ppMatchStatus'),matchReset=document.getElementById('ppMatchReset');
+const labels=[...wheel.querySelectorAll('.pp-upright')];
+function setWheelPrizes(prizes){const available=prizes.filter(p=>p.inventory>0);labels.forEach(label=>{const symbol=label.querySelector('.pp-symbol'),name=label.querySelector('strong');if(symbol)symbol.textContent='✦';if(name)name.textContent='PRIZE'});wheel.setAttribute('aria-label','Illustrative wheel. Server cash prizes: '+available.map(p=>p.title).join(', '));}
+const makeRequestId=()=>{if(typeof crypto.randomUUID==='function')return crypto.randomUUID();const b=new Uint8Array(16);crypto.getRandomValues(b);b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;return [...b].map((v,i)=>([4,6,8,10].includes(i)?'-':'')+v.toString(16).padStart(2,'0')).join('')};
+
+let campaign=null,busy=false,rotation=0,used=0,cap=2;
+const api=async(path,method='GET',data)=>{const r=await fetch('/api/'+path,{method,credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:data?JSON.stringify(data):undefined});const j=await r.json();if(!r.ok)throw Error(j.error||'Server error');return j};
+function resetMatch(){const icons=['🎁','📱','⭐','💎','🎁','📱','⭐','💎'];for(let i=icons.length-1;i>0;i--){const j=crypto.getRandomValues(new Uint32Array(1))[0]%(i+1);[icons[i],icons[j]]=[icons[j],icons[i]]}matchGrid.replaceChildren();let shown=[],matched=0,waiting=false;matchStatus.textContent='Match all four pairs!';icons.forEach((icon,i)=>{const b=document.createElement('button');b.type='button';b.textContent='?';b.style.cssText='min-height:58px;border:1px solid #5f987e;border-radius:12px;background:#214b40;color:white;font-size:24px;font-weight:900';b.addEventListener('click',()=>{if(waiting||b.disabled||shown.includes(i))return;b.textContent=icon;shown.push(i);if(shown.length===2){const [a,d]=shown;if(icons[a]===icons[d]){matchGrid.children[a].disabled=true;matchGrid.children[d].disabled=true;matched++;shown=[];matchStatus.textContent=matched===4?'All pairs matched!':matched+' of 4 pairs matched'}else{waiting=true;setTimeout(()=>{matchGrid.children[a].textContent='?';matchGrid.children[d].textContent='?';shown=[];waiting=false},800)}}});matchGrid.append(b)})}
+matchReset.addEventListener('click',resetMatch);resetMatch();
+async function refresh(){const [campaigns,activity,prizeData]=await Promise.all([api('campaigns'),api('activity'),api('prize-wheel')]);setWheelPrizes(prizeData.prizes);campaign=campaigns.campaigns[0]||null;used=Number(activity.usage[0]?.used||0);cap=Number(activity.daily_cap||2);const remaining=Math.max(0,cap-used);left.textContent=remaining+' / '+cap+' spins left today';count.textContent=remaining+' of '+cap+' daily spins remaining';const spins=activity.spins;results.textContent=spins.length?spins.slice(0,2).map(x=>x.prize_title||'No prize').join(' · '):'No prizes yet';history.textContent=spins.length?spins.slice(0,8).map(x=>x.prize_title||'No prize').join(' · '):'No spins yet';cash.textContent=activity.wallet.length?activity.wallet.map(x=>x.currency+' '+(Number(x.verified_minor)/100).toFixed(2)+' verified · '+(Number(x.pending_minor)/100).toFixed(2)+' pending').join(' · '):'$0.00 verified';after.hidden=remaining!==0;btn.disabled=busy||!campaign||used>=cap;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=2?'DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';if(!campaign)status.textContent='Real prizes require a funded, active campaign. No prizes are being awarded right now.'}
+btn.addEventListener('click',async()=>{if(busy||!campaign||used>=2)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:makeRequestId()});const index=crypto.getRandomValues(new Uint32Array(1))[0]%labels.length;const current=((rotation%360)+360)%360,desired=(360-index*45)%360;rotation+=1800+((desired-current+360)%360);wheel.classList.add('spinning');wheel.style.transform='rotate('+rotation+'deg)';labels.forEach(label=>label.style.transform='rotate('+(-rotation)+'deg)');await new Promise(r=>setTimeout(r,4200));wheel.classList.remove('spinning');status.textContent=result.prize_title?'Server-confirmed result: '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false;btn.disabled=!campaign||used>=2;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=2?'DAILY SPINS COMPLETE':'✦ '+Math.max(0,cap-used)+' SPIN'+(cap-used===1?'':'S')+' LEFT'}});
+btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabled=true;btn.textContent='TEMPORARILY UNAVAILABLE';status.textContent='Prize service unavailable: '+e.message});
+})();
+</script>
 
 <script>
 (function(){
@@ -493,7 +490,7 @@ const CONFIG = {
   // in a pageview double-counts its impression and reads as invalid traffic, so
   // a duplicate paste is refused with a console warning (see injectPlacement).
   // Check the name in the console: typeof window.show_312446.
-  INTERSTITIAL_TRIGGER: "show_312446",
+  INTERSTITIAL_TRIGGER: "",
   // Where the full-screen break runs. "gate" = on the third tap, before the
   // contact form. "done" (default) = on the confirmed screen, as the last thing
   // they see. "both" = both moments. "off" = never built.
@@ -644,7 +641,7 @@ const CONFIG = {
 
 
   // --- legal ----------------------------------------------------------------
-  SUPPORT_EMAIL: "the PayoutPool site operator",
+  SUPPORT_EMAIL: "",
   /* The number the whole page is built around, in one place. Every element
      carrying data-pool is rewritten from this string at boot, so the headline,
      the confirmed screen and the sponsored break cannot drift apart - and
