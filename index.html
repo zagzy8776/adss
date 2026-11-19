@@ -280,11 +280,7 @@ img,video,canvas,svg{max-width:100%}
   <span class="live">Free daily prizes</span>
 </header>
 
-<div class="urgency">
-  <i aria-hidden="true"></i>
-  <span>Explore PayoutPool rewards</span>
-  <span id="clock" role="timer" aria-live="off">15:00</span>
-</div>
+<div class="urgency" style="display:none" aria-hidden="true"><span id="clock">—</span></div>
 
 <aside class="adbox" id="adHeld" data-slot="held" aria-label="Advertisement"></aside>
 
@@ -302,7 +298,7 @@ img,video,canvas,svg{max-width:100%}
   <div class="meta"><span id="pStep">STEP 1 OF 5</span><span id="pPct">20% complete</span></div>
 </div>
 
-<!-- PayoutPool rewards board: isolated from existing entry funnel and ads -->
+
 
 
 
@@ -319,7 +315,7 @@ img,video,canvas,svg{max-width:100%}
   <aside class="adbox" id="adBelow" data-slot="below" aria-label="Advertisement"></aside>
 
   <section class="card hide" id="capture" aria-labelledby="capH">
-    <div class="h"><b>STEP 5</b><span id="tagCap">Contact</span></div>
+    <div class="h"><b>STEP 4</b><span id="tagCap">Contact</span></div>
     <h2 id="capH">Where should we send it?</h2>
     <p id="s2">This form stores your entry contact details for the separate entry program. It does not automatically award a cash prize.</p>
     <aside class="adbox inset" id="adCapture" data-slot="capture" aria-label="Advertisement"></aside>
@@ -346,7 +342,7 @@ img,video,canvas,svg{max-width:100%}
         <span>I agree to submit my email and phone number for entry administration. No SMS notifications are currently configured. See <a href="/privacy.html">Privacy Policy</a>.</span>
       </label>
       <div class="err" id="consentErr" role="alert">Please confirm consent to storing your entry contact details.</div>
-      <button class="btn" id="submitBtn" type="submit">Claim my position →</button>
+      <button class="btn" id="submitBtn" type="submit">Submit my entry →</button>
       <p class="note">18+ · Open worldwide · We never ask for payment details or gift card codes.</p>
     </form>
   </section>
@@ -355,7 +351,7 @@ img,video,canvas,svg{max-width:100%}
     <div class="ok" aria-hidden="true">✓</div>
     <h2>Entry confirmed</h2>
     <p>Your contact entry has been recorded. This does not award a cash prize. The separate daily wheel below is the current cash-prize program.</p>
-    <div class="ref"><span>Your referral code</span><b id="myCode">—</b></div>
+    <div class="ref"><span>Your sharing code (not a prize boost)</span><b id="myCode">—</b></div>
     <aside class="adbox inset" id="adDone" data-slot="done" aria-label="Advertisement"></aside>
     <div id="boost" class="hide" style="margin-top:12px;text-align:left">
       <div class="h"><b>BOOST</b><span>Move up 40 places</span></div>
@@ -824,17 +820,6 @@ if (CONFIG.FEED_URL) {
     })
     .catch(e => console.warn('[PayoutPool] feed unavailable, using cached rows:', e.message));
 }
-
-/* --------------------------- live claim counter -------------------------- */
-let claiming = 142;
-setInterval(() => {
-  const r = Math.random();
-  if (r < 0.62) claiming += 1 + Math.floor(Math.random() * 3);   /* bias upward */
-  else if (r < 0.88) claiming -= 1;
-  if (claiming > 420) claiming = 300 + Math.floor(Math.random() * 40);
-  claiming = Math.max(claiming, 64);
-  $('claiming').textContent = fmt(claiming);
-}, 2600);
 
 /* ------------------------------ ad units ---------------------------------
    Eight reserved boxes. An unsold box stays in the page but draws nothing -
@@ -1742,23 +1727,17 @@ $('skipBtn').addEventListener('click', function () {
   closeInterstitial();
 });
 /* --------------------------- steps + progress ---------------------------- */
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 const STEPS = [
-  { t: 'Confirm your entry',
-    s: 'Your slot is held for this round. Confirm to keep it \u2014 it returns to the pool if you close this page.',
-    b: 'Confirm and continue \u2192', tag: 'Position held' },
-  { t: 'Verify you\u2019re active',
-    s: 'Real entries only. Tap to confirm a person is completing this \u2014 automated entries are removed from the pool daily.',
-    b: 'I\u2019m active, continue \u2192', tag: 'Live check' },
-  { t: 'Save your position',
-    s: 'You are <strong>#__Q__</strong> in line. Save it now or it returns to the pool.',
-    b: 'Save my position \u2192', tag: 'Almost there' }
+  {t:'Start the entry form',s:'This is an optional contact entry, separate from the cash-prize wheel. It does not reserve a cash award.',b:'Continue →',tag:'Optional entry'},
+  {t:'Review participation',s:'Submitting your details does not guarantee selection or a cash prize. You can use the separate prize wheel without entering.',b:'I understand →',tag:'Information'},
+  {t:'Enter contact information',s:'Next, you can voluntarily submit an email address and phone number to the entry service. Please review the privacy notice.',b:'Open contact form →',tag:'Contact next'}
 ];
 
 /* Progress = steps completed out of 5, so the bar and the label can never
    disagree: STEP 1 OF 5 at 0%, STEP 5 OF 5 at 80%, submitted at 100%. */
 function setProgress(n, forceDone) {
-  const pct = forceDone ? 100 : Math.round(((n - 1) / TOTAL_STEPS) * 100);
+  const pct = forceDone ? 100 : Math.round(((n-1)/TOTAL_STEPS)*100);
   $('prog').style.width = Math.max(pct, 3) + '%';
   $('progbar').setAttribute('aria-valuenow', String(pct));
   $('progbar').setAttribute('aria-valuetext', 'Step ' + n + ' of ' + TOTAL_STEPS);
@@ -1783,7 +1762,7 @@ function showCapture() {
   ls.set(KEY.step, 4);
   $('reveal').classList.add('hide');
   $('capture').classList.remove('hide');
-  setProgress(5);
+  setProgress(4);
   hit('capture_view');
   $('capture').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
 }
@@ -1795,7 +1774,7 @@ function finish(fresh) {
   $('reveal').classList.add('hide');
   $('capture').classList.add('hide');
   $('done').classList.remove('hide');
-  setProgress(5, true);
+  setProgress(4, true);
   $('myCode').textContent = myCode();
   renderOffers();
   hit('done');
@@ -1804,8 +1783,8 @@ function finish(fresh) {
      full-screen monetisations for one visit - the visitor gets whichever
      overlay loads last and one of them is wasted. The break wins; the tab only
      opens on a visit where no break is due. */
-  const breakHere = !!fresh && breakDue('done');
-  if (!breakHere) openDirect('ad_direct');
+  const breakHere = false;
+  /* No pop-under or forced ad from entry submission. */
   secondPop();
   /* Networks configured fireOn:'done' fire here, where they cannot collide
      with an OnClick tag that already owns the gate tap. */
@@ -1826,7 +1805,7 @@ function moveUp(by) {
 }
 
 function renderOffers() {
-  if (!CONFIG.OFFERS.length) { $('boost').classList.add('hide'); return; }
+  $('boost').classList.add('hide'); return;
   $('boost').classList.remove('hide');
   $('offerList').innerHTML = CONFIG.OFFERS.slice(0, 5).map(function (o, i) {
     return '<a class="off" href="' + o.u + '" target="_blank" rel="noopener nofollow sponsored" data-i="' + i + '">' +
@@ -1839,7 +1818,7 @@ function renderOffers() {
 
 $('offerList').addEventListener('click', function (e) {
   const a = e.target.closest ? e.target.closest('a[data-i]') : null;
-  if (a) moveUp(40);
+  if (a) hit('offer_click');
 });
 
 /* ----------------------------- capture / leads --------------------------- */
@@ -1934,7 +1913,7 @@ $('form').addEventListener('submit', async function (e) {
 
   /* Valid entry, sent in a moment: the last tap while the gesture is live.
      fireAd only appends script tags, so it cannot cancel the POST below. */
-  fireAd();
+  /* Advertisements are independent from this contact submission. */
 
   if (!$('sms').checked) {
     $('consentErr').classList.add('on');
@@ -1948,7 +1927,7 @@ $('form').addEventListener('submit', async function (e) {
   /* Dedupe: one submission per device per 24h. */
   const last = parseInt(ls.get(KEY.sent, '0'), 10) || 0;
   if (last && Date.now() - last < 86400000) {
-    toast('You already entered today \u2014 position #' + fmt(queue) + ' is saved.');
+    toast('You already submitted this entry today.');
     finish();
     return;
   }
@@ -1970,10 +1949,11 @@ $('form').addEventListener('submit', async function (e) {
     ua: navigator.userAgent
   };
 
-  await submitLead(payload);
+  const savedOnServer=await submitLead(payload);
+  if(!savedOnServer){btn.disabled=false;btn.textContent='Retry entry submission →';toast('Entry not yet confirmed; please retry when online.');return;}
   ls.set(KEY.sent, Date.now());
   btn.disabled = false;
-  btn.textContent = 'Claim my position \u2192';
+  btn.textContent = 'Submit entry →';
   /* fresh=true: this is a real completion, so the end-of-funnel break (if
      INTERSTITIAL_ON includes it) may run. Re-visits and the honeypot pass
      nothing, so a returning visitor is never trapped behind it on load. */
@@ -2004,8 +1984,7 @@ function myCode() {
 
 async function share() {
   const url = siteUrl() + '/?ref=' + myCode();
-  const text = 'I just entered the ' + CONFIG.POOL_AMOUNT +
-    ' PayoutPool. Use my link and we both move up the queue:';
+  const text = 'Explore the PayoutPool prize wheel and optional entry form:';
   if (navigator.share) {
     try { await navigator.share({ title: 'PayoutPool', text: text, url: url }); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }
@@ -2094,17 +2073,12 @@ document.addEventListener('visibilitychange', function () {
 
 $('btn').addEventListener('click', function () {
   if (step < 2) {
-    if (CONFIG.AD_EVERY_TAP) fireAd();   /* the original build fired on every tap */
     renderStep(step + 1);
     hit('step_' + (step + 1));
     return;
   }
   if (step === 2) {
-    fireAd();
-    if (CONFIG.GATE_DOUBLE_FIRE) fireAd();
-    $('badge').textContent = 'STEP 4';
-    $('tag').textContent = 'Sponsored';
-    setProgress(4);
+    $('tag').textContent = 'Contact';
     /* With the break switched off - or with nothing to show - this tap goes
        straight to the form instead of dropping the visitor onto a screen with
        nothing to do. */
