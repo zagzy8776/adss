@@ -199,7 +199,7 @@ footer a:hover{color:#00d54b}
 
 <div class="urgency">
   <i aria-hidden="true"></i>
-  <span>Slot held for</span>
+  <span>Round closes in</span>
   <span id="clock" role="timer" aria-live="off">15:00</span>
 </div>
 
@@ -395,12 +395,33 @@ const siteUrl = () => (CONFIG.SITE_URL || location.origin).replace(/\/+$/, '');
 })();
 
 const KEY = {
-  end: 'pp_end', queue: 'pp_queue', step: 'pp_step', done: 'pp_done',
+  queue: 'pp_queue', step: 'pp_step', done: 'pp_done',
   code: 'pp_code', inbound: 'pp_inbound', sent: 'pp_sent_at', buf: 'pp_buf'
 };
 
-/* ------------------------- state: queue + timer -------------------------- */
-const HOLD_MS = 15 * 60 * 1000;
+/* ------------------------- state: queue + timer --------------------------
+   The countdown is the actual Round deadline: Terms §2.2 closes a Round at
+   23:59:59 UTC on the last day of the month. It replaces a 15-minute "slot
+   hold" that reset itself forever, i.e. a reservation claim that was not true.
+   This one cannot reset - it follows the calendar.
+   ------------------------------------------------------------------------ */
+function roundCloseAt(ts) {
+  const d = new Date(ts || Date.now());
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1) - 1000;  /* last day, 23:59:59 UTC */
+}
+let roundClose = roundCloseAt();
+
+function tickClock() {
+  let left = roundClose - Date.now();
+  if (left <= 0) { roundClose = roundCloseAt(); left = roundClose - Date.now(); }
+  const d = Math.floor(left / 86400000);
+  const h = Math.floor((left % 86400000) / 3600000);
+  const m = Math.floor((left % 3600000) / 60000);
+  const s = Math.floor((left % 60000) / 1000);
+  const pad = n => String(n).padStart(2, '0');
+  $('clock').textContent = d > 0 ? d + 'd ' + pad(h) + 'h' : pad(h) + ':' + pad(m) + ':' + pad(s);
+}
+
 
 /* Queue is generated once and persisted, so the number in the copy, the
    number on the card and the number after a reload are always the same. */
@@ -411,30 +432,7 @@ if (!queue || queue < 1) {
 ls.set(KEY.queue, queue);
 let step = 0;                       /* 0-2 card, 3 interstitial, 4 capture, 5 done */
 
-/* Deadline re-rolls instead of pinning at 00:00. */
-function refreshDeadline() {
-  let end = parseInt(ls.get(KEY.end, '0'), 10) || 0;
-  if (!end || end - Date.now() <= 0) {
-    end = Date.now() + HOLD_MS;
-    ls.set(KEY.end, end);
-  }
-  return end;
-}
-let deadline = refreshDeadline();
-
-function reheld() {
-  deadline = refreshDeadline();
-  toast('Your slot was re-held for another 15 minutes.');
-  hit('rehold');
-}
-
-function tickClock() {
-  let left = deadline - Date.now();
-  if (left <= 0) { reheld(); left = HOLD_MS; }
-  const m = Math.floor(left / 60000);
-  const s = Math.floor((left % 60000) / 1000);
-  $('clock').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-}
+/* Deadline is the calendar (see tickClock above) - nothing to re-roll. */
 
 setInterval(tickClock, 1000);
 /* ------------------------------- toast ---------------------------------- */
@@ -1067,7 +1065,7 @@ function offerExit() {
   if (exitShown || step >= 5 || interOpen) return;
   exitShown = true;
   if (step < 3) {
-    toast('Position #' + fmt(queue) + ' is only held for 15 minutes. Tap continue to keep it.', 4200);
+    toast('Position #' + fmt(queue) + ' is saved for this Round. Finish before the Round closes to keep it.', 4200);
     $('btn').focus();
     $('reveal').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
   } else {
