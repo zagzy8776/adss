@@ -35,7 +35,8 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | Key | What to paste | Where to get it |
 |---|---|---|
 | `SITE_URL` | `https://yourdomain.com` (blank = auto-detect from the browser) | your domain |
-| `POPUNDER_TAG` | network script URL **or** the full `<script>` snippet | Adsterra → Websites → Add site → Popunder tag |
+| `POPUNDER_TAG` | one popunder script URL — shorthand for a single-entry `AD_NETWORKS` | Adsterra → Websites → Add site → Popunder tag |
+| `AD_NETWORKS` | array of network objects, so two networks can share the funnel — see [Two networks at once](#two-networks-at-once) | any network |
 | `INTERSTITIAL_HTML` | the vignette/interstitial `<script>` or `<iframe>` snippet | Monetag → OnClick/Vignette zone |
 | `AD_DIRECT_LINK` | a direct-link URL, opened in a new tab | any network's Direct Link product |
 | `AD_DIRECT_LINK_ON` | `"done"` (default) or `"gate"` | see ad slots below |
@@ -77,7 +78,7 @@ localStorage and retried on the next visit. `window.__ppMissing` lists every uns
 | Confirmed screen | `AD_SLOT_DONE` | after the lead is stored | 1 box | — |
 | Inside the gate | `AD_SLOT_GATE` | when the interstitial opens | 1 box | `ad_inter` |
 | Bottom anchor | `AD_SLOT_STICKY` | on load, until closed | 1 box | `ad_stick_x` |
-| Popunder script | `POPUNDER_TAG` | every tap if `AD_EVERY_TAP`, else the gate tap | 1 script, N fires | `ad_pop` |
+| Popunder script | `POPUNDER_TAG` / `AD_NETWORKS[].popunder` | every tap if `AD_EVERY_TAP`, one network rotated per tap | 1 script per network per visit | `ad_<id>`, `ad_pop` |
 | Network re-call | `SECOND_POP` | confirmed screen, +1.2s | 1 | `ad_second` |
 | Direct link | `AD_DIRECT_LINK` | `AD_DIRECT_LINK_ON` | 1 tab total | `ad_direct` |
 | Interstitial | `INTERSTITIAL_HTML` | gate tap, 5s skip | 1 per pageload | `ad_inter` |
@@ -102,12 +103,50 @@ form — you would trade a lead (worth $0.50–$3) for a direct-link click (wort
 With `AD_DIRECT_LINK_ON: "gate"` you get the aggressive variant; the default opens the tab after
 the lead is in KV, or on exit-intent if the visitor saw the form and started leaving.
 
+## Two networks at once
+
+`AD_NETWORKS` takes one object per network. A creative pasted straight into an `AD_SLOT_*` key
+always wins; otherwise each box is offered to the networks that list it, and they rotate per
+visitor on a persisted cursor, so neither network takes every impression. `POPUNDER_TAG` still
+works — it is simply treated as one more network in the pool.
+
+```js
+AD_NETWORKS: [
+  { id: 'monetag', head: true, weight: 1,          // its tag is already in <head>
+    slots: { BELOW: 'script:https://quge5.com/88/zzz.js' } },
+  { id: 'adsterra',
+    popunder: 'https://cdn.net/popunder.js',
+    fireOn: 'done',                                // never the gate tap
+    weight: 1,
+    slots: { DONE: 'script:https://cdn.net/300x250.js' } }
+]
+```
+
+A creative is `script:<src>` (a script tag), a bare `https://` URL (an iframe), or raw HTML.
+The `script:` form exists because a bare URL is an iframe: pasting just a script's `src` would
+render an empty frame. And never paste a real closing script tag into `index.html` — it ends the
+inline script early and takes the page down with it. Inside a string, write it as `<\/script>`.
+
+Three rules the code enforces, and why:
+
+- **One popunder per tap.** `pickPopunder(stage)` resolves to a single network; the rest sit that
+  tap out. Two networks popping on one tap is the double-billing complaint that gets an arbitrage
+  account suspended.
+- **One pop per network per visit** (`popFired`), so no buyer is charged twice for one person.
+- **`fireOn: 'gate' | 'done'`.** An always-on OnClick tag in `<head>` already pops on the gate tap.
+  Give a second popunder network `'done'` and it fires after the lead is in KV instead. Each fire
+  is tracked as `ad_<id>`, so `/hit` says which network actually earned.
+
+`weight` is an integer 1–10: `3` is the same as listing that network three times in the rotation.
+
 Verify what actually fired, in the console:
 
 ```js
 __ppAdReport()
-// { configured: { popunder: true, popHook: true, direct: true, interstitial: true, offers: 3 },
-//   fired: { gateTaps: 1, directTab: true, secondPop: true } }
+// { networks: [ { id: 'adsterra', head: false, popunder: true, fireOn: 'done',
+//                 slots: ['DONE'], popped: true } ],
+//   configured: { popHook: true, direct: true, interstitial: true, offers: 3 },
+//   fired: { gateTaps: 3, directTab: false, secondPop: false } }
 ```
 
 `popHook: false` means your network does not expose `window.__pop`, so `SECOND_POP` cannot do
@@ -212,8 +251,9 @@ Still on you (cannot be coded):
 1. Replace `YOURDOMAIN.com` (4 places in `<head>`, plus `worker/wrangler.toml` and the mailto links).
 2. Rounds are calendar months by definition (section 2). If you want fixed dates instead, edit section 2
    of `terms.html` and the date line on `winners.html`.
-3. Paste the ad tags into the eight `AD_SLOT_*` keys, `POPUNDER_TAG` / `INTERSTITIAL_HTML` /
-   `AD_DIRECT_LINK`, and `OFFERS` — until then the page earns nothing.
+3. Paste the ad tags into the eight `AD_SLOT_*` keys, `AD_NETWORKS` (or the single-network
+   `POPUNDER_TAG`) / `INTERSTITIAL_HTML` / `AD_DIRECT_LINK`, and `OFFERS` — until then the page
+   earns nothing.
 4. Deploy the Worker, set `ADMIN_TOKEN`, and paste its URLs into `CONFIG` plus `WINNERS_URL`.
 5. **Actually run a real draw.** The page promises `$5,000`, so publish the real result with
    `POST /winners` rather than leaving the placeholder row up.

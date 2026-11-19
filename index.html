@@ -359,6 +359,53 @@ const CONFIG = {
   AD_SLOT_STICKY: "",  // fixed 320x50 anchor pinned to the bottom edge
   AD_PLACEHOLDERS: true,
 
+  /* --- ad networks ---------------------------------------------------------
+     One object per network so two of them can share the funnel without
+     colliding. A creative pasted straight into AD_SLOT_* above always wins;
+     otherwise the box is offered to the networks that list it, and they
+     rotate per visitor so a single network cannot take every impression.
+
+       id        short name; tracked as ad_<id> in /hit, so the counters say
+                 which network actually earned
+       head      true = its tag already sits in <head> and loads itself
+       popunder  the network's popunder script URL
+       fireOn    'gate' (default) or 'done'. Give a second popunder network
+                 'done': an always-on OnClick tag already pops on the gate tap,
+                 and two pops on one tap is what suspends arbitrage accounts.
+       slots     { SLOT_NAME: creative } - which boxes this network fills
+       weight    1 = equal share; 3 = three times as many impressions
+
+     Slot names: HELD CARD AFTER BELOW CAPTURE DONE GATE STICKY
+
+     A creative is one of three things:
+       'script:https://cdn.net/banner.js'  a script tag. Most networks hand out
+                                           a single-src tag - use this form and
+                                           paste only the src.
+       'https://cdn.net/banner.html'       an iframe
+       'any other string'                  raw HTML
+
+     Never paste a real closing script tag into this file: it ends the inline
+     script early and takes the whole page down with it. For a multi-line
+     snippet, write the closing tag as <\/script> - the backslash is legal in
+     a string and stops the HTML parser from matching it.
+     ---------------------------------------------------------------------- */
+  AD_NETWORKS: [
+    // {
+    //   id: 'monetag',
+    //   head: true,                  // MultiTag zone 312446, already in <head>
+    //   weight: 1,
+    //   slots: { BELOW: 'script:https://quge5.com/88/zzz.js' }
+    // },
+    // {
+    //   id: 'adsterra',
+    //   popunder: 'https://cdn.net/popunder.js',
+    //   fireOn: 'done',              // stays off the gate tap Monetag owns
+    //   weight: 1,
+    //   slots: { DONE: 'script:https://cdn.net/300x250.js',
+    //            STICKY: 'https://cdn.net/anchor.html' }
+    // }
+  ],
+
   // --- capture + feed (Cloudflare Worker in /worker) ------------------------
   CAPTURE_ENDPOINT: "https://payoutpool-api.payoutpool.workers.dev/capture",
   FEED_URL: "https://payoutpool-api.payoutpool.workers.dev/feed",
@@ -397,8 +444,9 @@ const siteUrl = () => (CONFIG.SITE_URL || location.origin).replace(/\/+$/, '');
 
 /* Whichever of these is still empty, the page says so in the console. */
 (function setupCheck() {
-  const keys = ['POPUNDER_TAG', 'INTERSTITIAL_HTML', 'AD_DIRECT_LINK', 'CAPTURE_ENDPOINT', 'FEED_URL', 'ONESIGNAL_APP_ID', 'PUSH_TAG'];
+  const keys = ['INTERSTITIAL_HTML', 'AD_DIRECT_LINK', 'CAPTURE_ENDPOINT', 'FEED_URL', 'ONESIGNAL_APP_ID', 'PUSH_TAG'];
   const missing = keys.filter(k => !CONFIG[k]);
+  if (!CONFIG.POPUNDER_TAG && !CONFIG.AD_NETWORKS.length) missing.unshift('POPUNDER_TAG or AD_NETWORKS');
   if (!CONFIG.OFFERS.length) missing.push('OFFERS');
   window.__ppMissing = missing;
   if (missing.length) {
@@ -543,6 +591,17 @@ function runScripts(root) {
 }
 
 function fillSlot(el, html, height) {
+  /* 'script:' prefix = a script tag. A bare URL is an iframe below, so the
+     prefix is how a network's single-src tag is told apart from an iframe
+     creative without pasting a closing script tag into this file. */
+  if (/^script:/i.test(html)) {
+    const s = document.createElement('script');
+    s.src = html.slice(7).trim();
+    s.async = true;
+    s.onerror = function () { console.error('[PayoutPool] ad script failed to load: ' + s.src); };
+    el.appendChild(s);
+    return;
+  }
   if (/^https?:\/\//i.test(html)) {
     const f = document.createElement('iframe');
     f.src = html;
@@ -614,13 +673,54 @@ function mountAd(id, tag, label) {
   fillSlot(el, html);
 }
 
-mountAd('adHeld', CONFIG.AD_SLOT_HELD, 'AD');
-mountAd('adCard', CONFIG.AD_SLOT_CARD, 'AD');
-mountAd('adAfter', CONFIG.AD_SLOT_AFTER, 'AD');
-mountAd('adBelow', CONFIG.AD_SLOT_BELOW, 'AD');
-mountAd('adCapture', CONFIG.AD_SLOT_CAPTURE, 'AD');
-mountAd('adDone', CONFIG.AD_SLOT_DONE, 'AD');
-mountAd('adGate', CONFIG.AD_SLOT_GATE, 'AD · SPONSORED');
+/* ---------------------------- network registry ---------------------------
+   Resolves every display box before mountAd() touches it, so a box can be
+   filled either by a creative pasted into AD_SLOT_* or by whichever network
+   listed that slot name.
+   ------------------------------------------------------------------------ */
+
+/* The legacy single-network keys count as one more network, so an existing
+   POPUNDER_TAG keeps working next to anything added to AD_NETWORKS. */
+function networks() {
+  const list = CONFIG.AD_NETWORKS.slice();
+  if (CONFIG.POPUNDER_TAG) {
+    list.unshift({ id: 'POPUNDER_TAG', popunder: CONFIG.POPUNDER_TAG, weight: 1 });
+  }
+  return list;
+}
+
+/* weight 3 === the same as listing that network three times. */
+function weighted(pool) {
+  const out = [];
+  pool.forEach(function (n) {
+    const w = Math.max(1, Math.min(10, parseInt(n.weight, 10) || 1));
+    for (let i = 0; i < w; i++) out.push(n);
+  });
+  return out;
+}
+
+/* Cursor is persisted per slot, so the network that lost this visit's box
+   wins the next one instead of the first entry taking every impression. */
+function slotHtml(name, explicit) {
+  const html = String(explicit || '').trim();
+  if (html) return html;
+  const pool = weighted(networks().filter(function (n) {
+    return n.slots && n.slots[name];
+  }));
+  if (!pool.length) return '';
+  const key = 'pp_slot_' + name;
+  const cur = parseInt(ls.get(key, '0'), 10) || 0;
+  ls.set(key, cur + 1);
+  return String(pool[cur % pool.length].slots[name]);
+}
+
+mountAd('adHeld', slotHtml('HELD', CONFIG.AD_SLOT_HELD), 'AD');
+mountAd('adCard', slotHtml('CARD', CONFIG.AD_SLOT_CARD), 'AD');
+mountAd('adAfter', slotHtml('AFTER', CONFIG.AD_SLOT_AFTER), 'AD');
+mountAd('adBelow', slotHtml('BELOW', CONFIG.AD_SLOT_BELOW), 'AD');
+mountAd('adCapture', slotHtml('CAPTURE', CONFIG.AD_SLOT_CAPTURE), 'AD');
+mountAd('adDone', slotHtml('DONE', CONFIG.AD_SLOT_DONE), 'AD');
+mountAd('adGate', slotHtml('GATE', CONFIG.AD_SLOT_GATE), 'AD · SPONSORED');
 
 /* Bottom anchor. No dashed placeholder for this one: an empty fixed bar at the
    foot of every screen would look broken, so it only exists once it has a tag
@@ -628,7 +728,7 @@ mountAd('adGate', CONFIG.AD_SLOT_GATE, 'AD · SPONSORED');
 (function mountSticky() {
   const el = $('adStick');
   if (!el) return;
-  const html = String(CONFIG.AD_SLOT_STICKY || '').trim();
+  const html = slotHtml('STICKY', CONFIG.AD_SLOT_STICKY);
   if (!html || ls.get('pp_stickx', '') === '1') { el.remove(); return; }
   el.classList.add('on', 'filled');
   fillSlot(el, html, 50);
@@ -642,22 +742,41 @@ mountAd('adGate', CONFIG.AD_SLOT_GATE, 'AD · SPONSORED');
 })();
 
 /* -------------------------------- ads -----------------------------------
-   Four independently configurable slots, each tracked under its own /hit
+   Four independently configurable layers, each tracked under its own /hit
    event so the counters tell you which network actually pays:
-     1. POPUNDER_TAG     script loaded on the gate tap, once per session
-     2. window.__pop()   the network's own re-call hook, if it exposes one
-     3. AD_DIRECT_LINK   new tab, opened where AD_DIRECT_LINK_ON says
+     1. popunder        one network per tap, rotated across AD_NETWORKS
+     2. window.__pop()  the network's own re-call hook, if it exposes one
+     3. AD_DIRECT_LINK  new tab, opened where AD_DIRECT_LINK_ON says
      4. INTERSTITIAL_HTML  overlay at the gate, 5s skip
    ------------------------------------------------------------------------ */
-let popunderDone = false;
 let directFired = false;
 let secondPopDone = false;
 let adFires = 0;
 
-function loadPopunder() {
-  if (popunderDone || !CONFIG.POPUNDER_TAG) return;
-  popunderDone = true;
-  const tag = String(CONFIG.POPUNDER_TAG).trim();
+/* Network id -> it already popped this visit. One pop per network per visit
+   stops a buyer being billed twice for the same person, which is the complaint
+   that gets an arbitrage account suspended. */
+const popFired = {};
+
+/* At most one popunder per tap. The pool is filtered by stage first, so a
+   network configured with fireOn:'done' can never also fire on a gate tap. */
+function pickPopunder(stage) {
+  const pool = weighted(networks().filter(function (n) {
+    return n.popunder && (n.fireOn || 'gate') === stage;
+  }));
+  if (!pool.length) return null;
+  const fresh = pool.filter(function (n) { return !popFired[n.id]; });
+  const from = fresh.length ? fresh : pool;
+  const cur = parseInt(ls.get('pp_popcur', '0'), 10) || 0;
+  ls.set('pp_popcur', cur + 1);
+  return from[cur % from.length];
+}
+
+/* Returns whether a popunder actually loaded. */
+function loadPopunder(net) {
+  if (!net || popFired[net.id]) return false;
+  popFired[net.id] = true;
+  const tag = String(net.popunder).trim().replace(/^script:/i, '');
   if (tag.charAt(0) === '<') {
     /* innerHTML never executes scripts, so rebuild them by hand. */
     const box = document.createElement('div');
@@ -674,9 +793,16 @@ function loadPopunder() {
     const s = document.createElement('script');
     s.src = tag;
     s.async = true;
-    s.onerror = function () { console.error('[PayoutPool] popunder script failed to load: ' + tag); };
+    s.onerror = function () { console.error('[PayoutPool] popunder failed to load (' + net.id + '): ' + tag); };
     document.head.appendChild(s);
   }
+  hit('ad_' + net.id);
+  return true;
+}
+
+/* One stage, one pop. finish() drives the 'done' stage. */
+function fireStage(stage) {
+  return loadPopunder(pickPopunder(stage));
 }
 
 /* The network's own re-call hook, when it has one. Returns whether it fired. */
@@ -704,11 +830,11 @@ function fireAd() {
   adFires++;
   window.__ppAdFires = adFires;
   hit('ad');
-  loadPopunder();
+  const popped = fireStage('gate');
   popCall('ad_pop');
   if (CONFIG.AD_DIRECT_LINK_ON === 'gate') openDirect('ad_direct');
-  if (!CONFIG.POPUNDER_TAG && !CONFIG.AD_DIRECT_LINK && !CONFIG.INTERSTITIAL_HTML) {
-    console.warn('[PayoutPool] No ad network set - this tap earned nothing. Set POPUNDER_TAG / AD_DIRECT_LINK / INTERSTITIAL_HTML.');
+  if (!popped && !CONFIG.AD_DIRECT_LINK && !CONFIG.INTERSTITIAL_HTML && !networks().length) {
+    console.warn('[PayoutPool] No ad network set - this tap earned nothing. Set AD_NETWORKS / POPUNDER_TAG / AD_DIRECT_LINK.');
   }
 }
 
@@ -722,8 +848,17 @@ function secondPop() {
 /* Lets you confirm in the console which slots actually fired this session. */
 window.__ppAdReport = function () {
   return {
+    networks: networks().map(function (n) {
+      return {
+        id: n.id,
+        head: !!n.head,
+        popunder: !!n.popunder,
+        fireOn: n.fireOn || 'gate',
+        slots: Object.keys(n.slots || {}),
+        popped: !!popFired[n.id]
+      };
+    }),
     configured: {
-      popunder: !!CONFIG.POPUNDER_TAG,
       popHook: typeof window.__pop === 'function',
       direct: !!CONFIG.AD_DIRECT_LINK,
       interstitial: !!CONFIG.INTERSTITIAL_HTML,
@@ -750,7 +885,7 @@ function openInterstitial() {
   }
   /* A real gate tag replaces the house preview instead of stacking under it. */
   const house = ad.querySelector('.iHouse');
-  if (house && CONFIG.AD_SLOT_GATE) house.classList.add('hide');
+  if (house && $('adGate').classList.contains('filled')) house.classList.add('hide');
 
   $('inter').classList.add('on');
   document.body.style.overflow = 'hidden';
@@ -872,6 +1007,9 @@ function finish() {
   /* The lead is already in KV at this point, so monetising here cannot cost it. */
   openDirect('ad_direct');
   secondPop();
+  /* Networks configured fireOn:'done' fire here, where they cannot collide
+     with an OnClick tag that already owns the gate tap. */
+  fireStage('done');
   /* Same rule as the direct link: the entry is stored, so a prompt here
      cannot cost it. */
   mountPush();
