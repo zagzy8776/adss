@@ -285,7 +285,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
  <div class="pp-eyebrow">✦ PAYOUTPOOL REWARDS ✦</div>
  <h2 id="ppWheelHeading">Spin the wheel</h2>
  <p class="pp-desc">Cash prizes, phones and surprises. Discover the rewards lineup and see what's next.</p>
- <div class="pp-wallet" aria-label="Verified rewards balance"><div><span class="pp-wallet-label">🎁 Your verified rewards</span><strong id="ppVerifiedRewards" class="pp-wallet-value">0 verified rewards</strong><span id="ppSpinCount" class="pp-wallet-label">0 spins played</span><span class="pp-wallet-label">No confirmed prizes yet</span></div><div class="pp-wallet-icon" aria-hidden="true">🎁</div></div>
+ <div class="pp-wallet" aria-label="Verified rewards balance"><div><span class="pp-wallet-label">🎯 Your wheel results</span><strong id="ppVerifiedRewards" class="pp-wallet-value">No results yet</strong><span id="ppSpinCount" class="pp-wallet-label">0 spins played</span><span class="pp-wallet-label">Spin history on this device · Claim status not yet available</span></div><div class="pp-wallet-icon" aria-hidden="true">🎁</div></div>
  <div class="pp-arena"><div class="pp-aura"></div><div class="pp-bulbs"></div>
   <div class="pp-wheel" id="ppHomeWheel" aria-label="Animated six-segment prize wheel">
    <div class="pp-prize" style="transform:translate(-50%,-50%) translate(0,-112px)"><span class="pp-upright"><span class="pp-symbol">💵</span><strong>$5</strong></span></div>
@@ -298,7 +298,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
  </div>
  <button id="ppHomeSpinBtn" class="pp-action" type="button">✦ TRY A SPIN</button>
  <p id="ppHomeSpinStatus" class="pp-result" role="status" aria-live="polite">Tap to spin the wheel.</p>
- <p class="pp-note">Every spin brings a new surprise. Your confirmed prizes and claim details will appear here when rewards are activated.</p>
+ <p class="pp-note">Your wheel results are saved for this session. Claimable prize balances will appear once account verification is connected.</p>
  <a class="pp-link" href="/rewards.html">See all rewards →</a>
 </section>
 <script>
@@ -306,7 +306,11 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
  const btn=document.getElementById('ppHomeSpinBtn'),wheel=document.getElementById('ppHomeWheel'),status=document.getElementById('ppHomeSpinStatus'),labels=[...wheel.querySelectorAll('.pp-upright')];
 
  const prizes=['$5','Phone','Gift','$100','Bonus','$20'];
- let rotation=0,busy=false,spins=0;const spinCount=document.getElementById("ppSpinCount");
+ let rotation=0,busy=false;const spinCount=document.getElementById("ppSpinCount"),results=document.getElementById("ppVerifiedRewards");
+ let history=[];try{const saved=JSON.parse(sessionStorage.getItem('ppWheelHistory')||'[]');if(Array.isArray(saved))history=saved.filter(x=>prizes.includes(x)).slice(-50)}catch(e){}
+ let spins=history.length;
+ function renderHistory(){spinCount.textContent=spins+' spins played';results.textContent=history.length?history.slice(-3).reverse().join(' · '):'No results yet'}
+ renderHistory();
  const modal=document.createElement('div');
  modal.style.cssText='display:none;position:fixed;inset:0;z-index:2147483000;background:#06131de8;align-items:center;justify-content:center;padding:20px';
  modal.innerHTML='<div style="position:relative;overflow:hidden;max-width:400px;width:100%;text-align:center;border:2px solid #f5d982;border-radius:24px;padding:35px 20px;background:radial-gradient(circle at top,#21654b,#102033 78%);box-shadow:0 20px 70px #000c"><div id="ppGiftVisual" style="font-size:95px">🎁</div><h2 id="ppGiftTitle" style="color:#fff;font-size:28px">Surprise!</h2><p id="ppGiftMessage" style="color:#e1f9eb;line-height:1.5"></p><div id="ppGiftConfetti" aria-hidden="true" style="position:absolute;inset:0;pointer-events:none"></div><button id="ppGiftClose" type="button" style="position:relative;background:#a3f9b9;color:#063a1d;border:0;border-radius:12px;padding:14px 25px;font-weight:900">Continue</button></div>';
@@ -322,7 +326,7 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
   visual.textContent=gift?'🎁':'✨';
   visual.style.animation='none';void visual.offsetWidth;visual.style.animation='ppGiftBurst .8s ease-out both';
   modal.querySelector('#ppGiftTitle').textContent=gift?'Tap the gift box to open!':'Landed on '+prizes[sector];
-  modal.querySelector('#ppGiftMessage').textContent=gift?'Tap the box to burst it open with celebration effects.':'The wheel landed on '+prizes[sector]+'. Check your rewards for confirmed prizes.';
+  modal.querySelector('#ppGiftMessage').textContent=gift?'Tap the box to burst it open with celebration effects.':'Wheel result: '+prizes[sector]+'. Added to your spin history. Prize claims will be available when account verification is connected.';
   const confetti=modal.querySelector('#ppGiftConfetti');confetti.replaceChildren();
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){for(let i=0;i<35;i++){const p=document.createElement('i');p.style.cssText='position:absolute;top:-20px;left:'+(Math.random()*100)+'%;width:8px;height:12px;background:'+['#ffe079','#6af6b0','#ff90bd','#79c7ff'][i%4]+';animation:ppGiftFall '+(1.5+Math.random()*2)+'s '+(Math.random()*.7)+'s linear forwards';confetti.appendChild(p)}}
   modal.style.display='flex';
@@ -332,13 +336,13 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
  btn.addEventListener('click',function(){
   if(busy)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='The wheel is spinning…';
   const buf=new Uint32Array(1);crypto.getRandomValues(buf);
-  const sector=spins===0?2:spins===1?0:buf[0]%6;spins++;spinCount.textContent=spins+' spins played';
+  const sector=spins===0?2:spins===1?0:buf[0]%6;spins++;
   const start=((rotation%360)+360)%360,target=(360-sector*60)%360;
   rotation+=3240+((target-start+360)%360);
   wheel.style.transform='rotate('+rotation+'deg)';
   labels.forEach(function(label){label.style.transform='rotate('+(-rotation)+'deg)'});
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  setTimeout(function(){status.textContent='Landed on '+prizes[sector]+'. Your confirmed rewards will appear above.';btn.disabled=false;btn.textContent='✦ SPIN AGAIN';busy=false;reveal(sector)},reduced?80:9200);
+  setTimeout(function(){history.push(prizes[sector]);history=history.slice(-50);try{sessionStorage.setItem('ppWheelHistory',JSON.stringify(history))}catch(e){}renderHistory();status.textContent='Wheel result: '+prizes[sector]+' — added to your spin history.';btn.disabled=false;btn.textContent='✦ SPIN AGAIN';busy=false;reveal(sector)},reduced?80:9200);
  });
 })();
 </script>
