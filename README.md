@@ -175,51 +175,74 @@ anything regardless of the setting.
 
 ## Wiring Adsterra
 
-Adsterra hands out four different kinds of code. Three of them map straight onto a key; the mapping
+Adsterra hands out four different kinds of code. Three of them map onto a config key; the mapping
 is not obvious, and pasting the wrong one is why a box renders empty:
 
-| What Adsterra gives you | Where it goes | Notes |
+| What Adsterra gives you | Where it goes | Form |
 |---|---|---|
-| **Popunder → Script URL** (`https://pl…profitablecpmgate.com/xx/yy/zz/script.js`) | `AD_NETWORKS[].popunder` | loads on every gate tap; tracked as `ad_adsterra` |
-| **Banner** `300x250`, `468x60`, `320x50` | `AD_SLOT_*` or `AD_NETWORKS[].slots` | copy the **invoke.js** URL, prefix it with `script:` |
-| **Native banner** | `AD_SLOT_*` as raw HTML | needs its script *and* its `<div id="container-…">` together |
-| **Direct link** | `AD_DIRECT_LINK` | one tab per visitor, after the lead by default |
+| **Banner** `300x250`, `320x50`, `728x90` … | `AD_NETWORKS[].slots` | `adsterra:<key>/<w>x<h>` |
+| **Popunder → Script URL** | `AD_NETWORKS[].popunder` | bare URL |
+| **Native banner** | `AD_SLOT_*` | raw HTML: its script *and* its `<div id="container-…">` |
+| **Direct link** | `AD_DIRECT_LINK` | bare URL, one tab per visitor |
 
-The banner snippet Adsterra shows is two `<script>` tags — `atOptions = {...}` then `invoke.js`.
-`runScripts()` rebuilds them in document order, so the inline one defines `atOptions` before
-`invoke.js` runs: **paste just the `invoke.js` URL** with a `script:` prefix and it works. If you
-prefer the whole snippet, paste it as raw HTML and write the closing tags as `<\/script>`.
+`<key>` is the last path segment of the `invoke.js` URL Adsterra shows you
+(`https://bancadeltempoidea.org/22/<key>`), and `<w>x<h>` is the size the zone was created
+with. Six units are wired today — `HELD 320x50`, `CARD 300x250`, `AFTER 468x60`,
+`BELOW 728x90`, `CAPTURE 160x300`, `DONE 160x600`.
+
+**Do not paste the two-`<script>` snippet**, even though it looks self-contained. `atOptions`
+is one global, and the loader reads it and then deletes it:
+
+```js
+if (window['atOptions'] && isObject(window[...])) merge(...), delete window['atOptions'];
+```
+
+Six copies on one page overwrite each other before the earlier loaders have read theirs, so
+every box comes out at the *last* unit's size, or blank. `mountUnit()` instead sets
+`atOptions`, inserts that unit's loader, waits for the loader to consume (delete) it, and only
+then starts the next unit — one queue for the whole page. `node _admap.mjs` asserts the key
+each loader actually read, so a regression here fails the probe rather than silently
+half-filling the page.
+
+Two rules that come with that:
+
+- **One unit per key.** Loading the same zone twice per page doubles its impressions and reads
+  as invalid traffic, which is why `GATE` and `STICKY` stay empty until you create a second
+  `300x250` (break) and a second `320x50` (bottom bar).
+- **Units wider than the column are scaled.** A 728x90 in a 358px column is clipped, not
+  shrunk, so `fitUnit()` applies `transform: scale()` and hands the box the scaled height.
 
 ```js
 AD_NETWORKS: [
   { id: 'adsterra',
-    popunder: 'https://pl01234567.profitablecpmgate.com/xx/yy/zz/script.js',
+    popunder: '',                      // ← paste Popunder → Script URL here
     fireOn: 'gate',
     weight: 1,
     slots: {
-      HELD: 'script:https://www.highperformanceformat.com/abcdef/invoke.js',
-      CARD: 'script:https://www.highperformanceformat.com/abcdef/invoke.js',
-      AFTER: '',
-      BELOW: '',
-      CAPTURE: 'script:https://www.highperformanceformat.com/ghijkl/invoke.js',
-      DONE: 'script:https://www.highperformanceformat.com/mnopqr/invoke.js',
-      GATE: '',
-      STICKY: 'script:https://www.highperformanceformat.com/stuvwx/invoke.js'
+      HELD:    'adsterra:83ffc72d…/320x50',
+      CARD:    'adsterra:81c79547…/300x250',
+      AFTER:   'adsterra:928e14e8…/468x60',
+      BELOW:   'adsterra:0fbe28a3…/728x90',
+      CAPTURE: 'adsterra:819964b8…/160x300',
+      DONE:    'adsterra:0ebe3930…/160x600',
+      GATE: '', STICKY: ''
     } }
 ]
 ```
 
-Fill `AFTER` and `GATE` last, if at all: the gate already carries the popunder and the sponsored
-break, and two units stacked there is the placement that gets a visitor to close the tab.
+`popunder` is deliberately empty: the banners earn impressions, but nothing pops until the
+Popunder Script URL is pasted there. `node _admap.mjs` shows that as `popunder none` on all five
+taps, which is the honest state of the page until then.
 
 A network only counts as wired once it has a `popunder` or at least one slot; an entry with every
 URL still empty does **not** silence the boot warning, so a half-pasted block cannot look healthy.
 
-Verify the page before and after, in the console:
+Verify in the console, before and after a paste:
 
 ```js
-__ppAdReport().networks        // [] before, [{ id: 'adsterra', popped: … }] after
-document.querySelectorAll('.ad.fill, .adBox.filled').length   // boxes that took a creative
+__ppAdReport().networks                            // [] once, [{ id: 'adsterra', … }] now
+document.querySelectorAll('.adbox.filled').length  // boxes that took a creative: 6
+window.__unitLog                                   // (probe only) what each loader read
 ```
 
 

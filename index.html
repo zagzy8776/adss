@@ -128,7 +128,8 @@ footer a:hover{color:#00d54b}
   background:#0c0e12;border:1px dashed #2a303a;border-radius:10px;
   color:#5b6572;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
 .adbox.inset{margin:12px 0 0}
-.adbox iframe,.adbox img{width:100%;display:block;border:0}
+.adbox iframe{display:block;border:0;margin:0 auto}
+.adbox img{width:100%;display:block;border:0}
 .adbox.filled{display:block;min-height:0;padding:0;border:0;background:none}
 /* bottom anchor: the highest-RPM non-popunder unit, dismissible, persists the
    dismissal so it cannot nag a returning visitor. */
@@ -402,28 +403,35 @@ const CONFIG = {
      a string and stops the HTML parser from matching it.
      ---------------------------------------------------------------------- */
   AD_NETWORKS: [
-    /* --- Adsterra: uncomment, paste the URLs, done -------------------------
-       popunder   Sites -> your site -> Popunder -> "Script URL", looks like
-                  https://pl01234567.profitablecpmgate.com/xx/yy/zz/script.js
-       slots      Banners -> copy a 300x250 (CARD/BELOW/CAPTURE) or a 320x50
-                  (STICKY) unit. Use its invoke.js URL with the script: prefix;
-                  runScripts() rebuilds the atOptions block, so the two-script
-                  snippet works too if you paste it whole as raw HTML.
-                  Native banner needs its script *and* its container div, so
-                  paste that one as raw HTML rather than script:.
-       Empty slots stay empty, and an entry with no popunder and no slots is
-       ignored by the setup warning, so a half-filled block cannot fake being
-       configured. */
-    // {
-    //   id: 'adsterra',            // counted as ad_adsterra in /hit and /stats
-    //   popunder: '',              // Script URL from the Popunder format
-    //   fireOn: 'gate',            // 'gate' = the 5 funnel taps, 'done' = confirmed screen
-    //   weight: 1,                 // 3 = three times as likely to win a slot
-    //   slots: {
-    //     HELD: '', CARD: '', AFTER: '', BELOW: '',
-    //     CAPTURE: '', DONE: '', GATE: '', STICKY: ''
-    //   }
-    // }
+    /* --- Adsterra: six banner units, one per box --------------------------
+       Unit form is  adsterra:<key>/<w>x<h>  - the key is the last path
+       segment of the invoke.js URL Adsterra gives you, and <w>x<h> is the
+       size the zone was created with. The paste-in two-script snippet is NOT
+       used here: atOptions is one global that the loader reads and deletes,
+       six of them on one page overwrite each other. mountUnit() sets it per
+       unit and waits for the loader to consume it before starting the next.
+
+       popunder is still empty on purpose: paste the Popunder -> Script URL
+       and each funnel tap pops on top of showing these banners. */
+    {
+      id: 'adsterra',            // counted as ad_adsterra in /hit and /stats
+      popunder: '',              // TODO: Popunder -> "Script URL"
+      fireOn: 'gate',            // 'gate' = the 5 funnel taps, 'done' = confirmed screen
+      weight: 1,                 // 3 = three times as likely to win a slot
+      slots: {
+        HELD:    'adsterra:83ffc72d9f10f7597c254f78bab26288/320x50',
+        CARD:    'adsterra:81c795472aab64816500ddd9e896d84b/300x250',
+        AFTER:   'adsterra:928e14e8019955668fba93c6b3ac5862/468x60',
+        BELOW:   'adsterra:0fbe28a313228dc7d9fb1af1c75c4db7/728x90',
+        CAPTURE: 'adsterra:819964b86ff843ee8329700798c41360/160x300',
+        DONE:    'adsterra:0ebe39300b5eb1ae8a1f4ead36e44626/160x600',
+        /* GATE and STICKY stay empty until they have a unit of their own:
+           re-using a key above would load that one zone twice per page, which
+           doubles its impression count and reads as invalid traffic. Ask
+           Adsterra for a second 300x250 (break) and 320x50 (bottom bar). */
+        GATE: '', STICKY: ''
+      }
+    }
   ],
 
   // --- capture + feed (Cloudflare Worker in /worker) ------------------------
@@ -610,7 +618,103 @@ function runScripts(root) {
   });
 }
 
+/* ------------------------------ Adsterra units ----------------------------
+   Adsterra's banner snippet is two parts: an inline `atOptions = {...}` and a
+   loader script. The loader reads window.atOptions the moment it executes,
+   merges it, and then deletes it - so only ONE unit can be in flight at a
+   time. Mount six in parallel and the later assignments land before the
+   earlier loaders have read theirs: every box renders the last unit's size,
+   or nothing at all. Units therefore queue, and the queue waits for that
+   delete before starting the next one.
+
+   A creative is declared  adsterra:<key>/<w>x<h>  where <key> is the last
+   path segment of the invoke.js URL Adsterra handed out, and <w>x<h> is the
+   size the zone was created with.
+   ------------------------------------------------------------------------ */
+const ADSTERRA_HOST = 'https://bancadeltempoidea.org/22/';
+let unitQueue = Promise.resolve();
+
+/* Anything wider than its column is clipped, not shrunk: an iframe keeps its
+   own layout, so on a 390px phone the right-hand half of a 728x90 is simply
+   gone. Scale it and give the box the scaled height instead. */
+function fitUnit(el) {
+  if (!el) return;
+  const box = el.clientWidth || (el.parentNode ? el.parentNode.clientWidth : 0) || 0;
+  Array.prototype.forEach.call(el.querySelectorAll('iframe'), function (f) {
+    const w = parseInt(f.getAttribute('width'), 10) || f.offsetWidth;
+    const h = parseInt(f.getAttribute('height'), 10) || f.offsetHeight;
+    if (!w || !h) return;
+    if (!box || w <= box) { el.style.height = h + 'px'; return; }
+    const k = box / w;
+    f.style.maxWidth = 'none';
+    f.style.transformOrigin = 'top left';
+    f.style.transform = 'scale(' + k.toFixed(4) + ')';
+    f.style.width = w + 'px';
+    f.style.height = h + 'px';
+    el.style.height = Math.ceil(h * k) + 'px';
+  });
+}
+
+function mountUnit(el, spec) {
+  const m = /^([0-9a-f]{16,64})(?:\/(\d{1,4})x(\d{1,4}))?$/i.exec(spec);
+  if (!m) {
+    console.error('[PayoutPool] bad adsterra unit "' + spec + '" - want key/WxH');
+    return;
+  }
+  const key = m[1], w = parseInt(m[2], 10) || 300, h = parseInt(m[3], 10) || 250;
+
+  /* The loader injects its iframe after its own load event, so re-fit on any
+     child change rather than trusting a single measurement. */
+  if (!el.__fit) {
+    el.__fit = true;
+    new MutationObserver(function () { fitUnit(el); }).observe(el, { childList: true, subtree: true });
+  }
+
+  unitQueue = unitQueue.then(function () {
+    return new Promise(function (done) {
+      let settled = false;
+      const finish = function () {
+        if (settled) return;
+        settled = true;
+        fitUnit(el);
+        done();
+      };
+      window.atOptions = { key: key, format: 'iframe', height: h, width: w, params: {} };
+      const s = document.createElement('script');
+      s.src = ADSTERRA_HOST + key;
+      s.async = false;
+      s.onerror = function () {
+        console.error('[PayoutPool] Adsterra unit ' + key + ' did not load');
+        finish();
+      };
+      s.onload = function () {
+        let waited = 0;
+        (function poll() {
+          /* Done when the loader has consumed atOptions - or sooner, once the
+             iframe is visibly in the box. Either way the next unit may not
+             overwrite atOptions until this one is finished with it. */
+          if (!window.atOptions || el.querySelector('iframe') || waited >= 1200) return finish();
+          waited += 50;
+          setTimeout(poll, 50);
+        })();
+      };
+      el.appendChild(s);
+      setTimeout(finish, 8000); /* a hung CDN must not wedge the queue */
+      /* A loader that runs but never puts an iframe in this box means the box
+         collapses to nothing - the one failure that looks like "ads are on"
+         while the page earns zero. Say it out loud instead. */
+      setTimeout(function () {
+        if (!el.querySelector('iframe')) {
+          console.warn('[PayoutPool] Adsterra unit ' + key + ' loaded but rendered nothing in #' + (el.id || '?'));
+        }
+      }, 5000);
+    });
+  });
+}
+
 function fillSlot(el, html, height) {
+  /* adsterra:<key>/<w>x<h> - queued unit, see mountUnit() above. */
+  if (/^adsterra:/i.test(html)) { mountUnit(el, html.slice(9).trim()); return; }
   /* 'script:' prefix = a script tag. A bare URL is an iframe below, so the
      prefix is how a network's single-src tag is told apart from an iframe
      creative without pasting a closing script tag into this file. */
