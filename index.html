@@ -17,7 +17,7 @@
      Full checklist + config reference: README.md
      ========================================================================== -->
 <title>PayoutPool — $5,000 Payout Pool</title>
-<meta name="description" content="PayoutPool's $5,000 payout pool. Five steps, forty seconds. Entries reviewed daily.">
+<meta name="description" content="PayoutPool's $5,000 payout pool. Optional entry form and free cash-prize wheel.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://adss-roan.vercel.app/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -26,7 +26,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PayoutPool">
 <meta property="og:title" content="PayoutPool — $5,000 Payout Pool">
-<meta property="og:description" content="Five steps, forty seconds. Entries reviewed daily. Hold your position before your slot expires.">
+<meta property="og:description" content="Optional contact entry and separate server-backed cash-prize wheel. No purchase required.">
 <meta property="og:image" content="https://adss-roan.vercel.app/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -354,8 +354,8 @@ img,video,canvas,svg{max-width:100%}
     <div class="ref"><span>Your sharing code (not a prize boost)</span><b id="myCode">—</b></div>
     <aside class="adbox inset" id="adDone" data-slot="done" aria-label="Advertisement"></aside>
     <div id="boost" class="hide" style="margin-top:12px;text-align:left">
-      <div class="h"><b>BOOST</b><span>Move up 40 places</span></div>
-      <p style="margin:0 0 9px;font-size:11.5px;color:#9aa1ad">Complete any one offer below and we move you up 40 places in the queue.</p>
+      <div class="h"><b>Optional offers</b><span>No queue or prize boost</span></div>
+      <p style="margin:0 0 9px;font-size:11.5px;color:#9aa1ad">Optional third-party links do not alter prize odds or queue position.</p>
       <div id="offerList" style="display:grid;gap:6px"></div>
     </div>
     <section id="ppKeepExploring" aria-labelledby="ppExploreHeading" style="margin-top:20px;text-align:left">
@@ -447,11 +447,11 @@ btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabl
 </footer>
 
 <div id="inter" role="dialog" aria-modal="true" aria-labelledby="interLabel" aria-describedby="interDesc" tabindex="-1">
-  <div class="iTop"><span id="interLabel">Step 4 of 5 · Sponsored</span><span id="interCount"></span></div>
+  <div class="iTop"><span id="interLabel">Sponsored content</span><span id="interCount"></span></div>
   <div id="interAd"><div class="iHouse">
     <div class="k">Sponsored break</div>
     <div class="v" data-pool>$5,000</div>
-    <p id="interDesc">Your position is still held. This partner placement is what keeps the pool free to enter.</p>
+    <p id="interDesc">Advertisements are separate from prize spins and claims.</p>
   </div><div class="adbox inset" id="adGate" data-slot="gate" aria-label="Advertisement"></div></div>
   <div class="iBar"><div id="skipBar"></div></div>
   <button id="skipBtn" type="button" disabled aria-describedby="interDesc">Continue in 5</button>
@@ -733,7 +733,7 @@ let deadline = refreshDeadline();
 
 function reheld() {
   deadline = refreshDeadline();
-  toast('Your slot was re-held for another 15 minutes.');
+  toast('Continue when ready; the cash-prize wheel is separate.');
   hit('rehold');
 }
 
@@ -1584,8 +1584,8 @@ let lastFocus = null;
 let skipInterval = null;
 
 const INTER_TEXT = {
-  gate: { label: 'Step 4 of 5 \u00b7 Sponsored',
-          desc: 'Your position is still held. This partner placement is what keeps the pool free to enter.' },
+  gate: { label: 'Sponsored content',
+          desc: 'Advertisements are separate from prize spins and claims. This keeps the pool free to enter.' },
   done: { label: 'Sponsored \u00b7 Final step',
           desc: 'Your entry is confirmed. This partner placement is what keeps the pool free to enter.' }
 };
@@ -2053,11 +2053,11 @@ function offerExit() {
   if (exitShown || step >= 5 || interOpen) return;
   exitShown = true;
   if (step < 3) {
-    toast('Position #' + fmt(queue) + ' is only held for 15 minutes. Tap continue to keep it.', 4200);
+    toast('Your contact form is unfinished. You can continue whenever ready.', 4200);
     $('btn').focus();
     $('reveal').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
   } else {
-    toast('Your slot is still open \u2014 finish to lock position #' + fmt(queue) + '.', 4200);
+    toast('Your contact entry is not yet submitted.', 4200);
     $('capture').scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
     /* They saw the gate but are leaving before submitting: this is the last
        chance to earn from them. Still capped at one tab per visitor. */
