@@ -214,6 +214,22 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
   #prog,#skipBar{transition:none}
   .urgency i{animation:none}
 }
+
+/* Mobile viewport repair: keep the entire experience inside the visible phone width. */
+html{width:100%;min-width:0;overflow-x:clip}
+body{width:100%;max-width:480px;min-width:0;margin-inline:auto;overflow-x:clip}
+*,*::before,*::after{box-sizing:border-box}
+img,video,canvas,svg{max-width:100%}
+@media(max-width:600px){
+ html,body{width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important}
+ body>header,body>main,body>section,body>footer,#gate,#ppWheelHome{max-width:100%!important;min-width:0!important;width:100%!important;transform:none!important}
+ #ppWheelHome{margin:12px auto!important;padding:16px 12px 20px!important;border-radius:18px!important}
+ #ppWheelHome .pp-arena{max-width:min(88vw,350px)!important;margin-inline:auto!important}
+ #ppWheelHome .pp-action{max-width:100%!important;white-space:normal!important}
+ .card,.adbox,.pp-wallet,.pp-reward,.pp-section{max-width:100%;min-width:0}
+ .adbox{overflow:hidden}
+ iframe{max-width:100%}
+}
 </style>
 </head>
 <body>
