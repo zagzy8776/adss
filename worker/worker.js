@@ -37,7 +37,7 @@ function cors(env) {
   return {
     'Access-Control-Allow-Origin': (env && env.ALLOWED_ORIGIN) || '*',
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type,X-Admin-Token',
     'Access-Control-Max-Age': '86400'
   };
 }
