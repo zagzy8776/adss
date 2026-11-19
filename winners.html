@@ -60,5 +60,55 @@ it is not us — report it to <a href="mailto:support@YOURDOMAIN.com">support@YO
 <footer>
   <a href="/">Home</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a>
 </footer>
+
+<script>
+/* ============================ WINNERS FEED ================================
+   Paste the deployed Worker URL below, e.g.
+     const WINNERS_URL = "https://api.yourdomain.com/winners";
+   Left empty the table keeps its static "no results" row, so the page is
+   never broken — it just does not update by itself. Rows come from KV and are
+   written only by the operator (see README: POST /winners).
+   ========================================================================= */
+const WINNERS_URL = "";
+
+(function () {
+  const tbody = document.getElementById('rows');
+  if (!tbody) return;
+
+  if (!WINNERS_URL) {
+    console.warn('[PayoutPool] WINNERS_URL is empty — showing the static placeholder row.');
+    return;
+  }
+
+  const esc = function (v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+
+  fetch(WINNERS_URL, { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+    .then(function (d) {
+      const rounds = (Array.isArray(d) ? d : (d && d.rounds) || [])
+        .filter(function (x) { return x && x.rows && x.rows.length; });
+      if (!rounds.length) return;
+
+      let html = '';
+      rounds.forEach(function (round) {
+        round.rows.forEach(function (w) {
+          html += '<tr><td>' + esc(round.round) + '</td>' +
+                  '<td>' + esc(round.drawDate || '\u2014') + '</td>' +
+                  '<td>' + esc(w.name) + '</td>' +
+                  '<td>' + esc(w.region) + '</td>' +
+                  '<td class="amt">' + esc(w.amount) + '</td></tr>';
+        });
+      });
+      tbody.innerHTML = html;
+    })
+    .catch(function (e) {
+      console.error('[PayoutPool] winners feed unavailable, keeping the placeholder row: ' + e.message);
+    });
+})();
+</script>
 </body>
 </html>

@@ -15,7 +15,7 @@ favicon.ico     legacy /favicon.ico fallback so older clients do not 404
 og.jpg          1200x630 social card (generated)
 _headers        Cloudflare Pages security/cache headers
 robots.txt      crawl rules + sitemap pointer
-worker/         Cloudflare Worker + KV: /capture, /feed, /hit
+worker/         Cloudflare Worker + KV: /capture, /feed, /hit, /winners
 ```
 
 ## Deploy — Cloudflare Pages
@@ -46,7 +46,10 @@ Everything you must set lives in the `CONFIG` object at the top of the `<script>
 | `AD_SLOT_CARD` | reserved box inside the step card, above the CTA | banner code |
 | `AD_SLOT_AFTER` | reserved box directly under the CTA ("Save my position") | banner code |
 | `AD_SLOT_BELOW` | reserved box below the card | banner code |
+| `AD_SLOT_CAPTURE` | reserved box inside the contact card, above the email field | banner code (300×250 / 320×100) |
+| `AD_SLOT_DONE` | reserved box on the "Entry confirmed" screen, under the referral code | banner code |
 | `AD_SLOT_GATE` | ad inside the sponsored interstitial (replaces the house preview) | banner / native code |
+| `AD_SLOT_STICKY` | 320×50 anchor pinned to the bottom edge, with a close button | anchor/banner code |
 | `AD_PLACEHOLDERS` | `true` (default) = empty slots show a dashed `AD` box; `false` = empty slots are removed | your call |
 | `CAPTURE_ENDPOINT` | `https://api.yourdomain.com/capture` | your Worker (below) |
 | `FEED_URL` | `https://api.yourdomain.com/feed` | same Worker |
@@ -70,17 +73,28 @@ localStorage and retried on the next visit. `window.__ppMissing` lists every uns
 | Above the CTA | `AD_SLOT_CARD` | on load, every step | 1 box | — |
 | Under the CTA | `AD_SLOT_AFTER` | on load, every step | 1 box | — |
 | Below the card | `AD_SLOT_BELOW` | on load | 1 box | — |
+| In the contact card | `AD_SLOT_CAPTURE` | when step 5 appears | 1 box | — |
+| Confirmed screen | `AD_SLOT_DONE` | after the lead is stored | 1 box | — |
 | Inside the gate | `AD_SLOT_GATE` | when the interstitial opens | 1 box | `ad_inter` |
+| Bottom anchor | `AD_SLOT_STICKY` | on load, until closed | 1 box | `ad_stick_x` |
 | Popunder script | `POPUNDER_TAG` | every tap if `AD_EVERY_TAP`, else the gate tap | 1 script, N fires | `ad_pop` |
 | Network re-call | `SECOND_POP` | confirmed screen, +1.2s | 1 | `ad_second` |
 | Direct link | `AD_DIRECT_LINK` | `AD_DIRECT_LINK_ON` | 1 tab total | `ad_direct` |
 | Interstitial | `INTERSTITIAL_HTML` | gate tap, 5s skip | 1 per pageload | `ad_inter` |
 | CPA offers | `OFFERS` | confirmed screen | 5 links shown | `offer_click` |
 
-The five `AD_SLOT_*` boxes are real reserved containers: each accepts banner HTML (an `<iframe>`,
-`<ins>`, `<img>`, or a script snippet) or a bare `https://` iframe URL. Every box is in the funnel
-where a visitor is looking, so a display campaign can run alongside the popunder without waiting for
-a click. `CONFIG.AD_PLACEHOLDERS` keeps the dashed outline visible while a slot is empty.
+The eight `AD_SLOT_*` boxes are real reserved containers: each accepts banner HTML (an `<iframe>`,
+`<ins>`, `<img>`, or a script snippet) or a bare `https://` iframe URL. Script tags are re-created
+after insertion, because `innerHTML` alone never executes them — so a standard network tag works.
+Every box is in the funnel where a visitor is looking, so a display campaign can run alongside the
+popunder without waiting for a click. `CONFIG.AD_PLACEHOLDERS` keeps the dashed outline visible
+while a slot is empty; the bottom anchor has no placeholder (an empty fixed bar would look broken)
+and never comes back once a visitor closes it (`pp_stickx` in localStorage).
+
+Density is a money question, not a "more boxes = more revenue" one. Past roughly four display units
+per viewport, fill rate and CPM both fall and the form completion rate drops with them — the lead is
+the better-paying event. If you add a network, prefer a second **anchor** (`AD_SLOT_STICKY`) or a
+300×250 in `AD_SLOT_CAPTURE`, not another box stacked on the first screen.
 
 The direct link deliberately **does not** fire on the gate tap by default. `window.open` on that
 tap moves focus to the new tab, so the visitor never sees the interstitial and never submits the
@@ -116,7 +130,35 @@ three URLs into `CONFIG`.
 | `/capture` | POST | validates, rate-limits to 5/IP/hour, stores the lead in KV, appends a masked row to the feed |
 | `/feed` | GET | last 40 entries as `{n,p,t}` — first letter + `•••`, city/region, timestamp |
 | `/hit` | POST | increments an allow-listed funnel counter (`step_1`, `ad`, `done`, …) |
+| `/winners` | GET | published draw results, newest round first, cached 5 min |
+| `/winners` | POST | publishes one round (needs `X-Admin-Token`); re-posting a round replaces it |
+| `/winners?round=…` | DELETE | unpublishes one round (needs `X-Admin-Token`) |
 | `/health` | GET | liveness + KV binding check |
+
+### Publishing a round (the winners "database")
+
+No separate database is needed: the draws are already listed in KV under `winners`, and
+`winners.html` renders them. Turn writes on once, then publish after each draw.
+
+```bash
+cd worker
+npx wrangler secret put ADMIN_TOKEN          # pick a long random string
+# then, after drawing:
+curl -X POST https://api.yourdomain.com/winners \
+  -H "X-Admin-Token: $ADMIN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"round":"November 2026","drawDate":"2026-12-03",
+       "rows":[{"name":"Priya S.","region":"ON","amount":"$250"}]}'
+```
+
+- Without `ADMIN_TOKEN` the endpoint answers `503 publishing-disabled`; with it, an anonymous
+  caller gets `401 unauthorized`. There is no way for a visitor to inject a name.
+- Max 20 rows per round, 24 rounds kept; strings are stripped to 40 chars and control characters
+  are removed, so a pasted row cannot break the table.
+- `GET /winners` and `/feed` are public by design. `/feed` only ever exposes a masked display name
+  (`M•••`) and a coarse region; `/winners` is the consented, published list.
+- Last step: paste `https://api.yourdomain.com/winners` into `WINNERS_URL` at the bottom of
+  `winners.html`. Empty = the static "No results published yet" row stays, which is also what the
+  page shows before your first real draw.
 
 Reading leads back out: `npx wrangler kv key list --namespace-id=<id>` or wire the KV namespace to
 a Google Sheet with a scheduled Worker. KV is eventually consistent (≈60 s), which is fine for
@@ -156,8 +198,12 @@ Fixed:
 - **Worldwide.** No region gate, no US/Canada phone rule: `validPhone()` accepts 7–15 digits with an
   optional `+` country code, the Worker's `PHONE_RE` does the same, and the copy no longer claims a
   territory. A `+44`, `+234` or `+55` number submits exactly like a `+1`.
-- **Five reserved ad boxes** (`AD_SLOT_*`, above): each fills from CONFIG and shows a dashed outline
-  while empty, so the placements are visible before the tags arrive.
+- **Eight reserved ad boxes** (`AD_SLOT_*`, above): each fills from CONFIG and shows a dashed outline
+  while empty, so the placements are visible before the tags arrive. The two new funnel positions
+  (`AD_SLOT_CAPTURE`, `AD_SLOT_DONE`), the dismissible bottom anchor (`AD_SLOT_STICKY`) and script-tag
+  activation were added on top of the original five.
+- **Winners are real, not hand-edited HTML.** `POST /winners` stores a round in KV behind an admin
+  token and `winners.html` renders it; until then the page shows the honest "no results" row.
 - **Compliance** — SMS consent checkbox with frequency/STOP/rates language, and real Terms, Privacy
   and Winners pages (they previously 404'd).
 
@@ -166,9 +212,11 @@ Still on you (cannot be coded):
 1. Replace `YOURDOMAIN.com` (4 places in `<head>`, plus `worker/wrangler.toml` and the mailto links).
 2. Rounds are calendar months by definition (section 2). If you want fixed dates instead, edit section 2
    of `terms.html` and the date line on `winners.html`.
-3. Paste the ad tags into the `AD_SLOT_*` keys and `OFFERS` — until then the page earns nothing.
-4. Deploy the Worker, or delete the email/phone step and keep push-only.
-5. **Actually run a real draw.** The page promises `$5,000`.
+3. Paste the ad tags into the eight `AD_SLOT_*` keys, `POPUNDER_TAG` / `INTERSTITIAL_HTML` /
+   `AD_DIRECT_LINK`, and `OFFERS` — until then the page earns nothing.
+4. Deploy the Worker, set `ADMIN_TOKEN`, and paste its URLs into `CONFIG` plus `WINNERS_URL`.
+5. **Actually run a real draw.** The page promises `$5,000`, so publish the real result with
+   `POST /winners` rather than leaving the placeholder row up.
 
 ## Local testing
 

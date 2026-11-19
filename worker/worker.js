@@ -4,14 +4,21 @@
  *   POST /capture   store one entry          -> JSON payload from index.html
  *   GET  /feed      last 40 entries, masked  -> [{ n, p, t }]
  *   POST /hit       funnel counters          -> { e: "step_1" | "ad" | ... }
+ *   GET  /winners   published draw results   -> [{ round, drawDate, rows:[...] }]
+ *   POST /winners   publish one round        -> needs X-Admin-Token
+ *   DELETE /winners?round=...  unpublish one -> needs X-Admin-Token
  *   GET  /health    liveness + binding check
  *
  * Deploy:  cd worker && npx wrangler kv namespace create PP
  *          paste the id into wrangler.toml, then  npx wrangler deploy
- * Then paste the printed URL into CONFIG.CAPTURE_ENDPOINT / FEED_URL / HIT_URL.
+ *          npx wrangler secret put ADMIN_TOKEN   (enables /winners writes)
+ * Then paste the printed URL into CONFIG.CAPTURE_ENDPOINT / FEED_URL / HIT_URL
+ * and into WINNERS_URL at the bottom of winners.html.
  *
  * Nothing is returned to the client that identifies another person: the feed
- * exposes a masked display name, a coarse region, and a timestamp only.
+ * exposes a masked display name, a coarse region, and a timestamp only. The
+ * winners list is public by design and is typed in by the operator after a
+ * draw — first name + last initial only.
  */
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
@@ -21,7 +28,7 @@ const PHONE_RE = /^\+?\d{7,15}$/;
 
 const ALLOW_EVENTS = new Set([
   'view', 'step_1', 'step_2', 'step_3', 'interstitial', 'ad',
-  'ad_pop', 'ad_direct', 'ad_inter', 'ad_second',
+  'ad_pop', 'ad_direct', 'ad_inter', 'ad_second', 'ad_stick_x',
   'capture_view', 'done', 'offer_click', 'ref_land', 'rehold',
   'exit_intent', 'hidden'
 ]);
@@ -149,6 +156,89 @@ async function hitCounter(req, env) {
   return json({ ok: true }, 200, env);
 }
 
+/* ---------------------------- published winners --------------------------
+   KV key "winners" holds an array, newest round first:
+     [{ round, drawDate, publishedAt, rows: [{ name, region, amount }] }]
+   Reading is public (that is the point of the page). Writing needs the
+   ADMIN_TOKEN secret, so an anonymous visitor can never invent a winner.
+   ------------------------------------------------------------------------ */
+const WINNERS_KEY = 'winners';
+const WINNERS_MAX_ROUNDS = 24;
+const WINNERS_MAX_ROWS = 20;
+
+function clean(v, n) {
+  return String(v == null ? '' : v).replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/\s+/g, ' ').trim().slice(0, n || 40);
+}
+
+/* Length-safe compare; avoids leaking the token through response timing. */
+function safeEqual(a, b) {
+  a = String(a || ''); b = String(b || '');
+  if (!a.length || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+async function readWinners(env) {
+  const raw = await env.PP.get(WINNERS_KEY);
+  try {
+    const v = JSON.parse(raw || '[]');
+    return Array.isArray(v) ? v : [];
+  } catch (e) { return []; }
+}
+
+function authorised(req, env) {
+  if (!env.ADMIN_TOKEN) return false;
+  return safeEqual(req.headers.get('X-Admin-Token'), env.ADMIN_TOKEN);
+}
+
+async function winners(req, env) {
+  if (req.method === 'GET') {
+    return json(await readWinners(env), 200, env, { 'Cache-Control': 'public, max-age=300' });
+  }
+
+  /* Writes stay off until a secret exists, so a public deploy cannot be
+     written to by anyone who guesses the route. */
+  if (!env.ADMIN_TOKEN) return json({ ok: false, error: 'publishing-disabled' }, 503, env);
+  if (!authorised(req, env)) return json({ ok: false, error: 'unauthorized' }, 401, env);
+
+  if (req.method === 'DELETE') {
+    const round = clean(new URL(req.url).searchParams.get('round'), 40);
+    if (!round) return json({ ok: false, error: 'round-required' }, 422, env);
+    const kept = (await readWinners(env)).filter(function (r) { return r && r.round !== round; });
+    await env.PP.put(WINNERS_KEY, JSON.stringify(kept));
+    return json({ ok: true, removed: round }, 200, env);
+  }
+
+  let body;
+  try { body = await req.json(); } catch (e) { return json({ ok: false, error: 'bad-json' }, 400, env); }
+
+  const round = clean(body && body.round, 40);
+  const drawDate = clean(body && body.drawDate, 24);
+  const rows = Array.isArray(body && body.rows) ? body.rows : [];
+  if (!round || !rows.length) return json({ ok: false, error: 'round-and-rows-required' }, 422, env);
+
+  const out = rows.slice(0, WINNERS_MAX_ROWS).map(function (r) {
+    return {
+      name: clean(r && r.name, 40),
+      region: clean(r && r.region, 40) || 'Online',
+      amount: clean(r && r.amount, 20) || '\u2014'
+    };
+  }).filter(function (r) { return r.name.length > 0; });
+
+  if (!out.length) return json({ ok: false, error: 'no-valid-rows' }, 422, env);
+
+  const list = await readWinners(env);
+  const entry = { round, drawDate: drawDate || '', publishedAt: new Date().toISOString(), rows: out };
+  /* Re-publishing the same round replaces it instead of duplicating it. */
+  const next = [entry].concat(list.filter(function (r) { return r && r.round !== round; }))
+    .slice(0, WINNERS_MAX_ROUNDS);
+
+  await env.PP.put(WINNERS_KEY, JSON.stringify(next));
+  return json({ ok: true, round, rows: out.length, rounds: next.length }, 200, env);
+}
+
 export default {
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
@@ -163,6 +253,7 @@ export default {
     if (path === '/feed' && req.method === 'GET') return feed(req, env);
     if (path === '/capture' && req.method === 'POST') return capture(req, env, ctx);
     if (path === '/hit' && req.method === 'POST') return hitCounter(req, env);
+    if (path === '/winners') return winners(req, env);
 
     return json({ ok: false, error: 'not-found' }, 404, env);
   }

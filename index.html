@@ -120,6 +120,18 @@ footer a:hover{color:#00d54b}
 .adbox.inset{margin:12px 0 0}
 .adbox iframe,.adbox img{width:100%;display:block;border:0}
 .adbox.filled{display:block;min-height:0;padding:0;border:0;background:none}
+/* bottom anchor: the highest-RPM non-popunder unit, dismissible, persists the
+   dismissal so it cannot nag a returning visitor. */
+#adStick{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,480px);margin:0;
+  z-index:600;min-height:52px;display:none;place-items:center;overflow:visible;
+  background:#0b0d11;border-top:1px solid #1b1f26;border-radius:0;
+  padding:0 0 env(safe-area-inset-bottom)}
+#adStick.on{display:grid}
+#adStick.filled{padding:0 0 env(safe-area-inset-bottom)}
+#adStickX{position:absolute;top:-27px;right:6px;width:25px;height:25px;border-radius:50%;
+  background:#14171d;border:1px solid #262b34;color:#9aa1ad;font-size:13px;line-height:1;
+  font-family:inherit;cursor:pointer;padding:0}
+#adStickX:hover,#adStickX:active{color:#eef1f5;border-color:#3a414d}
 
 .hide{display:none!important}
 
@@ -224,6 +236,7 @@ footer a:hover{color:#00d54b}
     <div class="h"><b>STEP 5</b><span id="tagCap">Contact</span></div>
     <h2 id="capH">Where should we send it?</h2>
     <p id="s2">We only use this to confirm your entry and reach you about your payout. One entry per person.</p>
+    <aside class="adbox inset" id="adCapture" data-slot="capture" aria-label="Advertisement"></aside>
     <form id="form" novalidate>
       <div class="field">
         <label class="lbl" for="email">Email address</label>
@@ -259,6 +272,7 @@ footer a:hover{color:#00d54b}
     <h2>Entry confirmed</h2>
     <p>You are in the <strong>$5,000</strong> pool. We review entries daily and contact winners at the email or number on file.</p>
     <div class="ref"><span>Your referral code</span><b id="myCode">—</b></div>
+    <aside class="adbox inset" id="adDone" data-slot="done" aria-label="Advertisement"></aside>
     <div id="boost" class="hide" style="margin-top:12px;text-align:left">
       <div class="h"><b>BOOST</b><span>Move up 40 places</span></div>
       <p style="margin:0 0 9px;font-size:11.5px;color:#9aa1ad">Complete any one offer below and we move you up 40 places in the queue.</p>
@@ -269,6 +283,10 @@ footer a:hover{color:#00d54b}
     <p class="note" id="pushNote">We'll notify you the moment your position clears.</p>
   </section>
 </main>
+
+<div class="adbox" id="adStick" data-slot="sticky" aria-label="Advertisement">
+  <button id="adStickX" type="button" aria-label="Close advertisement" title="Close">✕</button>
+</div>
 
 <footer>
   <a href="/winners.html">Winners</a>
@@ -330,7 +348,10 @@ const CONFIG = {
   AD_SLOT_CARD:  "",   // inside the step card, above the CTA button
   AD_SLOT_AFTER: "",   // directly under the CTA button (Save my position)
   AD_SLOT_BELOW: "",   // below the card, before the next section
+  AD_SLOT_CAPTURE: "", // inside the contact card, above the email field
+  AD_SLOT_DONE:  "",   // inside the "Entry confirmed" card, under the referral code
   AD_SLOT_GATE:  "",   // inside the sponsored interstitial
+  AD_SLOT_STICKY: "",  // fixed 320x50 anchor pinned to the bottom edge
   AD_PLACEHOLDERS: true,
 
   // --- capture + feed (Cloudflare Worker in /worker) ------------------------
@@ -493,9 +514,38 @@ setInterval(() => {
 }, 2600);
 
 /* ------------------------------ ad units ---------------------------------
-   Five reserved boxes. Empty + AD_PLACEHOLDERS = dashed outline so the
+   Eight reserved boxes. Empty + AD_PLACEHOLDERS = dashed outline so the
    placement is visible before a tag is pasted in.
+   Inner script tags never run when assigned through innerHTML, and most
+   networks hand out <script> tags, so every inserted node is re-activated.
    ------------------------------------------------------------------------ */
+function runScripts(root) {
+  Array.prototype.forEach.call(root.querySelectorAll('script'), function (old) {
+    const s = document.createElement('script');
+    for (let i = 0; i < old.attributes.length; i++) {
+      s.setAttribute(old.attributes[i].name, old.attributes[i].value);
+    }
+    if (!old.src) s.textContent = old.textContent;
+    old.parentNode.replaceChild(s, old);
+  });
+}
+
+function fillSlot(el, html, height) {
+  if (/^https?:\/\//i.test(html)) {
+    const f = document.createElement('iframe');
+    f.src = html;
+    f.loading = 'lazy';
+    f.title = 'Advertisement';
+    f.setAttribute('scrolling', 'no');
+    f.setAttribute('frameborder', '0');
+    f.style.height = (height || 250) + 'px';
+    el.appendChild(f);
+    return;
+  }
+  el.innerHTML = html;
+  runScripts(el);
+}
+
 function mountAd(id, tag, label) {
   const el = $(id);
   if (!el) return;
@@ -507,25 +557,35 @@ function mountAd(id, tag, label) {
     return;
   }
   el.classList.add('filled');
-  if (/^https?:\/\//i.test(html)) {
-    const f = document.createElement('iframe');
-    f.src = html;
-    f.loading = 'lazy';
-    f.title = 'Advertisement';
-    f.setAttribute('scrolling', 'no');
-    f.setAttribute('frameborder', '0');
-    f.style.height = '250px';
-    el.appendChild(f);
-  } else {
-    el.innerHTML = html;
-  }
+  fillSlot(el, html);
 }
 
 mountAd('adHeld', CONFIG.AD_SLOT_HELD, 'AD');
 mountAd('adCard', CONFIG.AD_SLOT_CARD, 'AD');
 mountAd('adAfter', CONFIG.AD_SLOT_AFTER, 'AD');
 mountAd('adBelow', CONFIG.AD_SLOT_BELOW, 'AD');
+mountAd('adCapture', CONFIG.AD_SLOT_CAPTURE, 'AD');
+mountAd('adDone', CONFIG.AD_SLOT_DONE, 'AD');
 mountAd('adGate', CONFIG.AD_SLOT_GATE, 'AD · SPONSORED');
+
+/* Bottom anchor. No dashed placeholder for this one: an empty fixed bar at the
+   foot of every screen would look broken, so it only exists once it has a tag
+   and the visitor has not closed it before. */
+(function mountSticky() {
+  const el = $('adStick');
+  if (!el) return;
+  const html = String(CONFIG.AD_SLOT_STICKY || '').trim();
+  if (!html || ls.get('pp_stickx', '') === '1') { el.remove(); return; }
+  el.classList.add('on', 'filled');
+  fillSlot(el, html, 50);
+  document.body.style.paddingBottom = '66px';
+  $('adStickX').addEventListener('click', function () {
+    ls.set('pp_stickx', '1');
+    document.body.style.paddingBottom = '';
+    el.remove();
+    hit('ad_stick_x');
+  });
+})();
 
 /* -------------------------------- ads -----------------------------------
    Four independently configurable slots, each tracked under its own /hit
