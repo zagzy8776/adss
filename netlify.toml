@@ -1,0 +1,30 @@
+# Netlify deploy config — this site is plain static HTML, no build step.
+# Netlify already reads `_headers` in this folder (same format Cloudflare Pages
+# uses), so security headers keep working here with no extra setup.
+#
+# Deploy either way:
+#   1. GitHub: Netlify → Add new site → Import an existing project → zagzy8776/adss
+#   2. Drag & drop the folder onto https://app.netlify.com/drop
+#
+# After the first deploy: Site configuration → Site details → Change site name
+# → "payoutpool" gives you https://payoutpool.netlify.app
+
+[build]
+  command = ""
+  publish = "."
+
+# index.html is served at / already; keep the .html URLs working too.
+[[redirects]]
+  from = "/terms"
+  to = "/terms.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/winners"
+  to = "/winners.html"
+  status = 200
