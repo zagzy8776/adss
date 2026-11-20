@@ -1918,6 +1918,7 @@ async function postLead(p) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(p)
   });
+  if (r.status === 429) { const e=new Error('Too many entries from this connection. Please try again later.');e.rateLimited=true;throw e; }
   if (!r.ok) throw new Error('capture HTTP ' + r.status);
   return true;
 }
@@ -1929,6 +1930,7 @@ async function submitLead(p) {
     return false;
   } catch (err) {
     /* Never swallow: the lead is buffered and retried, and the console says why. */
+    if(err.rateLimited){toast(err.message,5000);return false;}
     console.error('[PayoutPool] capture failed, queued for retry:', err.message);
     writeBuf(readBuf().concat([p]));
     toast('Saved on this device \u2014 we will retry when you reconnect.');
@@ -1997,7 +1999,7 @@ $('form').addEventListener('submit', async function (e) {
   };
 
   const savedOnServer=await submitLead(payload);
-  if(!savedOnServer){btn.disabled=false;btn.textContent='Retry entry submission →';toast('Entry not yet confirmed; please retry when online.');return;}
+  if(!savedOnServer){btn.disabled=false;btn.textContent='Retry entry submission →';toast('Entry not confirmed. Please check the notice above and try again later.',5000);return;}
   ls.set(KEY.sent, Date.now());
   btn.disabled = false;
   btn.textContent = 'Submit entry →';
