@@ -55,13 +55,12 @@ body{background:#08090b;color:#eef1f5;font-family:Inter,system-ui,-apple-system,
 .logo{width:25px;height:25px;border-radius:7px;background:linear-gradient(135deg,#00d54b,#00a83b);display:grid;place-items:center;font-weight:800;font-size:12px;color:#00290f;flex:0 0 auto}
 .bname{font-size:12.5px;font-weight:700;letter-spacing:-.01em}
 .live{margin-left:auto;font-size:9.5px;color:#00d54b;background:#04170c;border:1px solid #0d3d20;padding:3px 8px;border-radius:20px;white-space:nowrap}
-.urgency{background:#150e0e;border-bottom:1px solid #2c1a1a;padding:8px 16px;display:flex;align-items:center;gap:8px;font-size:10.5px;color:#e08d8d}
-.urgency i{width:6px;height:6px;border-radius:50%;background:#ff6b6b;box-shadow:0 0 8px #ff6b6b;animation:pulse 1.2s ease-in-out infinite;flex:0 0 auto}
-.urgency > span:not(#clock){flex:1;min-width:0}
+.urgency{background:#150e0e;border-bottom:1px solid #2c1a1a;padding:7px 16px;display:flex;align-items:center;gap:8px;font-size:10.5px;color:#e08d8d}
+.urgency i{width:5px;height:5px;border-radius:50%;background:#e08d8d;box-shadow:0 0 6px #e08d8d;animation:pulse 1.4s infinite}
 #clock{margin-left:auto;color:#f5b942;font-variant-numeric:tabular-nums;font-weight:700}
 
-.ticker-wrap{height:104px;overflow:hidden;position:relative;background:#0a0b0e;border-bottom:1px solid #15181d}
-#ticker{will-change:transform;animation:sl 26s linear infinite;animation-play-state:running;display:block;transform:translateZ(0)}
+.ticker-wrap{height:104px;overflow:hidden;position:relative;background:#0a0b0e}
+#ticker{will-change:transform;animation:sl 26s linear infinite;animation-play-state:running;display:block}
 .ticker-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(180deg,#08090b,transparent 26%,transparent 74%,#08090b)}
 .tR{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:11px}
@@ -164,29 +163,30 @@ html.addebug .adbox:not(:has(iframe,img,video,ins,div,span,a))::before{content:a
 .ok-s{display:block;font-size:9.5px;color:#8b93a1;margin-top:1px}
 .ok-a{margin-left:auto;color:#5f6673;font-size:15px}
 
-/* ---------- interstitial (full-screen video / partner break) ---------- */
-#inter{position:fixed;inset:0;background:#050607;z-index:9000;display:none;flex-direction:column;
-  padding:max(12px,env(safe-area-inset-top)) 12px max(14px,env(safe-area-inset-bottom))}
+/* ---------- interstitial ---------- */
+#inter{position:fixed;inset:0;background:#08090b;z-index:9000;display:none;flex-direction:column;
+  padding:max(14px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
 #inter.on{display:flex}
 #inter:focus{outline:none}
-.iTop{display:flex;align-items:center;gap:8px;font-size:9.5px;color:#8b93a1;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
-.iTop span:last-child{margin-left:auto;color:#5f6673;font-variant-numeric:tabular-nums}
-#interAd{flex:1;display:grid;place-items:center;align-content:center;margin:10px 0;border-radius:16px;overflow:hidden;
-  background:#0a0c10;border:1px solid #1c222c;min-height:min(58vh,420px);box-shadow:inset 0 0 0 1px #ffffff08}
+.iTop{display:flex;align-items:center;gap:8px;font-size:9.5px;color:#7b8390;letter-spacing:.09em;text-transform:uppercase;font-weight:700}
+.iTop span:last-child{margin-left:auto;color:#5f6673}
+#interAd{flex:1;display:grid;place-items:center;align-content:center;margin:12px 0;border-radius:14px;overflow:hidden;
+  background:#0e1014;border:1px solid #1b1f26;min-height:300px}
 #interAd iframe,#interAd img{max-width:100%;border:0}
-#interAd video{display:block;width:100%;max-height:min(62vh,520px);height:auto;background:#000;border:0}
-#interAd .iFill{max-width:100%;width:100%;display:grid;place-items:center}
-#interAd.withFill .iHouse{padding:12px 14px}
+#interAd .iFill{max-width:100%;display:grid;place-items:center}
+/* A pasted partner tag plus the house copy has to fit one phone screen, so the
+   panel shrinks instead of pushing Continue off the bottom. */
+#interAd.withFill .iHouse{padding:14px 16px}
 #interAd.withFill .iHouse .v{font-size:20px;margin:6px 0 3px}
-.iHouse{text-align:center;padding:28px 22px}
-.iHouse .k{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#6b7280;font-weight:700}
-.iHouse .v{font-size:28px;font-weight:800;color:#00d54b;margin:10px 0 6px;letter-spacing:-.03em}
-.iHouse p{margin:0;font-size:12px;color:#9aa1ad;line-height:1.55}
+.iHouse{text-align:center;padding:26px 20px}
+.iHouse .k{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#5f6673;font-weight:700}
+.iHouse .v{font-size:27px;font-weight:800;color:#00d54b;margin:9px 0 5px;letter-spacing:-.03em}
+.iHouse p{margin:0;font-size:11.5px;color:#9aa1ad;line-height:1.55}
 .iBar{height:3px;background:#15181d;border-radius:3px;overflow:hidden;margin-bottom:10px}
-#skipBar{height:100%;width:0%;background:linear-gradient(90deg,#00b344,#00d54b);transition:width 5s linear}
-#skipBtn{width:100%;min-height:50px;background:#14171d;color:#7b8390;border:1px solid #262b34;border-radius:12px;
-  font-family:inherit;font-size:13.5px;font-weight:700;cursor:not-allowed;letter-spacing:-.01em}
-#skipBtn.ready{background:#00d54b;color:#00290f;border-color:#00d54b;cursor:pointer;box-shadow:0 0 0 1px #00d54b44}
+#skipBar{height:100%;width:0%;background:#00d54b;transition:width 5s linear}
+#skipBtn{width:100%;min-height:48px;background:#14171d;color:#7b8390;border:1px solid #262b34;border-radius:11px;
+  font-family:inherit;font-size:13px;font-weight:700;cursor:not-allowed}
+#skipBtn.ready{background:#00d54b;color:#00290f;border-color:#00d54b;cursor:pointer}
 
 /* ---------- done / toast ---------- */
 #done .ok{width:46px;height:46px;border-radius:50%;background:#04170c;border:1px solid #0d3d20;display:grid;place-items:center;
@@ -295,13 +295,6 @@ img,video,canvas,svg{max-width:100%}
 #ppWheelHome .pp-wallet,#ppWheelHome #ppDailyDashboard{background:#0c2221!important;border-color:#31544c!important}
 @media(prefers-reduced-motion:reduce){#ppWheelHome .pp-wheel.spinning{transition:none!important}#ppWheelHome .pp-pin{transition:none!important}}
 </style>
-<style>
-/* A compact, responsive wheel shortcut without default blue underlined link styling. */
-.pp-spin-link{max-width:480px;margin:10px auto 16px;padding:0 16px;text-align:center}
-.pp-spin-link a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border-radius:999px;border:1px solid #285c47;background:#0d211b;color:#a9efc8;text-decoration:none;font-size:13px;font-weight:750;letter-spacing:.01em}
-.pp-spin-link a:hover,.pp-spin-link a:focus-visible{background:#123b2c;border-color:#44b983}
-@media(max-width:480px){.pp-spin-link{padding:0 16px}.pp-spin-link a{width:100%}}
-</style>
 </head>
 <body>
 <a class="sr-only" href="#btn">Skip to the entry steps</a>
@@ -311,19 +304,16 @@ img,video,canvas,svg{max-width:100%}
   <span class="bname">PayoutPool</span>
   <span class="live">Free daily prizes</span>
 </header>
-<div class="urgency" role="status">
-  <i aria-hidden="true"></i>
-  <span>Session held · confirm while the timer is live</span>
-  <span id="clock" role="timer" aria-live="off">15:00</span>
-</div>
+
+<div class="urgency" style="display:none" aria-hidden="true"><span id="clock">—</span></div>
 
 <aside class="adbox" id="adHeld" data-slot="held" aria-label="Advertisement"></aside>
 
-<div class="ticker-wrap" aria-label="Recent activity"><div id="ticker"></div></div>
+<div class="ticker-wrap" aria-hidden="true"><div id="ticker"></div></div>
 
 <section class="hero">
-  <h1><span data-pool>$5,000</span> cash prize pool</h1>
-  <p class="sub">Register your contact entry below. Cash prizes are awarded only through the free daily wheel.</p>
+  <h1>Explore a <span data-pool>$5,000</span> cash prize pool</h1>
+  <p class="sub">Optional entry form below · Cash prizes awarded by the separate wheel</p>
 </section>
 
 <div class="prog-wrap">
@@ -344,7 +334,7 @@ img,video,canvas,svg{max-width:100%}
     <p id="s">Complete the optional entry steps to submit your details. The cash-prize wheel is a separate activity below.</p>
     <aside class="adbox inset" id="adCard" data-slot="card" aria-label="Advertisement"></aside>
     <button class="btn" id="btn" type="button" aria-describedby="note">Confirm and continue →</button>
-    <p class="note" id="note">No payment details requested at any step. Entry is free.</p><p class="pp-spin-cta"><a href="#ppWheelHome">🎡 Or jump to the free cash-prize wheel ↓</a></p>
+    <p class="note" id="note">No payment details in this step. Ever.</p><p class="pp-spin-cta"><a href="#ppWheelHome">🎡 Or jump to the free cash-prize wheel ↓</a></p>
   </section>
 
   <aside class="adbox" id="adBelow" data-slot="below" aria-label="Advertisement"></aside>
@@ -406,7 +396,7 @@ img,video,canvas,svg{max-width:100%}
     <p class="note" id="pushNote" hidden style="display:none"></p>
   </section>
 </main>
-<nav class="pp-spin-link" aria-label="Cash wheel shortcut"><a href="#ppWheelHome">Explore the cash wheel ↓</a></nav>
+<section class="pp-spin-link"><a href="#ppWheelHome">🎡 Spin for cash prizes — two free spins daily ↓</a><small>Cash spins are separate from entry registration; completing the form does not affect spin odds.</small></section>
 <section id="ppWheelHome" aria-labelledby="ppWheelHeading">
  <div class="pp-eyebrow">✦ PAYOUTPOOL REWARDS ✦</div>
  <h2 id="ppWheelHeading">The cash wheel</h2>
@@ -492,9 +482,9 @@ btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabl
 <div id="inter" role="dialog" aria-modal="true" aria-labelledby="interLabel" aria-describedby="interDesc" tabindex="-1">
   <div class="iTop"><span id="interLabel">Sponsored content</span><span id="interCount"></span></div>
   <div id="interAd"><div class="iHouse">
-    <div class="k">Sponsored presentation</div>
+    <div class="k">Sponsored break</div>
     <div class="v" data-pool>$5,000</div>
-    <p id="interDesc">This short sponsored break helps keep the prize pool free to enter. Ads are separate from spins and claims.</p>
+    <p id="interDesc">Advertisements are separate from prize spins and claims.</p>
   </div><div class="adbox inset" id="adGate" data-slot="gate" aria-label="Advertisement"></div></div>
   <div class="iBar"><div id="skipBar"></div></div>
   <button id="skipBtn" type="button" disabled aria-describedby="interDesc">Continue in 5</button>
@@ -538,7 +528,7 @@ const CONFIG = {
   // trigger - because a house-only pause there just delays a card that already
   // carries a banner. A network's own vignette fires wherever its script
   // decides; this key only owns our overlay.
-  INTERSTITIAL_ON: "gate",
+  INTERSTITIAL_ON: "off",
   // Seconds the break is held before Continue unlocks. 0 = Continue is live at
   // once, which is what most verified programs require of an interstitial.
   // Our overlay only - a network's own ad closes itself.
@@ -551,10 +541,10 @@ const CONFIG = {
   AD_DIRECT_LINK_ON: "done",
   // Re-call window.__pop() once on the confirmed screen. No-op unless your
   // network exposes that hook (Adsterra does; most others do not).
-  SECOND_POP: true,
+  SECOND_POP: false,
   // The original build called fireAd() on every tap of the 3-tap funnel, not
   // just the sponsored gate tap: 3 fires per visitor instead of 1. Restored.
-  AD_EVERY_TAP: true,
+  AD_EVERY_TAP: false,
   // The original also fired a second time as the gate opened, making 4 fires
   // per visitor.
   GATE_DOUBLE_FIRE: false,
@@ -590,7 +580,7 @@ const CONFIG = {
   AD_SLOT_BELOW: "",   // below the card, before the next section
   AD_SLOT_CAPTURE: "", // inside the contact card, above the email field
   AD_SLOT_DONE:  "",   // inside the "Entry confirmed" card, under the referral code
-  AD_SLOT_GATE:  "",   // full-screen break: video:URL|poster=…|click=…  or  vast:URL  or partner HTML
+  AD_SLOT_GATE:  "",   // inside the sponsored interstitial
   AD_SLOT_WHEEL: "",  // requires a distinct, approved 300x250 ad zone; never reuse the existing CARD key
   AD_SLOT_STICKY: "",  // fixed 320x50 anchor pinned to the bottom edge
   AD_PLACEHOLDERS: true,
@@ -776,7 +766,7 @@ let deadline = refreshDeadline();
 
 function reheld() {
   deadline = refreshDeadline();
-  toast('Timer refreshed — session held for another 15 minutes.');
+  toast('Continue when ready; the cash-prize wheel is separate.');
   hit('rehold');
 }
 
