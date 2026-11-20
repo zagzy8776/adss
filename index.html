@@ -391,6 +391,8 @@ img,video,canvas,svg{max-width:100%}
     <p>Your contact entry has been recorded. This does not award a cash prize. The separate daily wheel below is the current cash-prize program.</p>
     <div class="ref"><span>Your sharing code (not a prize boost)</span><b id="myCode">—</b></div>
     <aside class="adbox inset" id="adDone" data-slot="done" aria-label="Advertisement"></aside>
+    <button class="btn" id="ppStartAgain" type="button" style="margin-top:14px">Start a new entry →</button>
+    <p class="note">New submissions are subject to anti-spam limits. A new entry does not create extra cash spins or prize claims.</p>
     <div id="boost" class="hide" style="margin-top:12px;text-align:left">
       <div class="h"><b>Optional offers</b><span>No queue or prize boost</span></div>
       <p style="margin:0 0 9px;font-size:11.5px;color:#9aa1ad">Optional third-party links do not alter prize odds or queue position.</p>
@@ -1975,13 +1977,7 @@ $('form').addEventListener('submit', async function (e) {
   $('consentErr').classList.remove('on');
   $('consentWrap').classList.remove('bad');
 
-  /* Dedupe: one submission per device per 24h. */
-  const last = parseInt(ls.get(KEY.sent, '0'), 10) || 0;
-  if (last && Date.now() - last < 86400000) {
-    toast('You already submitted this entry today.');
-    finish();
-    return;
-  }
+  /* Returning visitors may create a new entry; Cloudflare enforces its own rate limit. */
 
   btn.disabled = true;
   btn.textContent = 'Saving\u2026';
@@ -2143,16 +2139,25 @@ $('btn').addEventListener('click', function () {
   }
 });
 
-/* Returning visitor lands on the confirmed screen instead of the funnel. */
-const alreadyDone = parseInt(ls.get(KEY.done, '0'), 10) || 0;
-if (alreadyDone) {
-  $('reveal').classList.add('hide');
-  finish();
-} else {
-  const saved = parseInt(ls.get(KEY.step, '0'), 10) || 0;
-  if (saved === 4) { $('reveal').classList.add('hide'); showCapture(); }
-  else renderStep(saved >= 1 && saved <= 2 ? saved : 0);
+/* Every new visit starts the optional entry flow fresh. No cash-wheel or claim cookies are reset. */
+function restartEntry() {
+  ls.del(KEY.done);
+  ls.del(KEY.step);
+  ls.del(KEY.sent);
+  $('form').reset();
+  $('company').value='';
+  $('reveal').classList.remove('hide');
+  $('capture').classList.add('hide');
+  $('done').classList.add('hide');
+  $('submitBtn').disabled=false;
+  $('submitBtn').textContent='Submit my entry →';
+  ['email','phone'].forEach(name=>setErr(name,false));
+  $('consentErr').classList.remove('on');
+  $('consentWrap').classList.remove('bad');
+  renderStep(0);
 }
+$('ppStartAgain').addEventListener('click',()=>{restartEntry();$('reveal').scrollIntoView({block:'start',behavior:reduceMotion.matches?'auto':'smooth'})});
+restartEntry();
 
 tickClock();
 flushBuf();
