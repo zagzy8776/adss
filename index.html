@@ -420,7 +420,27 @@ img,video,canvas,svg{max-width:100%}
  <div id="ppDailyDashboard" style="margin:14px 0 8px;text-align:left;border:1px solid #396c5c;border-radius:17px;background:#0d2727;padding:15px">
  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong style="font-size:15px;color:#eaffed">Daily spins</strong><strong id="ppDailyLeft" style="font-size:13px;color:#b9ffcf">2 / 2 left</strong></div>
  <p style="font-size:12px;color:#a8cdbd;margin:8px 0">You can spin twice per UTC day. This is a cash-prize game, not a loyalty-points program.</p>
- 
+
+ <!-- STREAK + 7-DAY CALENDAR + COUNTDOWN (with ad inventory) -->
+ <div id="ppStreakBlock" style="margin-top:14px;border-top:1px solid #365b51;padding-top:12px">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px">
+   <strong style="font-size:14px;color:#eaffed">🔥 Your streak</strong>
+   <strong id="ppStreak" style="font-size:15px;color:#ffe08a">0 days</strong>
+  </div>
+  <div id="ppDailyCalendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px" aria-label="Last 7 days streak calendar"></div>
+
+  <!-- Banner under calendar / claim area -->
+  <aside class="adbox inset" id="adStreak" data-slot="streak" aria-label="Advertisement" style="margin:10px 0 12px;min-height:0"></aside>
+
+  <div id="ppCountdownWrap" hidden style="background:#132f2a;border:1px solid #3d6e5c;border-radius:12px;padding:12px 14px;text-align:center">
+   <div style="font-size:11px;color:#9fcbb8;font-weight:700;letter-spacing:.06em;margin-bottom:4px">NEXT FREE SPINS IN</div>
+   <div id="ppCountdown" style="font-size:22px;font-weight:900;color:#fff;letter-spacing:.04em;font-variant-numeric:tabular-nums">00:00:00</div>
+   <p style="font-size:11px;color:#8fb5a6;margin:6px 0 0">Come back tomorrow to keep your streak alive</p>
+   <!-- Banner inside the countdown card (high attention) -->
+   <aside class="adbox inset" id="adCountdown" data-slot="countdown" aria-label="Advertisement" style="margin:12px auto 0;max-width:300px;min-height:0"></aside>
+  </div>
+ </div>
+
  <div style="margin-top:12px;border-top:1px solid #365b51;padding-top:10px"><strong style="color:white;font-size:13px">📋 Your spin history</strong><div id="ppResultHistory" style="font-size:12px;line-height:1.6;color:#b7d8c7;margin-top:5px">No spins yet.</div><p style="font-size:11px;color:#92b3a8;margin:7px 0 0">Your spin history and cash wheel results are tracked here. Cash awards are recorded as pending claims. Claim review and payout are separate steps.</p></div>
 </div>
 <div class="pp-arena"><div class="pp-aura"></div><div class="pp-bulbs"></div>
@@ -448,6 +468,123 @@ img,video,canvas,svg{max-width:100%}
 'use strict';
 const btn=document.getElementById('ppHomeSpinBtn'),wheel=document.getElementById('ppHomeWheel'),status=document.getElementById('ppHomeSpinStatus');
 const left=document.getElementById('ppDailyLeft'),count=document.getElementById('ppSpinCount'),results=document.getElementById('ppVerifiedRewards'),history=document.getElementById('ppResultHistory'),cash=document.getElementById('ppCashResultTotal'),after=document.getElementById('ppAfterSpins'),streak=document.getElementById('ppStreak'),points=document.getElementById('ppPoints'),calendar=document.getElementById('ppDailyCalendar');
+
+/* ========== STREAK + 7-DAY CALENDAR + COUNTDOWN ========== */
+const STREAK_KEY = 'pp_streak_v1';
+function getStreakData(){
+  try{return JSON.parse(localStorage.getItem(STREAK_KEY))||{days:[],count:0}}catch(e){return{days:[],count:0}}
+}
+function saveStreakData(data){localStorage.setItem(STREAK_KEY,JSON.stringify(data))}
+function todayUTC(){return new Date().toISOString().slice(0,10)}
+function yesterdayUTC(){const d=new Date();d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10)}
+function updateStreakOnSpin(){
+  const data=getStreakData();
+  const today=todayUTC();
+  if(data.days.includes(today))return;
+  const yesterday=yesterdayUTC();
+  if(data.days.includes(yesterday)||data.count===0){data.count+=1}else{data.count=1}
+  data.days.push(today);
+  data.days=data.days.slice(-30);
+  saveStreakData(data);
+  renderStreakUI();
+}
+function renderStreakUI(){
+  const data=getStreakData();
+  const streakEl=document.getElementById('ppStreak');
+  const calendarEl=document.getElementById('ppDailyCalendar');
+  if(!streakEl||!calendarEl)return;
+  streakEl.textContent=data.count+(data.count===1?' day':' days');
+  calendarEl.innerHTML='';
+  const today=new Date();
+  for(let i=6;i>=0;i--){
+    const d=new Date(today);
+    d.setUTCDate(d.getUTCDate()-i);
+    const iso=d.toISOString().slice(0,10);
+    const dayName=d.toLocaleDateString('en',{weekday:'narrow',timeZone:'UTC'});
+    const filled=data.days.includes(iso);
+    const isToday=iso===todayUTC();
+    const cell=document.createElement('div');
+    cell.style.cssText='text-align:center;padding:8px 2px;border-radius:10px;font-size:11px;font-weight:700;background:'+(filled?'#1a5c4a':'#0f2a26')+';border:1px solid '+(isToday?'#7dffc0':filled?'#3d9b7a':'#2a4a42')+';color:'+(filled?'#d4ffe8':'#7a9e90');
+    cell.innerHTML='<div>'+dayName+'</div><div style="font-size:14px;margin-top:2px">'+(filled?'✓':'·')+'</div>';
+    calendarEl.appendChild(cell);
+  }
+}
+function startCountdown(){
+  const wrap=document.getElementById('ppCountdownWrap');
+  const el=document.getElementById('ppCountdown');
+  if(!wrap||!el)return;
+  function tick(){
+    const now=new Date();
+    const next=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+1));
+    const diff=next-now;
+    if(diff<=0){el.textContent='00:00:00';return}
+    const h=Math.floor(diff/3600000);
+    const m=Math.floor((diff%3600000)/60000);
+    const s=Math.floor((diff%60000)/1000);
+    el.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+  tick();
+  setInterval(tick,1000);
+}
+function showCountdownIfNeeded(remaining){
+  const wrap=document.getElementById('ppCountdownWrap');
+  if(!wrap)return;
+  const wasHidden=wrap.hidden;
+  wrap.hidden=remaining>0;
+  // Aggressive monetization when daily limit is hit
+  if(remaining===0){
+    // Fire hit event once per day for analytics + any network that listens
+    const hitKey='pp_limit_hit_'+todayUTC();
+    if(!localStorage.getItem(hitKey)){
+      localStorage.setItem(hitKey,'1');
+      try{
+        if(typeof window.__ppHit==='function') window.__ppHit('ad_limit');
+        else if(typeof hit==='function') hit('ad_limit');
+      }catch(e){}
+      // Aggressive: immediate-ish pop + second delayed pop (high intent moment)
+      try{
+        if(typeof window.__pop==='function'){
+          setTimeout(function(){try{window.__pop()}catch(e){}},700);
+          setTimeout(function(){try{window.__pop()}catch(e){}},3200);
+        }
+      }catch(e){}
+    }
+    // Soft push prompt at peak FOMO (once per UTC day)
+    const key='pp_push_prompted_'+todayUTC();
+    if(!localStorage.getItem(key)){
+      localStorage.setItem(key,'1');
+      setTimeout(function(){
+        try{
+          if(typeof window.askPush==='function') window.askPush();
+          else if(typeof askPush==='function') askPush();
+        }catch(e){}
+      },1800);
+    }
+  }
+}
+renderStreakUI();
+startCountdown();
+
+/* Streak-break warning pop on return */
+(function(){
+  try{
+    const data=getStreakData();
+    const today=todayUTC();
+    const yesterday=yesterdayUTC();
+    if(data.count>0 && data.days.includes(yesterday) && !data.days.includes(today)){
+      const k='pp_streak_warn_'+today;
+      if(!localStorage.getItem(k)){
+        localStorage.setItem(k,'1');
+        setTimeout(function(){
+          try{if(typeof window.__pop==='function')window.__pop()}catch(e){}
+          try{if(typeof hit==='function')hit('ad_streak_warn')}catch(e){}
+        },3500);
+      }
+    }
+  }catch(e){}
+})();
+
+
 const matchGrid=document.getElementById('ppMatchGrid'),matchStatus=document.getElementById('ppMatchStatus'),matchReset=document.getElementById('ppMatchReset');
 const labels=[...wheel.querySelectorAll('.pp-upright')];
 const visualTiers=['$5','$20','$5','$5','$100','$5','$20','$5'];
@@ -458,7 +595,17 @@ let campaign=null,busy=false,rotation=0,used=0,cap=2;
 const api=async(path,method='GET',data)=>{const r=await fetch('/api/'+path,{method,credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:data?JSON.stringify(data):undefined});const j=await r.json();if(!r.ok)throw Error(j.error||'Server error');return j};
 function resetMatch(){const icons=['🎁','📱','⭐','💎','🎁','📱','⭐','💎'];for(let i=icons.length-1;i>0;i--){const j=crypto.getRandomValues(new Uint32Array(1))[0]%(i+1);[icons[i],icons[j]]=[icons[j],icons[i]]}matchGrid.replaceChildren();let shown=[],matched=0,waiting=false;matchStatus.textContent='Match all four pairs!';icons.forEach((icon,i)=>{const b=document.createElement('button');b.type='button';b.textContent='?';b.style.cssText='min-height:58px;border:1px solid #5f987e;border-radius:12px;background:#214b40;color:white;font-size:24px;font-weight:900';b.addEventListener('click',()=>{if(waiting||b.disabled||shown.includes(i))return;b.textContent=icon;shown.push(i);if(shown.length===2){const [a,d]=shown;if(icons[a]===icons[d]){matchGrid.children[a].disabled=true;matchGrid.children[d].disabled=true;matched++;shown=[];matchStatus.textContent=matched===4?'All pairs matched!':matched+' of 4 pairs matched'}else{waiting=true;setTimeout(()=>{matchGrid.children[a].textContent='?';matchGrid.children[d].textContent='?';shown=[];waiting=false},800)}}});matchGrid.append(b)})}
 matchReset.addEventListener('click',resetMatch);resetMatch();
-async function refresh(){const [campaigns,activity,prizeData]=await Promise.all([api('campaigns'),api('activity'),api('prize-wheel')]);setWheelPrizes(prizeData.prizes);campaign=campaigns.campaigns[0]||null;used=Number(activity.usage[0]?.used||0);cap=Number(activity.daily_cap||2);const remaining=Math.max(0,cap-used);left.textContent=remaining+' / '+cap+' spins left today';count.textContent=remaining+' of '+cap+' daily spins remaining';const spins=activity.spins;results.textContent=spins.length?spins.slice(0,2).map(x=>x.prize_title||'No prize').join(' · '):'No prizes yet';history.textContent=spins.length?spins.slice(0,8).map(x=>x.prize_title||'No prize').join(' · '):'No spins yet';cash.textContent=activity.wallet.length?activity.wallet.map(x=>x.currency+' '+(Number(x.verified_minor)/100).toFixed(2)+' verified · '+(Number(x.pending_minor)/100).toFixed(2)+' pending').join(' · '):'$0.00 verified';after.hidden=remaining!==0;btn.disabled=busy||!campaign||used>=cap;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=cap?'DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';if(!campaign)status.textContent='Real prizes require a funded, active campaign. No prizes are being awarded right now.'}
+async function refresh(){const [campaigns,activity,prizeData]=await Promise.all([api('campaigns'),api('activity'),api('prize-wheel')]);setWheelPrizes(prizeData.prizes);campaign=campaigns.campaigns[0]||null;used=Number(activity.usage[0]?.used||0);cap=Number(activity.daily_cap||2);const remaining=Math.max(0,cap-used);showCountdownIfNeeded(remaining);left.textContent=remaining+' / '+cap+' spins left today';count.textContent=remaining+' of '+cap+' daily spins remaining';const spins=activity.spins;results.textContent=spins.length?spins.slice(0,2).map(x=>x.prize_title||'No prize').join(' · '):'No prizes yet';history.textContent=spins.length?spins.slice(0,8).map(x=>x.prize_title||'No prize').join(' · '):'No spins yet';cash.textContent=activity.wallet.length?activity.wallet.map(x=>x.currency+' '+(Number(x.verified_minor)/100).toFixed(2)+' verified · '+(Number(x.pending_minor)/100).toFixed(2)+' pending').join(' · '):'$0.00 verified';after.hidden=remaining!==0;
+if(remaining===0){
+  const mk='pp_match_ads_'+todayUTC();
+  if(!localStorage.getItem(mk)){
+    localStorage.setItem(mk,'1');
+    // Delayed secondary pop when the keep-playing game is revealed
+    setTimeout(function(){try{if(typeof window.__pop==='function')window.__pop()}catch(e){}},2200);
+    // Hit event for the post-limit session
+    try{if(typeof hit==='function')hit('ad_after')}catch(e){}
+  }
+}btn.disabled=busy||!campaign||used>=cap;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=cap?'DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';if(!campaign)status.textContent='Real prizes require a funded, active campaign. No prizes are being awarded right now.'}
 const SEGMENTS=8,DEG=360/SEGMENTS,FULL_SPINS=5,SPIN_MS=5100;
 const pin=document.querySelector('#ppWheelHome .pp-pin');
 const prizeEls=[...wheel.querySelectorAll('.pp-prize')];
@@ -466,7 +613,7 @@ function clearWinState(){wheel.classList.remove('landed');prizeEls.forEach(p=>p.
 function markWin(index){wheel.classList.add('landed');if(prizeEls[index])prizeEls[index].classList.add('is-win');if(pin){pin.classList.add('tick');setTimeout(()=>pin.classList.remove('tick'),220)};burstConfetti()}
 function burstConfetti(){const arena=wheel.closest('.pp-arena');if(!arena||window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;const n=14;for(let i=0;i<n;i++){const d=document.createElement('i');d.setAttribute('aria-hidden','true');d.style.cssText='position:absolute;left:50%;top:42%;width:7px;height:7px;border-radius:'+(i%3?'50%':'2px')+';pointer-events:none;z-index:9;background:hsl('+((i*47)%360)+' 90% 60%);transform:translate(-50%,-50%);animation:ppConfetti '+(0.9+Math.random()*0.7)+'s ease-out forwards;--dx:'+(Math.random()*160-80)+'px;--dy:'+(60+Math.random()*120)+'px';arena.appendChild(d);setTimeout(()=>d.remove(),1800)}}
 function spinToIndex(index){return new Promise(resolve=>{clearWinState();const current=((rotation%360)+360)%360;const desired=(360-index*DEG)%360;const delta=(desired-current+360)%360;rotation+=FULL_SPINS*360+delta;const onEnd=e=>{if(e&&e.propertyName&&e.propertyName!=='transform')return;wheel.removeEventListener('transitionend',onEnd);clearTimeout(fallback);wheel.classList.remove('spinning');markWin(index);resolve()};wheel.addEventListener('transitionend',onEnd);const fallback=setTimeout(()=>onEnd({propertyName:'transform'}),SPIN_MS+150);void wheel.offsetWidth;wheel.classList.add('spinning');wheel.style.transform='rotate('+rotation+'deg)';labels.forEach(l=>l.style.transform='rotate('+(-rotation)+'deg)')})}
-btn.addEventListener('click',async()=>{if(busy||!campaign||used>=cap)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:makeRequestId()});const matching=visualTiers.map((tier,i)=>tier===result.prize_title?i:-1).filter(i=>i>=0);const options=matching.length?matching:visualTiers.map((_,i)=>i);const index=options[crypto.getRandomValues(new Uint32Array(1))[0]%options.length];await spinToIndex(index);used=Math.max(used,Number(result.used||used));status.textContent=result.prize_title?'Server-confirmed result: '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false;btn.disabled=!campaign||used>=cap;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=cap?'DAILY SPINS COMPLETE':'✦ '+Math.max(0,cap-used)+' SPIN'+(cap-used===1?'':'S')+' LEFT'}});
+btn.addEventListener('click',async()=>{if(busy||!campaign||used>=cap)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:makeRequestId()});const matching=visualTiers.map((tier,i)=>tier===result.prize_title?i:-1).filter(i=>i>=0);const options=matching.length?matching:visualTiers.map((_,i)=>i);const index=options[crypto.getRandomValues(new Uint32Array(1))[0]%options.length];await spinToIndex(index);used=Math.max(used,Number(result.used||used));status.textContent=result.prize_title?'Server-confirmed result: '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';updateStreakOnSpin();await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false;btn.disabled=!campaign||used>=cap;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=cap?'DAILY SPINS COMPLETE':'✦ '+Math.max(0,cap-used)+' SPIN'+(cap-used===1?'':'S')+' LEFT'}});
 btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabled=true;btn.textContent='TEMPORARILY UNAVAILABLE';status.textContent='Prize service unavailable: '+e.message});
 })();
 </script>
@@ -598,6 +745,8 @@ const CONFIG = {
   AD_SLOT_GATE:  "",   // full-screen break: video:URL|poster=…|click=…  or  vast:URL  or partner HTML
   AD_SLOT_WHEEL: "",  // requires a distinct, approved 300x250 ad zone; never reuse the existing CARD key
   AD_SLOT_STICKY: "",  // fixed 320x50 anchor pinned to the bottom edge
+  AD_SLOT_STREAK: "", // banner under the streak calendar / claim area
+  AD_SLOT_COUNTDOWN: "", // banner inside the "next free spins" countdown card
   AD_PLACEHOLDERS: true,
 
   /* --- ad networks ---------------------------------------------------------
@@ -1380,6 +1529,8 @@ mountAd('adCapture', slotHtml('CAPTURE', CONFIG.AD_SLOT_CAPTURE), 'AD');
 mountAd('adDone', slotHtml('DONE', CONFIG.AD_SLOT_DONE), 'AD');
 mountAd('adGate', slotHtml('GATE', CONFIG.AD_SLOT_GATE), 'AD · SPONSORED');
 mountAd('adWheel', slotHtml('WHEEL', CONFIG.AD_SLOT_WHEEL), 'AD · SPONSORED');
+mountAd('adStreak', slotHtml('STREAK', CONFIG.AD_SLOT_STREAK), 'AD');
+mountAd('adCountdown', slotHtml('COUNTDOWN', CONFIG.AD_SLOT_COUNTDOWN), 'AD');
 
 /* Bottom anchor. No dashed placeholder for this one: an empty fixed bar at the
    foot of every screen would look broken, so it only exists once it has a tag
@@ -2076,7 +2227,7 @@ async function askPush() {
     toast('Could not enable alerts in this browser.');
   }
 }
-$('pushBtn').addEventListener('click', askPush);
+window.askPush = askPush; $('pushBtn').addEventListener('click', askPush);
 
 if (CONFIG.ONESIGNAL_APP_ID) {
   window.OneSignalDeferred = window.OneSignalDeferred || [];
