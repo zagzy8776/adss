@@ -230,73 +230,224 @@ img,video,canvas,svg{max-width:100%}
 }
 </style>
 <style>
-#ppWheelHome{position:relative;isolation:isolate;max-width:480px;margin:20px auto;padding:26px 18px 24px;border-radius:30px;overflow:hidden;text-align:center;color:#fff;background:radial-gradient(ellipse at 50% 28%,#246a5e 0%,#101d29 52%,#070a12 100%);border:1px solid #4a9e89;box-shadow:0 24px 60px #000a,inset 0 1px #bdfed744}
-#ppWheelHome:before{content:"";pointer-events:none;position:absolute;inset:-35%;z-index:-1;background:conic-gradient(from 0deg,transparent 0deg,#7dfeba22 20deg,transparent 70deg,transparent 190deg,#7dfeba22 230deg,transparent 260deg);animation:ppAmbient 12s linear infinite}
+/* ========== PREMIUM WHEEL + BOX ========== */
+#ppWheelHome{
+  position:relative;isolation:isolate;max-width:480px;margin:22px auto;padding:28px 18px 26px;
+  border-radius:28px;overflow:hidden;text-align:center;color:#fff;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%,#1a4a3e 0%,transparent 55%),
+    radial-gradient(ellipse at 50% 40%,#0f241f 0%,#070d12 70%);
+  border:1px solid #2f6b58;
+  box-shadow:
+    0 28px 70px #000c,
+    0 0 0 1px #0008,
+    inset 0 1px 0 #ffffff18,
+    inset 0 -20px 40px #0006;
+}
+#ppWheelHome:before{
+  content:"";pointer-events:none;position:absolute;inset:-40%;z-index:0;
+  background:conic-gradient(from 0deg,transparent 0 40deg,#6dffc018 55deg,transparent 90deg,transparent 200deg,#6dffc014 230deg,transparent 280deg);
+  animation:ppAmbient 14s linear infinite;
+}
+#ppWheelHome:after{
+  content:"";pointer-events:none;position:absolute;inset:0;z-index:0;
+  background:radial-gradient(circle at 50% 18%,#ffffff08,transparent 42%);
+}
+#ppWheelHome > *{position:relative;z-index:1}
 #ppWheelHome *{box-sizing:border-box}
-#ppWheelHome .pp-eyebrow{font-size:11px;font-weight:900;letter-spacing:.22em;color:#a6ffdc}
-#ppWheelHome h2{color:white;font-size:clamp(28px,6vw,36px);letter-spacing:-.04em;margin:8px 0 5px;font-weight:900;text-shadow:0 2px 8px #0008}
-#ppWheelHome .pp-desc{max-width:370px;margin:0 auto 6px;color:#b8cfc9;font-size:13px;line-height:1.55}
-#ppWheelHome .pp-wallet{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;margin:18px 0 0;padding:14px 16px;border:1px solid #4b8e7a;border-radius:18px;background:linear-gradient(110deg,#264a42,#14282f);box-shadow:inset 0 1px #ffffff22,0 8px 20px #000b}
-#ppWheelHome .pp-wallet-label{display:block;font-size:10.5px;color:#b9d8ca;font-weight:800;letter-spacing:.04em}
+#ppWheelHome .pp-eyebrow{
+  font-size:11px;font-weight:900;letter-spacing:.24em;color:#9df0cd;
+  text-shadow:0 0 20px #3dffb844;
+}
+#ppWheelHome h2{
+  color:#fff;font-size:clamp(28px,6vw,38px);letter-spacing:-.045em;margin:8px 0 6px;font-weight:900;
+  text-shadow:0 2px 12px #000a,0 0 40px #2affb820;
+}
+#ppWheelHome .pp-desc{max-width:370px;margin:0 auto 6px;color:#a8c4b8;font-size:13px;line-height:1.55}
+#ppWheelHome .pp-wallet{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;
+  margin:18px 0 0;padding:14px 16px;border-radius:18px;
+  border:1px solid #3a7a66;
+  background:linear-gradient(135deg,#1a3d36 0%,#0e221f 50%,#122a28 100%);
+  box-shadow:inset 0 1px 0 #ffffff14,0 10px 28px #0009;
+}
+#ppWheelHome .pp-wallet-label{display:block;font-size:10.5px;color:#9fcbb8;font-weight:800;letter-spacing:.04em}
 #ppWheelHome .pp-wallet-value{display:block;font-size:21px;color:#fff;font-weight:900;letter-spacing:-.03em;margin-top:2px;text-shadow:0 1px 4px #0009}
-#ppWheelHome .pp-wallet-icon{display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#3e9e84,#1f5a4e);color:#c9ffdf;font-size:24px;box-shadow:0 4px 12px #000a}
-#ppWheelHome .pp-arena{width:min(370px,82vw);aspect-ratio:1;position:relative;margin:26px auto 16px;filter:drop-shadow(0 20px 28px #000c)}
-#ppWheelHome .pp-aura{position:absolute;inset:-14px;border-radius:50%;background:conic-gradient(#ffe594,#b87d2e,#ffe594,#9d6b24,#ffe594);box-shadow:0 0 22px #f8d772aa,0 0 48px #5affbf44;animation:ppHalo 2.6s ease-in-out infinite alternate}
-#ppWheelHome .pp-bulbs{position:absolute;inset:-8px;border-radius:50%;background:repeating-conic-gradient(#fff4bf 0 2.5deg,transparent 2.5deg 14deg);-webkit-mask:radial-gradient(transparent 0 92%,#000 93%);mask:radial-gradient(transparent 0 92%,#000 93%);animation:ppBulbs 1.2s steps(2) infinite;z-index:3;pointer-events:none}
-#ppWheelHome .pp-wheel-wrap{position:absolute;inset:3px;border-radius:50%;overflow:hidden;box-shadow:inset 0 0 0 3px #ffffff22,inset 0 0 40px #0009}
-#ppWheelHome .pp-wheel{position:absolute;inset:0;border:9px solid #1e3842;border-radius:50%;overflow:hidden;transform:rotate(0deg);transition:transform 0s;background:conic-gradient(from -22.5deg,#1b9e77 0deg 45deg,#3b82f6 45deg 90deg,#9d4edd 90deg 135deg,#f59e0b 135deg 180deg,#10b981 180deg 225deg,#6366f1 225deg 270deg,#f97316 270deg 315deg,#ef4444 315deg 360deg)}
-#ppWheelHome .pp-wheel:after{content:"";position:absolute;inset:4px;border-radius:50%;background:radial-gradient(circle,transparent 30%,#ffffff13 100%);pointer-events:none}
-#ppWheelHome .pp-wheel{will-change:transform}
-#ppWheelHome .pp-wheel.spinning{transition:transform 5.1s cubic-bezier(0.12,0.75,0.08,1)}
-#ppWheelHome .pp-prize .pp-upright{will-change:transform}
-#ppWheelHome .pp-pin{transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
-#ppWheelHome .pp-pin.tick{transform:translateX(-50%) translateY(5px) scaleY(.9)}
-#ppWheelHome .pp-wheel.landed .pp-prize.is-win strong{color:#ffe594;text-shadow:0 0 14px #ffe594bb,0 2px 6px #000;animation:ppWinPulse .55s ease-out}
-@keyframes ppWinPulse{0%{transform:scale(1)}40%{transform:scale(1.16)}100%{transform:scale(1)}}
-#ppWheelHome .pp-prize{position:absolute;left:50%;top:50%;width:22%;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transform:translate(-50%,-50%);text-shadow:0 2px 6px #000a;white-space:nowrap;cursor:default}
-#ppWheelHome .pp-prize .pp-symbol{font-size:24px;line-height:1}
-#ppWheelHome .pp-prize strong{font-size:clamp(11px,3vw,14px);font-weight:950;color:#fff;line-height:1.15}
-#ppWheelHome .pp-prize .pp-upright{display:flex;flex-direction:column;align-items:center;gap:3px;transition:transform 0s}
-#ppWheelHome .pp-pin{position:absolute;z-index:6;top:-22px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-top:42px solid #fde047;filter:drop-shadow(0 4px 6px #000a)}
-#ppWheelHome .pp-pin:after{content:"";position:absolute;top:42px;left:-5px;width:10px;height:12px;background:#fde047;border-radius:2px}
-#ppWheelHome .pp-center{position:absolute;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);width:78px;height:78px;border-radius:50%;background:radial-gradient(circle,#fef3c7,#d97706);border:3px solid #fff;box-shadow:0 0 20px #fcd34dcc,inset 0 1px #fff4;display:grid;place-items:center;font-weight:900;font-size:15px;letter-spacing:.08em;color:#7c2d12}
-#ppWheelHome .pp-hub{position:absolute;z-index:7;left:50%;top:50%;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid #b45309;box-shadow:0 0 10px #fff5}
-#ppWheelHome .pp-action{margin:18px auto 0;display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border:0;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 0 0 rgba(34,197,94,0),0 8px 20px #000a;transition:transform .1s,box-shadow .2s,background .2s}
-#ppWheelHome .pp-action:active{transform:scale(.96);box-shadow:0 4px 10px #000a}
-#ppWheelHome .pp-action[disabled]{opacity:.55;cursor:not-allowed;box-shadow:none}
-#ppWheelHome .pp-action:not([disabled]):hover{background:linear-gradient(135deg,#4ade80,#15803d);box-shadow:0 0 20px #22c55e55,0 8px 24px #000a}
-#ppWheelHome .pp-result{margin:14px auto 2px;min-height:34px;font-size:14px;color:#a6ffdc;font-weight:800;letter-spacing:.02em}
-#ppWheelHome .pp-note{font-size:11px;color:#94b3aa;margin-top:10px;line-height:1.5}
-#ppWheelHome .pp-link{display:inline-block;margin-top:10px;padding:9px 20px;border:1px solid #4b8e7a;border-radius:10px;color:#a6ffdc;text-decoration:none;font-size:12px;font-weight:800;transition:all .2s}
-#ppWheelHome .pp-link:hover{border-color:#a6ffdc;color:#fff;background:rgba(166,255,220,.1)}
-@keyframes ppAmbient{to{transform:rotate(360deg)}}
-@keyframes ppHalo{to{box-shadow:0 0 28px #ffe28ec9,0 0 62px #5dffb866}}
-@keyframes ppBulbs{50%{transform:rotate(9deg)}}
-@keyframes ppConfetti{0%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(calc(-50% + var(--dx,0px)),calc(-50% + var(--dy,100px))) rotate(540deg) scale(.4);opacity:0}}
-@media(prefers-reduced-motion:reduce){#ppWheelHome:before,#ppWheelHome .pp-aura,#ppWheelHome .pp-bulbs{animation:none!important}#ppWheelHome .pp-wheel{transition-duration:.01ms!important}}
-@keyframes ppAmbient{to{transform:rotate(360deg)}}
-@keyframes ppHalo{to{box-shadow:0 0 25px #ffe28ec9,0 0 58px #5dffb84d}}
-@keyframes ppBulbs{50%{transform:rotate(7.5deg)}}
-@media(prefers-reduced-motion:reduce){#ppWheelHome:before,#ppWheelHome .pp-aura,#ppWheelHome .pp-bulbs{animation:none!important}#ppWheelHome .pp-wheel,#ppWheelHome .pp-upright{transition-duration:.01ms!important}}
-</style>
-<style>
-/* Premium wheel treatment: restrained palette, legible cash denominations and precise pointer. */
-#ppWheelHome{background:radial-gradient(ellipse at 50% 30%,#17342d 0%,#0b171a 55%,#080e13 100%);border:1px solid #31564b;box-shadow:0 18px 50px #0009,inset 0 1px #ffffff12}
-#ppWheelHome:before{opacity:.18}
-#ppWheelHome .pp-eyebrow{color:#d9bb77;letter-spacing:.2em;font-weight:700}
-#ppWheelHome h2{font-weight:800;letter-spacing:-.045em}
-#ppWheelHome .pp-wheel{border:7px solid #102a2a;background:conic-gradient(from -22.5deg,#155a4b 0deg 45deg,#163d42 45deg 90deg,#1b6855 90deg 135deg,#174b50 135deg 180deg,#8b6a2d 180deg 225deg,#1d594b 225deg 270deg,#21494b 270deg 315deg,#134d46 315deg 360deg)}
-#ppWheelHome .pp-wheel:after{background:repeating-conic-gradient(from -22.5deg,transparent 0deg 44.6deg,#ffffff35 44.7deg 45deg);inset:0}
-#ppWheelHome .pp-prize{width:26%;text-shadow:0 1px 5px #0008}
+#ppWheelHome .pp-wallet-icon{
+  display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:14px;
+  background:linear-gradient(145deg,#3eb890,#1a5c4a);color:#c9ffdf;font-size:24px;
+  box-shadow:0 4px 14px #000a,inset 0 1px 0 #ffffff33;
+}
+#ppWheelHome #ppDailyDashboard{
+  margin:14px 0 8px;text-align:left;border-radius:18px;padding:15px;
+  border:1px solid #356b5a;
+  background:linear-gradient(160deg,#0e2824,#0a1c1a 60%,#0c2220);
+  box-shadow:inset 0 1px 0 #ffffff10,0 8px 24px #0007;
+}
+
+/* Arena + glow ring */
+#ppWheelHome .pp-arena{
+  width:min(340px,84vw);aspect-ratio:1;position:relative;margin:28px auto 18px;
+  filter:drop-shadow(0 18px 32px #000c);
+}
+#ppWheelHome .pp-aura{
+  position:absolute;inset:-18px;border-radius:50%;
+  background:conic-gradient(from 0deg,#f6e27a,#c9a227,#f8e9a0,#a67c1a,#f6e27a);
+  box-shadow:0 0 28px #f0d46a88,0 0 60px #2affb833,0 0 100px #f0d46a22;
+  animation:ppHalo 3.2s ease-in-out infinite alternate;
+}
+#ppWheelHome .pp-bulbs{
+  position:absolute;inset:-10px;border-radius:50%;z-index:3;pointer-events:none;
+  background:repeating-conic-gradient(#fff8d6 0 3deg,transparent 3deg 15deg);
+  -webkit-mask:radial-gradient(transparent 0 90%,#000 91.5% 100%);
+  mask:radial-gradient(transparent 0 90%,#000 91.5% 100%);
+  animation:ppBulbs 0.9s steps(2) infinite;
+  filter:drop-shadow(0 0 4px #ffe9a8);
+}
+#ppWheelHome .pp-wheel-wrap{
+  position:absolute;inset:4px;border-radius:50%;overflow:hidden;
+  box-shadow:
+    inset 0 0 0 2px #ffffff22,
+    inset 0 0 50px #000a,
+    0 0 0 3px #1a2e2a;
+}
+/* Premium segment palette — deep greens + gold accent segment */
+#ppWheelHome .pp-wheel{
+  position:absolute;inset:0;border-radius:50%;overflow:hidden;
+  border:10px solid #1a2f2c;
+  transform:rotate(0deg);transition:transform 0s;
+  will-change:transform;
+  background:conic-gradient(
+    from -22.5deg,
+    #0d4a3c 0deg 45deg,
+    #163d42 45deg 90deg,
+    #1a6b55 90deg 135deg,
+    #0f3d38 135deg 180deg,
+    #8b6a2d 180deg 225deg,
+    #145a48 225deg 270deg,
+    #1c4a52 270deg 315deg,
+    #0e453c 315deg 360deg
+  );
+  box-shadow:inset 0 0 30px #0008;
+}
+#ppWheelHome .pp-wheel:before{
+  content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;z-index:1;
+  background:repeating-conic-gradient(from -22.5deg,transparent 0deg 44.5deg,#ffffff28 44.5deg 45deg);
+}
+#ppWheelHome .pp-wheel:after{
+  content:"";position:absolute;inset:6px;border-radius:50%;pointer-events:none;z-index:1;
+  background:radial-gradient(circle at 35% 28%,#ffffff18 0%,transparent 45%),
+              radial-gradient(circle at 70% 75%,#00000033 0%,transparent 40%);
+}
+#ppWheelHome .pp-wheel.spinning{
+  transition:transform 6.2s cubic-bezier(0.08, 0.82, 0.12, 1);
+}
+#ppWheelHome .pp-wheel.landed .pp-prize.is-win strong{
+  color:#ffe594;text-shadow:0 0 16px #ffe594cc,0 2px 8px #000;animation:ppWinPulse 0.9s ease-in-out 2;
+}
+#ppWheelHome .pp-prize{
+  position:absolute;left:50%;top:50%;width:28%;transform-origin:center center;
+  text-align:center;z-index:2;pointer-events:none;
+}
+#ppWheelHome .pp-prize .pp-upright{display:inline-block;will-change:transform}
 #ppWheelHome .pp-prize .pp-symbol{display:none}
-#ppWheelHome .pp-prize strong{font-size:clamp(18px,5vw,25px);font-weight:850;letter-spacing:-.03em;color:#fff9e9}
-#ppWheelHome .pp-center{width:72px;height:72px;border:2px solid #e0c180;background:radial-gradient(circle at 35% 25%,#284e47,#102a2b);box-shadow:0 0 0 5px #0b2222,0 4px 20px #0008;color:#f1d59c;font-size:12px;letter-spacing:.12em}
-#ppWheelHome .pp-hub{width:12px;height:12px;background:#d9ba7b;border:2px solid #18302d;box-shadow:none}
-#ppWheelHome .pp-pin{top:-13px;border-left:12px solid transparent;border-right:12px solid transparent;border-top:28px solid #f2d18b;filter:drop-shadow(0 2px 4px #0008)}
-#ppWheelHome .pp-pin:after{display:none}
-#ppWheelHome .pp-action{border-radius:12px;background:linear-gradient(120deg,#0f865d,#0d684d);border:1px solid #38b98b;box-shadow:0 8px 20px #0007;letter-spacing:.02em}
-#ppWheelHome .pp-wallet,#ppWheelHome #ppDailyDashboard{background:#0c2221!important;border-color:#31544c!important}
-@media(prefers-reduced-motion:reduce){#ppWheelHome .pp-wheel.spinning{transition:none!important}#ppWheelHome .pp-pin{transition:none!important}}
+#ppWheelHome .pp-prize strong{
+  display:block;font-size:clamp(17px,4.8vw,24px);font-weight:900;letter-spacing:-.03em;
+  color:#f7f3e6;text-shadow:0 2px 6px #000c,0 0 1px #000;
+}
+#ppWheelHome .pp-center{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:78px;height:78px;border-radius:50%;z-index:5;
+  display:grid;place-items:center;
+  border:2.5px solid #e8c878;
+  background:
+    radial-gradient(circle at 35% 28%,#3a6b5e,#122e2a 55%,#0a1c1a);
+  box-shadow:
+    0 0 0 6px #0a1e1c,
+    0 0 0 8px #d4b46a55,
+    0 8px 24px #000b,
+    inset 0 2px 4px #ffffff22;
+  color:#f5e0a0;font-size:11px;font-weight:900;letter-spacing:.16em;
+  text-shadow:0 1px 2px #000a;
+}
+#ppWheelHome .pp-hub{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:14px;height:14px;border-radius:50%;z-index:6;
+  background:radial-gradient(circle at 35% 30%,#f0d78a,#b8943a);
+  border:2px solid #1a302c;
+  box-shadow:0 2px 6px #0009;
+}
+#ppWheelHome .pp-pin{
+  position:absolute;left:50%;top:-4px;transform:translateX(-50%);
+  width:0;height:0;z-index:7;
+  border-left:13px solid transparent;border-right:13px solid transparent;
+  border-top:30px solid #f2d48a;
+  filter:drop-shadow(0 3px 6px #000a);
+  transition:transform .16s cubic-bezier(.34,1.56,.64,1);
+}
+#ppWheelHome .pp-pin:before{
+  content:"";position:absolute;left:-5px;top:-30px;width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff0c0,#d4a84a);
+  box-shadow:0 1px 3px #0008;
+}
+#ppWheelHome .pp-pin.tick{transform:translateX(-50%) translateY(6px) scaleY(.88)}
+
+/* Spin button */
+#ppWheelHome .pp-action{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:52px;padding:14px 28px;margin:4px auto 0;border:0;cursor:pointer;
+  border-radius:999px;font-size:15px;font-weight:900;letter-spacing:.03em;color:#06291c;
+  background:linear-gradient(180deg,#7dffc0 0%,#2ecf8a 45%,#1aa86e 100%);
+  box-shadow:
+    0 0 0 1px #9dffd655,
+    0 10px 28px #0a3d2e88,
+    0 0 40px #2affb833,
+    inset 0 1px 0 #ffffff66;
+  transition:transform .15s ease, box-shadow .2s ease, filter .2s ease;
+}
+#ppWheelHome .pp-action:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 0 0 1px #b6ffe8aa,0 14px 32px #0a3d2e99,0 0 50px #2affb844,inset 0 1px 0 #ffffff77;
+}
+#ppWheelHome .pp-action:active:not(:disabled){transform:translateY(1px) scale(.98)}
+#ppWheelHome .pp-action:disabled{
+  filter:grayscale(.25) brightness(.75);cursor:not-allowed;box-shadow:0 4px 12px #0006;
+}
+#ppWheelHome .pp-result{
+  margin:12px 0 4px;font-size:14px;font-weight:700;color:#b8e0cc;min-height:1.4em;
+}
+#ppWheelHome .pp-note{font-size:11px;color:#7a9e90;line-height:1.5;max-width:360px;margin:10px auto 0}
+#ppWheelHome .pp-link{
+  display:inline-block;margin:8px 6px 0;padding:8px 14px;border-radius:10px;
+  border:1px solid #3d6e5c;color:#a6ffdc;text-decoration:none;font-size:12px;font-weight:800;
+  background:rgba(166,255,220,.06);
+}
+#ppWheelHome .pp-link:hover{border-color:#a6ffdc;color:#fff;background:rgba(166,255,220,.12)}
+
+@keyframes ppAmbient{to{transform:rotate(360deg)}}
+@keyframes ppHalo{
+  from{opacity:.75;filter:brightness(.92);transform:scale(.98)}
+  to{opacity:1;filter:brightness(1.12);transform:scale(1.02)}
+}
+@keyframes ppBulbs{from{opacity:1}to{opacity:.45}}
+@keyframes ppConfetti{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.4) rotate(180deg)}
+}
+@keyframes ppWinPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.12)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #ppWheelHome:before,#ppWheelHome .pp-aura,#ppWheelHome .pp-bulbs{animation:none!important}
+  #ppWheelHome .pp-wheel.spinning{transition:none!important}
+  #ppWheelHome .pp-pin{transition:none!important}
+}
+@media(max-width:480px){
+  #ppWheelHome{margin:12px auto;padding:18px 12px 20px;border-radius:22px}
+  #ppWheelHome .pp-arena{max-width:min(88vw,320px);margin:20px auto 14px}
+}
 </style>
 <style>
 /* A compact, responsive wheel shortcut without default blue underlined link styling. */
@@ -609,13 +760,13 @@ if(remaining===0){
     try{if(typeof hit==='function')hit('ad_after')}catch(e){}
   }
 }btn.disabled=busy||!campaign||used>=cap;btn.textContent=!campaign?'COMING SOON':used>=cap?'DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';if(!campaign)status.textContent='The prize wheel will open when the next campaign is live. Check back soon.'}
-const SEGMENTS=8,DEG=360/SEGMENTS,FULL_SPINS=5,SPIN_MS=5100;
+const SEGMENTS=8,DEG=360/SEGMENTS,FULL_SPINS=6,SPIN_MS=6200;
 const pin=document.querySelector('#ppWheelHome .pp-pin');
 const prizeEls=[...wheel.querySelectorAll('.pp-prize')];
 function clearWinState(){wheel.classList.remove('landed');prizeEls.forEach(p=>p.classList.remove('is-win'))}
 function markWin(index){wheel.classList.add('landed');if(prizeEls[index])prizeEls[index].classList.add('is-win');if(pin){pin.classList.add('tick');setTimeout(()=>pin.classList.remove('tick'),220)};burstConfetti()}
 function burstConfetti(){const arena=wheel.closest('.pp-arena');if(!arena||window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;const n=14;for(let i=0;i<n;i++){const d=document.createElement('i');d.setAttribute('aria-hidden','true');d.style.cssText='position:absolute;left:50%;top:42%;width:7px;height:7px;border-radius:'+(i%3?'50%':'2px')+';pointer-events:none;z-index:9;background:hsl('+((i*47)%360)+' 90% 60%);transform:translate(-50%,-50%);animation:ppConfetti '+(0.9+Math.random()*0.7)+'s ease-out forwards;--dx:'+(Math.random()*160-80)+'px;--dy:'+(60+Math.random()*120)+'px';arena.appendChild(d);setTimeout(()=>d.remove(),1800)}}
-function spinToIndex(index){return new Promise(resolve=>{clearWinState();const current=((rotation%360)+360)%360;const desired=(360-index*DEG)%360;const delta=(desired-current+360)%360;rotation+=FULL_SPINS*360+delta;const onEnd=e=>{if(e&&e.propertyName&&e.propertyName!=='transform')return;wheel.removeEventListener('transitionend',onEnd);clearTimeout(fallback);wheel.classList.remove('spinning');markWin(index);resolve()};wheel.addEventListener('transitionend',onEnd);const fallback=setTimeout(()=>onEnd({propertyName:'transform'}),SPIN_MS+150);void wheel.offsetWidth;wheel.classList.add('spinning');wheel.style.transform='rotate('+rotation+'deg)';labels.forEach(l=>l.style.transform='rotate('+(-rotation)+'deg)')})}
+function spinToIndex(index){return new Promise(resolve=>{clearWinState();const current=((rotation%360)+360)%360;const desired=(360-index*DEG)%360;const delta=(desired-current+360)%360;rotation+=FULL_SPINS*360+delta;const onEnd=e=>{if(e&&e.propertyName&&e.propertyName!=='transform')return;wheel.removeEventListener('transitionend',onEnd);clearTimeout(fallback);wheel.classList.remove('spinning');markWin(index);resolve()};wheel.addEventListener('transitionend',onEnd);const fallback=setTimeout(()=>onEnd({propertyName:'transform'}),SPIN_MS+200);void wheel.offsetWidth;wheel.classList.add('spinning');wheel.style.transform='rotate('+rotation+'deg)';labels.forEach(l=>l.style.transform='rotate('+(-rotation)+'deg)')})}
 btn.addEventListener('click',async()=>{if(busy||!campaign||used>=cap)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:makeRequestId()});const matching=visualTiers.map((tier,i)=>tier===result.prize_title?i:-1).filter(i=>i>=0);const options=matching.length?matching:visualTiers.map((_,i)=>i);const index=options[crypto.getRandomValues(new Uint32Array(1))[0]%options.length];await spinToIndex(index);used=Math.max(used,Number(result.used||used));status.textContent=result.prize_title?'Server-confirmed result: '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';updateStreakOnSpin();await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false;btn.disabled=!campaign||used>=cap;btn.textContent=!campaign?'COMING SOON':used>=cap?'DAILY SPINS COMPLETE':'✦ '+Math.max(0,cap-used)+' SPIN'+(cap-used===1?'':'S')+' LEFT'}});
 btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabled=true;btn.textContent='TRY AGAIN SHORTLY';status.textContent='Prize wheel is temporarily unavailable. Please try again shortly.'});
 })();
