@@ -381,7 +381,7 @@ img,video,canvas,svg{max-width:100%}
       </label>
       <div class="err" id="consentErr" role="alert">Please confirm consent to storing your entry contact details.</div>
       <button class="btn" id="submitBtn" type="submit">Submit my entry →</button>
-      <p class="note">18+ · Open worldwide · We never ask for payment details or gift card codes.</p>
+      
     </form>
   </section>
 
@@ -457,9 +457,12 @@ img,video,canvas,svg{max-width:100%}
     </div>
   </div><div class="pp-pin" aria-hidden="true"></div><div class="pp-center" aria-hidden="true">SPIN</div><div class="pp-hub" aria-hidden="true"></div>
  </div>
-<div id="ppAfterSpins" hidden style="margin:15px 0;padding:18px;border:1px solid #5d9378;border-radius:18px;background:linear-gradient(125deg,#164738,#142639);text-align:left"><strong style="font-size:17px;color:#eaffeb">🧩 Keep playing: Match the gifts</strong><p style="color:#b9ddce;font-size:12px;line-height:1.5">Your two daily spins are complete. Try this free memory challenge while you wait for tomorrow. No cash or prizes are awarded by this game.</p><div id="ppMatchGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0"></div><div id="ppMatchStatus" role="status" style="font-size:12px;color:#ddf7e5;margin:8px 0">Match all four pairs!</div><button id="ppMatchReset" type="button" style="padding:11px 16px;background:#a5f5c1;color:#103826;border:0;border-radius:10px;font-weight:800">Play again</button></div> <aside class="adbox pp-wheel-ad" id="adWheel" data-slot="wheel" aria-label="Advertisement" style="max-width:300px;margin:14px auto"></aside>
+<div id="ppAfterSpins" hidden style="margin:15px 0;padding:18px;border:1px solid #5d9378;border-radius:18px;background:linear-gradient(125deg,#164738,#142639);text-align:left"><strong style="font-size:17px;color:#eaffeb">🧩 Keep playing: Match the gifts</strong><p style="color:#b9ddce;font-size:12px;line-height:1.5">Your two daily spins are complete. Try this free memory challenge while you wait for tomorrow. No cash or prizes are awarded by this game.</p><div id="ppMatchGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0"></div><div id="ppMatchStatus" role="status" style="font-size:12px;color:#ddf7e5;margin:8px 0">Match all four pairs!</div>
+<aside class="adbox inset" id="adMatch" data-slot="match" aria-label="Advertisement" style="margin:10px 0;min-height:0"></aside>
+<button id="ppMatchReset" type="button" style="padding:11px 16px;background:#a5f5c1;color:#103826;border:0;border-radius:10px;font-weight:800">Play again</button></div> <aside class="adbox pp-wheel-ad" id="adWheel" data-slot="wheel" aria-label="Advertisement" style="max-width:300px;margin:14px auto"></aside>
  <button id="ppHomeSpinBtn" class="pp-action" type="button">✦ TRY A SPIN</button>
  <p id="ppHomeSpinStatus" class="pp-result" role="status" aria-live="polite">Tap to spin the wheel.</p>
+ <aside class="adbox inset" id="adSpin" data-slot="spin" aria-label="Advertisement" style="margin:12px auto;max-width:300px;min-height:0"></aside>
  <p class="pp-note">Illustrative segments are not proportional to winning odds. Initial server selection weights are $5: 70%, $20: 25%, $100: 5%, subject to remaining inventory. No registration required. Real prize results are recorded on the server. Cash awards remain pending until verified and approved for payout.</p>
  <a class="pp-link" href="/claims.html">View your prize claims and messages →</a> <a class="pp-link" href="/rewards.html">See all rewards →</a>
 </section>
@@ -605,7 +608,7 @@ if(remaining===0){
     // Hit event for the post-limit session
     try{if(typeof hit==='function')hit('ad_after')}catch(e){}
   }
-}btn.disabled=busy||!campaign||used>=cap;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=cap?'DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';if(!campaign)status.textContent='Real prizes require a funded, active campaign. No prizes are being awarded right now.'}
+}btn.disabled=busy||!campaign||used>=cap;btn.textContent=!campaign?'COMING SOON':used>=cap?'DAILY SPINS COMPLETE':'✦ '+remaining+' SPIN'+(remaining===1?'':'S')+' LEFT';if(!campaign)status.textContent='The prize wheel will open when the next campaign is live. Check back soon.'}
 const SEGMENTS=8,DEG=360/SEGMENTS,FULL_SPINS=5,SPIN_MS=5100;
 const pin=document.querySelector('#ppWheelHome .pp-pin');
 const prizeEls=[...wheel.querySelectorAll('.pp-prize')];
@@ -613,8 +616,8 @@ function clearWinState(){wheel.classList.remove('landed');prizeEls.forEach(p=>p.
 function markWin(index){wheel.classList.add('landed');if(prizeEls[index])prizeEls[index].classList.add('is-win');if(pin){pin.classList.add('tick');setTimeout(()=>pin.classList.remove('tick'),220)};burstConfetti()}
 function burstConfetti(){const arena=wheel.closest('.pp-arena');if(!arena||window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;const n=14;for(let i=0;i<n;i++){const d=document.createElement('i');d.setAttribute('aria-hidden','true');d.style.cssText='position:absolute;left:50%;top:42%;width:7px;height:7px;border-radius:'+(i%3?'50%':'2px')+';pointer-events:none;z-index:9;background:hsl('+((i*47)%360)+' 90% 60%);transform:translate(-50%,-50%);animation:ppConfetti '+(0.9+Math.random()*0.7)+'s ease-out forwards;--dx:'+(Math.random()*160-80)+'px;--dy:'+(60+Math.random()*120)+'px';arena.appendChild(d);setTimeout(()=>d.remove(),1800)}}
 function spinToIndex(index){return new Promise(resolve=>{clearWinState();const current=((rotation%360)+360)%360;const desired=(360-index*DEG)%360;const delta=(desired-current+360)%360;rotation+=FULL_SPINS*360+delta;const onEnd=e=>{if(e&&e.propertyName&&e.propertyName!=='transform')return;wheel.removeEventListener('transitionend',onEnd);clearTimeout(fallback);wheel.classList.remove('spinning');markWin(index);resolve()};wheel.addEventListener('transitionend',onEnd);const fallback=setTimeout(()=>onEnd({propertyName:'transform'}),SPIN_MS+150);void wheel.offsetWidth;wheel.classList.add('spinning');wheel.style.transform='rotate('+rotation+'deg)';labels.forEach(l=>l.style.transform='rotate('+(-rotation)+'deg)')})}
-btn.addEventListener('click',async()=>{if(busy||!campaign||used>=cap)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:makeRequestId()});const matching=visualTiers.map((tier,i)=>tier===result.prize_title?i:-1).filter(i=>i>=0);const options=matching.length?matching:visualTiers.map((_,i)=>i);const index=options[crypto.getRandomValues(new Uint32Array(1))[0]%options.length];await spinToIndex(index);used=Math.max(used,Number(result.used||used));status.textContent=result.prize_title?'Server-confirmed result: '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';updateStreakOnSpin();await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false;btn.disabled=!campaign||used>=cap;btn.textContent=!campaign?'NO ACTIVE FUNDED CAMPAIGN':used>=cap?'DAILY SPINS COMPLETE':'✦ '+Math.max(0,cap-used)+' SPIN'+(cap-used===1?'':'S')+' LEFT'}});
-btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabled=true;btn.textContent='TEMPORARILY UNAVAILABLE';status.textContent='Prize service unavailable: '+e.message});
+btn.addEventListener('click',async()=>{if(busy||!campaign||used>=cap)return;busy=true;btn.disabled=true;btn.textContent='✦ SPINNING…';status.textContent='Verifying your spin with the server…';try{const result=await api('spin','POST',{campaign_id:campaign.id,request_id:makeRequestId()});const matching=visualTiers.map((tier,i)=>tier===result.prize_title?i:-1).filter(i=>i>=0);const options=matching.length?matching:visualTiers.map((_,i)=>i);const index=options[crypto.getRandomValues(new Uint32Array(1))[0]%options.length];await spinToIndex(index);used=Math.max(used,Number(result.used||used));status.textContent=result.prize_title?'Server-confirmed result: '+result.prize_title+'. Your prize is recorded and pending verification.':'No prize this spin. Your result is recorded.';updateStreakOnSpin();await refresh()}catch(e){status.textContent=e.message;try{await refresh()}catch{}}finally{busy=false;btn.disabled=!campaign||used>=cap;btn.textContent=!campaign?'COMING SOON':used>=cap?'DAILY SPINS COMPLETE':'✦ '+Math.max(0,cap-used)+' SPIN'+(cap-used===1?'':'S')+' LEFT'}});
+btn.disabled=true;btn.textContent='CONNECTING…';refresh().catch(e=>{btn.disabled=true;btn.textContent='TRY AGAIN SHORTLY';status.textContent='Prize wheel is temporarily unavailable. Please try again shortly.'});
 })();
 </script>
 
@@ -747,6 +750,8 @@ const CONFIG = {
   AD_SLOT_STICKY: "",  // fixed 320x50 anchor pinned to the bottom edge
   AD_SLOT_STREAK: "", // banner under the streak calendar / claim area
   AD_SLOT_COUNTDOWN: "", // banner inside the "next free spins" countdown card
+  AD_SLOT_MATCH: "", // inside the post-spin memory match game
+  AD_SLOT_SPIN: "", // under the spin button / result status
   AD_PLACEHOLDERS: true,
 
   /* --- ad networks ---------------------------------------------------------
@@ -1531,6 +1536,8 @@ mountAd('adGate', slotHtml('GATE', CONFIG.AD_SLOT_GATE), 'AD · SPONSORED');
 mountAd('adWheel', slotHtml('WHEEL', CONFIG.AD_SLOT_WHEEL), 'AD · SPONSORED');
 mountAd('adStreak', slotHtml('STREAK', CONFIG.AD_SLOT_STREAK), 'AD');
 mountAd('adCountdown', slotHtml('COUNTDOWN', CONFIG.AD_SLOT_COUNTDOWN), 'AD');
+mountAd('adMatch', slotHtml('MATCH', CONFIG.AD_SLOT_MATCH), 'AD');
+mountAd('adSpin', slotHtml('SPIN', CONFIG.AD_SLOT_SPIN), 'AD');
 
 /* Bottom anchor. No dashed placeholder for this one: an empty fixed bar at the
    foot of every screen would look broken, so it only exists once it has a tag
@@ -2204,14 +2211,15 @@ $('shareBtn').addEventListener('click', share);
 async function askPush() {
   const btn = $('pushBtn');
   if (!CONFIG.ONESIGNAL_APP_ID) {
-    btn.textContent = 'Alerts not enabled yet';
+    btn.hidden = true;
     btn.disabled = true;
-    $('pushNote').textContent = 'OneSignal is not connected on this build yet.';
-    console.warn('[PayoutPool] ONESIGNAL_APP_ID is empty - requestPermission() skipped.');
+    $('pushNote').hidden = true;
+    $('pushNote').textContent = '';
+    console.warn('[PayoutPool] push not configured - requestPermission() skipped.');
     return;
   }
   const OneSignal = window.__oneSignal;
-  if (!OneSignal) { toast('Still loading alerts \u2014 try again in a moment.'); return; }
+  if (!OneSignal) { toast('Alerts are loading \u2014 try again in a moment.'); return; }
   try {
     await OneSignal.Notifications.requestPermission();
     if (OneSignal.Notifications.permission) {
@@ -2227,6 +2235,19 @@ async function askPush() {
     toast('Could not enable alerts in this browser.');
   }
 }
+
+/* Hide push UI when not configured — never mention provider names to users */
+(function(){
+  try{
+    if(!CONFIG.ONESIGNAL_APP_ID){
+      var b=document.getElementById('pushBtn');
+      var n=document.getElementById('pushNote');
+      if(b){b.hidden=true;b.style.display='none';}
+      if(n){n.hidden=true;n.style.display='none';n.textContent='';}
+    }
+  }catch(e){}
+})();
+
 window.askPush = askPush; $('pushBtn').addEventListener('click', askPush);
 
 if (CONFIG.ONESIGNAL_APP_ID) {
